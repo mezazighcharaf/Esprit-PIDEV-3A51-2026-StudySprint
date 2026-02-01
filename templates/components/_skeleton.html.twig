@@ -1,0 +1,82 @@
+{#
+  Skeleton Loading Component
+  Usage:
+  {{ include('components/_skeleton.html.twig', {
+      type: 'card', // 'text' | 'heading' | 'avatar' | 'card' | 'row' | 'table'
+      count: 3, // number of skeleton items
+      lines: 4 // for text type, number of lines
+  }) }}
+#}
+
+{% set count = count|default(1) %}
+
+{% for i in 1..count %}
+    {% if type == 'text' %}
+        {% set lines = lines|default(3) %}
+        <div class="mb-4">
+            {% for j in 1..lines %}
+            <div class="skeleton skeleton-text" style="width: {{ j == lines ? '60%' : '100%' }}"></div>
+            {% endfor %}
+        </div>
+
+    {% elseif type == 'heading' %}
+        <div class="skeleton skeleton-heading"></div>
+
+    {% elseif type == 'avatar' %}
+        <div class="skeleton skeleton-avatar"></div>
+
+    {% elseif type == 'card' %}
+        <div class="card">
+            <div class="card-body">
+                <div class="skeleton skeleton-heading"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text"></div>
+                <div class="skeleton skeleton-text" style="width: 60%"></div>
+            </div>
+        </div>
+
+    {% elseif type == 'row' %}
+        <div class="skeleton skeleton-row"></div>
+
+    {% elseif type == 'table' %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th><div class="skeleton" style="height: 14px; width: 80px;"></div></th>
+                        <th><div class="skeleton" style="height: 14px; width: 120px;"></div></th>
+                        <th><div class="skeleton" style="height: 14px; width: 80px;"></div></th>
+                        <th><div class="skeleton" style="height: 14px; width: 60px;"></div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for k in 1..5 %}
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <div class="skeleton skeleton-avatar" style="width: 32px; height: 32px;"></div>
+                                <div class="skeleton" style="height: 14px; width: 100px;"></div>
+                            </div>
+                        </td>
+                        <td><div class="skeleton" style="height: 14px; width: 150px;"></div></td>
+                        <td><div class="skeleton" style="height: 14px; width: 60px;"></div></td>
+                        <td><div class="skeleton" style="height: 14px; width: 40px;"></div></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    {% elseif type == 'kpi' %}
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <div class="skeleton" style="height: 14px; width: 100px;"></div>
+            </div>
+            <div class="skeleton" style="height: 32px; width: 60px; margin: 8px 0;"></div>
+            <div class="skeleton" style="height: 12px; width: 80px;"></div>
+        </div>
+
+    {% else %}
+        <div class="skeleton skeleton-card"></div>
+    {% endif %}
+{% endfor %}

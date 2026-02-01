@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+class Administrator extends User
+{
+    // Admin specific logic if needed
+}

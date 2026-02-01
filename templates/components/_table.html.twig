@@ -1,0 +1,106 @@
+{#
+  Table Component
+  Usage:
+  {{ include('components/_table.html.twig', {
+      columns: [
+          { key: 'name', label: 'Nom', class: 'cell-user' },
+          { key: 'email', label: 'Email' },
+          { key: 'status', label: 'Statut' },
+          { key: 'actions', label: '', class: 'cell-actions' }
+      ],
+      rows: [
+          { name: 'John Doe', email: 'john@test.com', status: 'Actif', actions: '...' },
+          ...
+      ],
+      dense: false,
+      show_checkbox: false,
+      empty_message: 'Aucun element trouve'
+  }) }}
+#}
+
+<div class="table-container">
+    <table class="table {{ dense|default(false) ? 'table-dense' : '' }}">
+        <thead>
+            <tr>
+                {% if show_checkbox|default(false) %}
+                <th class="cell-checkbox">
+                    <input type="checkbox" aria-label="Tout selectionner">
+                </th>
+                {% endif %}
+                {% for column in columns %}
+                <th class="{{ column.class|default('') }}">{{ column.label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if rows|length > 0 %}
+                {% for row in rows %}
+                <tr>
+                    {% if show_checkbox|default(false) %}
+                    <td class="cell-checkbox">
+                        <input type="checkbox" aria-label="Selectionner">
+                    </td>
+                    {% endif %}
+                    {% for column in columns %}
+                    <td class="{{ column.class|default('') }}">
+                        {% if column.key == 'actions' %}
+                            <div class="dropdown">
+                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1"/>
+                                        <circle cx="12" cy="5" r="1"/>
+                                        <circle cx="12" cy="19" r="1"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <button class="dropdown-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                        Voir
+                                    </button>
+                                    <button class="dropdown-item">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                        Modifier
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item danger">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                        Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        {% elseif column.key == 'status' and row[column.key] is defined %}
+                            {% set status_class = row[column.key]|lower %}
+                            {% if status_class == 'actif' %}{% set status_class = 'active' %}{% endif %}
+                            {% if status_class == 'inactif' %}{% set status_class = 'inactive' %}{% endif %}
+                            {% if status_class == 'en attente' %}{% set status_class = 'pending' %}{% endif %}
+                            {% if status_class == 'bloque' %}{% set status_class = 'blocked' %}{% endif %}
+                            <span class="bo-status {{ status_class }}">
+                                <span class="bo-status-dot"></span>
+                                {{ row[column.key] }}
+                            </span>
+                        {% else %}
+                            {{ row[column.key]|default('') is iterable ? row[column.key]|raw : row[column.key]|default('') }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="{{ (show_checkbox|default(false) ? 1 : 0) + columns|length }}" class="text-center text-muted p-6">
+                        {{ empty_message|default('Aucun element trouve') }}
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>

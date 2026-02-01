@@ -1,0 +1,205 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Encadrement - StudySprint BO{% endblock %}
+{% block breadcrumb %}Encadrement{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" data-drawer-open="add-group-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Creer un groupe
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Encadrement</h1>
+</div>
+
+{# Tabs #}
+{{ include('components/_tabs.html.twig', {
+    id: 'mentoring-tabs',
+    tabs: data.tabs,
+    variant: 'bo'
+}) }}
+
+<div data-tab-content="mentoring-tabs">
+    {# Tab: Groups #}
+    <div data-tab-panel="groups" class="tab-content active">
+        <div class="table-container">
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Groupe</th>
+                        <th>Encadrant</th>
+                        <th>Membres</th>
+                        <th>Sessions</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in data.groups %}
+                    <tr>
+                        <td class="font-medium">{{ group.name }}</td>
+                        <td>{{ group.mentor }}</td>
+                        <td>{{ group.members }}</td>
+                        <td>{{ group.sessions }}</td>
+                        <td>
+                            <span class="bo-status {{ group.status|lower == 'actif' ? 'active' : 'inactive' }}">
+                                <span class="bo-status-dot"></span>
+                                {{ group.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1"/>
+                                        <circle cx="12" cy="5" r="1"/>
+                                        <circle cx="12" cy="19" r="1"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <button class="dropdown-item">Voir les membres</button>
+                                    <button class="dropdown-item">Modifier</button>
+                                    <button class="dropdown-item">Inviter des membres</button>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item danger">Supprimer</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Tab: Invitations #}
+    <div data-tab-panel="invitations" class="tab-content">
+        <div class="table-container">
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Groupe</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invitation in data.invitations %}
+                    <tr>
+                        <td class="font-medium">{{ invitation.user }}</td>
+                        <td>{{ invitation.group }}</td>
+                        <td class="text-muted">{{ invitation.date }}</td>
+                        <td>
+                            <span class="badge badge-{{ invitation.status == 'En attente' ? 'warning' : 'neutral' }}">
+                                {{ invitation.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button class="btn btn-ghost btn-sm">Renvoyer</button>
+                                <button class="btn btn-ghost btn-sm" style="color: var(--color-error);">Annuler</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Tab: Feedbacks #}
+    <div data-tab-panel="feedbacks" class="tab-content">
+        <div class="table-container">
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>De</th>
+                        <th>Pour</th>
+                        <th>Groupe</th>
+                        <th>Note</th>
+                        <th>Commentaire</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feedback in data.feedbacks %}
+                    <tr>
+                        <td class="font-medium">{{ feedback.from }}</td>
+                        <td>{{ feedback.to }}</td>
+                        <td>{{ feedback.group }}</td>
+                        <td>
+                            <div class="flex gap-1">
+                                {% for i in 1..5 %}
+                                <svg viewBox="0 0 24 24" fill="{{ i <= feedback.rating ? 'var(--color-warning)' : 'none' }}" stroke="var(--color-warning)" stroke-width="2" width="12" height="12">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td class="text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ feedback.comment }}
+                        </td>
+                        <td class="text-muted">{{ feedback.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Add Group #}
+<div class="drawer" id="add-group-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Creer un groupe</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Nom du groupe</label>
+            <input type="text" class="form-input" placeholder="Ex: Prepa MPSI - Maths">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Encadrant</label>
+            <select class="form-select">
+                <option value="">Selectionner un encadrant</option>
+                <option value="1">Sophie Durand</option>
+                <option value="2">Marc Petit</option>
+                <option value="3">Julie Moreau</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" placeholder="Description du groupe..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Matiere principale</label>
+            <select class="form-select">
+                <option value="">Aucune</option>
+                <option value="math">Mathematiques</option>
+                <option value="physics">Physique</option>
+                <option value="chemistry">Chimie</option>
+            </select>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Creer le groupe</button>
+    </div>
+</div>
+{% endblock %}

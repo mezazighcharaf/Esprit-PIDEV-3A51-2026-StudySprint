@@ -1,0 +1,127 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR FO ─── #}
+    <aside class="app-sidebar fo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('app_dashboard') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Navigation</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('app_dashboard') }}" class="sidebar-link {{ app.request.get('_route') == 'app_dashboard' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9"/>
+                                <rect x="14" y="3" width="7" height="5"/>
+                                <rect x="14" y="12" width="7" height="9"/>
+                                <rect x="3" y="16" width="7" height="5"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_planning') }}" class="sidebar-link {{ app.request.get('_route') == 'app_planning' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Planning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_training') }}" class="sidebar-link {{ app.request.get('_route') == 'app_training' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            <span>Training</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_groups') }}" class="sidebar-link {{ app.request.get('_route') == 'app_groups' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Groupes</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Raccourcis</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span>Sessions recentes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Favoris</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="fo-user-card">
+                <div class="fo-user-avatar">{{ user.initials|default('ET') }}</div>
+                <div class="fo-user-info">
+                    <div class="fo-user-name">{{ user.name|default('Etudiant Test') }}</div>
+                    <div class="fo-user-role">{{ user.role|default('Etudiant') }}</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                {% block topbar_actions %}{% endblock %}
+                <div class="topbar-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+            </div>
+        </header>
+
+        <div class="app-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{% block drawers %}{% endblock %}
+{% endblock %}

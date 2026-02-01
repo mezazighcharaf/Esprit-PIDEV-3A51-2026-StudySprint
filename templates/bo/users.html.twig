@@ -1,0 +1,238 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Utilisateurs - StudySprint BO{% endblock %}
+{% block breadcrumb %}Utilisateurs{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" data-drawer-open="add-user-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="8.5" cy="7" r="4"/>
+        <line x1="20" y1="8" x2="20" y2="14"/>
+        <line x1="23" y1="11" x2="17" y2="11"/>
+    </svg>
+    Ajouter un utilisateur
+</button>
+{% endblock %}
+
+{% block content %}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}" style="margin-bottom: 1rem; padding: 1rem; border-radius: 8px; background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text);">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Utilisateurs</h1>
+    </div>
+    <div class="filterbar mb-4">
+        <div class="skeleton" style="height: 32px; width: 120px;"></div>
+        <div class="skeleton" style="height: 32px; width: 120px;"></div>
+    </div>
+    {{ include('components/_skeleton.html.twig', { type: 'table', count: 1 }) }}
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Utilisateurs</h1>
+    </div>
+    {{ include('components/_empty_state.html.twig', {
+        title: 'Aucun utilisateur trouve',
+        description: 'Aucun utilisateur ne correspond a vos criteres de recherche.',
+        cta_text: 'Reinitialiser les filtres',
+        variant: 'bo'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Utilisateurs</h1>
+    </div>
+
+    {# Stats Row #}
+    <div class="bo-stats-row">
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.total }}</span>
+            <span class="bo-stat-label">Total</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-success);">{{ data.stats.active }}</span>
+            <span class="bo-stat-label">Actifs</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-gray-400);">{{ data.stats.inactive }}</span>
+            <span class="bo-stat-label">Inactifs</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-warning);">{{ data.stats.pending }}</span>
+            <span class="bo-stat-label">En attente</span>
+        </div>
+    </div>
+
+    {# Filterbar #}
+    {{ include('components/_filterbar.html.twig', {
+        filters: data.filters,
+        show_clear: true
+    }) }}
+
+    {# Users Table #}
+    <div class="table-container">
+        <table class="bo-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" aria-label="Tout selectionner">
+                    </th>
+                    <th>Utilisateur</th>
+                    <th>Role</th>
+                    <th>Statut</th>
+                    <th>Pays</th>
+                    <th>Détails (Spécifiques)</th>
+                    <th>Date Inscription</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <input type="checkbox" aria-label="Selectionner {{ user.nom }}">
+                    </td>
+                    <td>
+                        <div class="cell-user">
+                            <div class="cell-user-avatar" style="background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-size: 0.8rem; font-weight: 600;">
+                                {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+                            </div>
+                            <div class="cell-user-info">
+                                <div class="cell-user-name">{{ user.prenom }} {{ user.nom }}</div>
+                                <div class="cell-user-email">{{ user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.role == 'student' or 'ROLE_STUDENT' in user.roles %}
+                            <span class="badge" style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Étudiant</span>
+                        {% elseif user.role == 'professor' or 'ROLE_PROFESSOR' in user.roles %}
+                            <span class="badge" style="background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Professeur</span>
+                        {% elseif 'ROLE_ADMIN' in user.roles %}
+                            <span class="badge" style="background:#fce7f3; color:#9d174d; padding:2px 8px; border-radius:12px; font-size:0.75rem;">Admin</span>
+                        {% else %}
+                            {{ user.role }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="bo-status {{ user.statut|default('actif')|lower == 'actif' ? 'active' : 'inactive' }}">
+                            <span class="bo-status-dot"></span>
+                            {{ user.statut|default('actif') }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.pays is defined and user.pays %}
+                            {{ user.pays|country_name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem; color: #64748b;">
+                        {% if user.pays is defined and user.role == 'student' or 'ROLE_STUDENT' in user.roles %}
+                            {# Student Fields #}
+                            {% if user.age %}<div>Age: {{ user.age }} ans</div>{% endif %}
+                            {% if user.etablissement %}<div>École: {{ user.etablissement }}</div>{% endif %}
+                            {% if user.niveau %}<div>Niveau: {{ user.niveau }}</div>{% endif %}
+                        {% elseif user.specialite is defined or 'ROLE_PROFESSOR' in user.roles %}
+                             {# Professor Fields #}
+                             {% if user.specialite is defined %}<div>Spécialité: {{ user.specialite }}</div>{% endif %}
+                             {% if user.niveauEnseignement is defined %}<div>Niveau Ens: {{ user.niveauEnseignement }}</div>{% endif %}
+                             {% if user.anneesExperience is defined %}<div>Exp: {{ user.anneesExperience }} ans</div>{% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ user.dateInscription|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a href="{{ path('admin_user_edit', {id: user.id}) }}" class="dropdown-item">Modifier</a>
+                                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                    <button type="submit" class="dropdown-item danger" style="background: none; border: none; padding: 0.5rem 1rem; width: 100%; text-align: left; cursor: pointer;">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center p-4">Aucun utilisateur trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Pagination #}
+    <div class="pagination">
+        <button class="pagination-btn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+        <button class="pagination-btn active">1</button>
+        <button class="pagination-btn">2</button>
+        <button class="pagination-btn">3</button>
+        <button class="pagination-btn">...</button>
+        <button class="pagination-btn">12</button>
+        <button class="pagination-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        </button>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Add User #}
+<div class="drawer" id="add-user-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Ajouter un utilisateur</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    {% if form is defined %}
+        {{ form_start(form) }}
+        <div class="drawer-body">
+            {{ form_row(form.prenom) }}
+            {{ form_row(form.nom) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.role) }}
+            {{ form_row(form.motDePasse) }}
+        </div>
+        <div class="drawer-footer">
+            <button type="button" class="btn btn-secondary" data-drawer-close>Annuler</button>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+        </div>
+        {{ form_end(form) }}
+    {% else %}
+        <div class="drawer-body">Formulaire non disponible (Erreur interne)</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Modifier l'utilisateur - StudySprint{% endblock %}
+
+{% block content %}
+    <div class="bo-page-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{{ path('admin_users') }}" class="bo-back-btn" title="Retour">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </a>
+            <div>
+                <h1 class="bo-page-title">Modifier l'utilisateur</h1>
+                <p class="bo-page-subtitle">{{ user.prenom }} {{ user.nom }} ({{ user.email }})</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bo-content">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="bo-card">
+            <div class="bo-card-header">
+                <h2 class="bo-card-title">Informations de l'utilisateur</h2>
+            </div>
+            <div class="bo-card-body">
+                {{ form_start(form, {'attr': {'class': 'bo-form'}}) }}
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form_label(form.prenom) }}
+                            {{ form_widget(form.prenom) }}
+                            {{ form_errors(form.prenom) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.nom) }}
+                            {{ form_widget(form.nom) }}
+                            {{ form_errors(form.nom) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.email) }}
+                        {{ form_widget(form.email) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.role) }}
+                        {{ form_widget(form.role) }}
+                        {{ form_errors(form.role) }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(form.motDePasse) }}
+                        {{ form_widget(form.motDePasse) }}
+                        {{ form_errors(form.motDePasse) }}
+                        <small style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem; display: block;">
+                            💡 Laissez vide pour conserver le mot de passe actuel
+                        </small>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
+                        <a href="{{ path('admin_users') }}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                                <polyline points="7 3 7 8 15 8"/>
+                            </svg>
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .bo-back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .bo-back-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+        .bo-back-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+{% endblock %}

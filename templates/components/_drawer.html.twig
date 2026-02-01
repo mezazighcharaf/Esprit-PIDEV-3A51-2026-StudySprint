@@ -1,0 +1,40 @@
+{#
+  Drawer Component
+  Usage:
+  {{ include('components/_drawer.html.twig', {
+      id: 'my-drawer',
+      title: 'Titre du drawer',
+      body: '<p>Contenu du drawer</p>',
+      footer_buttons: [
+          { text: 'Annuler', class: 'btn-secondary', close: true },
+          { text: 'Enregistrer', class: 'btn-primary' }
+      ]
+  }) }}
+
+  To open: <button data-drawer-open="my-drawer">Ouvrir</button>
+  To close from inside: <button data-drawer-close>Fermer</button>
+#}
+
+<div class="drawer" id="{{ id }}">
+    <div class="drawer-header">
+        <h2 class="drawer-title">{{ title }}</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        {{ body|raw }}
+    </div>
+    {% if footer_buttons is defined and footer_buttons|length > 0 %}
+    <div class="drawer-footer">
+        {% for button in footer_buttons %}
+        <button class="btn {{ button.class|default('btn-secondary') }}" {{ button.close|default(false) ? 'data-drawer-close' : '' }}>
+            {{ button.text }}
+        </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
