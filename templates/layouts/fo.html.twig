@@ -123,5 +123,30 @@
 {# ─── DRAWER BACKDROP ─── #}
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
+{# ─── CONFIRMATION DIALOG ─── #}
+<div class="modal" id="confirm-dialog">
+    <div class="modal-dialog" style="max-width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmation</h2>
+                <button class="modal-close" data-modal-close aria-label="Fermer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message" style="margin: 0; color: var(--color-gray-700);">Etes-vous sur de vouloir continuer?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal-close>Annuler</button>
+                <button class="btn btn-danger" id="confirm-action-btn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block drawers %}{% endblock %}
+{% block modals %}{% endblock %}
 {% endblock %}

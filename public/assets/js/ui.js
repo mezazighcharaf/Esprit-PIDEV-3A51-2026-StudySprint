@@ -295,6 +295,159 @@
     }
   };
 
+  // ─── MODAL ───
+  const Modal = {
+    init() {
+      document.addEventListener('click', (e) => {
+        // Open modal
+        const openTrigger = e.target.closest('[data-modal-open]');
+        if (openTrigger) {
+          const modalId = openTrigger.dataset.modalOpen;
+          this.open(modalId);
+          return;
+        }
+
+        // Close modal
+        const closeTrigger = e.target.closest('[data-modal-close]');
+        if (closeTrigger) {
+          const modal = closeTrigger.closest('.modal');
+          if (modal) {
+            this.close(modal.id);
+          }
+          return;
+        }
+
+        // Click on modal backdrop (outside dialog)
+        if (e.target.classList.contains('modal')) {
+          this.close(e.target.id);
+        }
+      });
+
+      // ESC key closes modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const modal = document.querySelector('.modal.open');
+          if (modal) {
+            this.close(modal.id);
+          }
+        }
+      });
+    },
+
+    open(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    },
+
+    close(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    },
+
+    closeAll() {
+      document.querySelectorAll('.modal.open').forEach(modal => {
+        modal.classList.remove('open');
+      });
+      document.body.style.overflow = '';
+    }
+  };
+
+  // ─── CONFIRM DIALOG ───
+  const ConfirmDialog = {
+    callback: null,
+
+    init() {
+      document.addEventListener('click', (e) => {
+        // Handle kick member button
+        const kickBtn = e.target.closest('.kick-member-btn');
+        if (kickBtn) {
+          const memberName = kickBtn.dataset.memberName;
+          const memberId = kickBtn.dataset.memberId;
+          const groupId = kickBtn.dataset.groupId;
+          
+          // Store reference to the member row for removal
+          const memberRow = kickBtn.closest('.member-item');
+          
+          this.show(
+            `Retirer ${memberName} du groupe?`,
+            'Cette action ne peut pas être annulée.',
+            () => {
+              // Handle member removal
+              Toast.success('Succès', `${memberName} a été retiré du groupe.`);
+              // Remove the member from the list
+              if (memberRow) {
+                memberRow.remove();
+              }
+            }
+          );
+          return;
+        }
+
+        // Handle leave/delete group button
+        const leaveBtn = e.target.closest('.leave-group-btn');
+        if (leaveBtn) {
+          const groupName = leaveBtn.dataset.groupName;
+          const groupId = leaveBtn.dataset.groupId;
+          const action = leaveBtn.dataset.action;
+          
+          let title, message, successMessage;
+          if (action === 'delete') {
+            title = `Supprimer "${groupName}"?`;
+            message = 'Cette action est irréversible. Tous les messages et contenus du groupe seront supprimés.';
+            successMessage = `Le groupe "${groupName}" a été supprimé.`;
+          } else {
+            title = `Quitter "${groupName}"?`;
+            message = 'Vous quitterez le groupe et perdrez accès à ses contenus.';
+            successMessage = `Vous avez quitté le groupe "${groupName}".`;
+          }
+          
+          this.show(title, message, () => {
+            Toast.success('Succès', successMessage);
+            // Simulate group removal from the list
+            const groupCard = leaveBtn.closest('.fo-group-card');
+            if (groupCard) {
+              groupCard.style.opacity = '0';
+              setTimeout(() => {
+                groupCard.remove();
+              }, 300);
+            }
+          });
+          return;
+        }
+      });
+
+      // Handle confirm button
+      const confirmBtn = document.getElementById('confirm-action-btn');
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          if (this.callback) {
+            this.callback();
+          }
+          Modal.close('confirm-dialog');
+          this.callback = null;
+        });
+      }
+    },
+
+    show(title, message, onConfirm) {
+      const dialog = document.getElementById('confirm-dialog');
+      const titleEl = dialog.querySelector('.modal-title');
+      const messageEl = document.getElementById('confirm-message');
+      
+      if (titleEl) titleEl.textContent = title;
+      if (messageEl) messageEl.textContent = message;
+      this.callback = onConfirm;
+      
+      Modal.open('confirm-dialog');
+    }
+  };
+
   // ─── CHECKBOX TODO ───
   const TodoCheckbox = {
     init() {
@@ -321,9 +474,11 @@
   // ─── INIT ALL ───
   document.addEventListener('DOMContentLoaded', () => {
     Drawer.init();
+    Modal.init();
     Toast.init();
     Tabs.init();
     Dropdown.init();
+    ConfirmDialog.init();
     TodoCheckbox.init();
 
     // Check for state param and show toast if success
@@ -336,9 +491,11 @@
   // Expose to global
   window.StudySprint = {
     Drawer,
+    Modal,
     Toast,
     Tabs,
     Dropdown,
+    ConfirmDialog,
     UrlState
   };
 

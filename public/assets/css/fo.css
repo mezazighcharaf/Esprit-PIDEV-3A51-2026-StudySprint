@@ -478,6 +478,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-lg);
   padding: var(--space-4);
+  transition: all var(--transition-base);
 }
 
 .fo-group-header {
@@ -521,6 +522,18 @@
   justify-content: space-between;
   padding-top: var(--space-3);
   border-top: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.fo-group-members:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.fo-group-members:focus-visible {
+  outline: none;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
 }
 
 .fo-group-members-label {
