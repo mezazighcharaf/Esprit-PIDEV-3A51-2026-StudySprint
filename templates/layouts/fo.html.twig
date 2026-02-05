@@ -87,13 +87,20 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="fo-user-card">
-                <div class="fo-user-avatar">{{ user.initials|default('ET') }}</div>
-                <div class="fo-user-info">
-                    <div class="fo-user-name">{{ user.name|default('Etudiant Test') }}</div>
-                    <div class="fo-user-role">{{ user.role|default('Etudiant') }}</div>
-                </div>
-            </div>
+            <a href="{{ path('app_profile') }}" class="fo-user-card" style="text-decoration: none; color: inherit; display: flex;">
+                {% if app.user %}
+                    <div class="fo-user-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                        <div class="fo-user-role">{{ app.user.role|capitalize }}</div>
+                    </div>
+                {% else %}
+                    <div class="fo-user-avatar">?</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">Invité</div>
+                    </div>
+                {% endif %}
+            </a>
         </div>
     </aside>
 

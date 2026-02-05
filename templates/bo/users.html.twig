@@ -3,7 +3,50 @@
 {% block title %}Utilisateurs - StudySprint BO{% endblock %}
 {% block breadcrumb %}Utilisateurs{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .table-sort-link {
+            color: inherit;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+        .table-sort-link:hover {
+            color: var(--color-primary);
+        }
+        .table-sort-link i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        .bo-table th {
+            vertical-align: middle;
+        }
+    </style>
+{% endblock %}
+
 {% block topbar_actions %}
+<form method="post" action="{{ path('admin_deactivate_inactive') }}" style="display: inline;" onsubmit="return confirm('Voulez-vous désactiver tous les utilisateurs inactifs depuis plus de 5 minutes ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('deactivate_inactive') }}">
+    <button type="submit" class="btn btn-secondary btn-sm" style="margin-right: 0.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        Désactiver inactifs
+    </button>
+</form>
+<a href="{{ path('admin_statistics') }}" class="btn btn-secondary btn-sm" style="margin-right: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: inherit;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="3" y1="9" x2="21" y2="9"></line>
+        <line x1="9" y1="21" x2="9" y2="9"></line>
+    </svg>
+    Statistiques
+</a>
 <button class="btn btn-primary btn-sm" data-drawer-open="add-user-drawer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -56,28 +99,78 @@
     {# Stats Row #}
     <div class="bo-stats-row">
         <div class="bo-stat-item">
-            <span class="bo-stat-value">{{ data.stats.total }}</span>
+            <span class="bo-stat-value">{{ user_kpis.total_non_admins }}</span>
             <span class="bo-stat-label">Total</span>
         </div>
         <div class="bo-stat-item">
-            <span class="bo-stat-value" style="color: var(--color-success);">{{ data.stats.active }}</span>
+            <span class="bo-stat-value" style="color: var(--color-success);">{{ user_kpis.active }}</span>
             <span class="bo-stat-label">Actifs</span>
         </div>
         <div class="bo-stat-item">
-            <span class="bo-stat-value" style="color: var(--color-gray-400);">{{ data.stats.inactive }}</span>
+            <span class="bo-stat-value" style="color: var(--color-gray-400);">{{ user_kpis.inactive }}</span>
             <span class="bo-stat-label">Inactifs</span>
         </div>
         <div class="bo-stat-item">
-            <span class="bo-stat-value" style="color: var(--color-warning);">{{ data.stats.pending }}</span>
+            <span class="bo-stat-value" style="color: var(--color-warning);">{{ user_kpis.pending }}</span>
             <span class="bo-stat-label">En attente</span>
         </div>
     </div>
 
     {# Filterbar #}
-    {{ include('components/_filterbar.html.twig', {
-        filters: data.filters,
-        show_clear: true
-    }) }}
+    <form method="get" action="{{ path('admin_users') }}" class="filterbar-form">
+        <div class="filterbar" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0; margin-bottom: 0; border-bottom: none;">
+            <div class="filterbar-group">
+                <label class="filterbar-label" for="search-input">Rechercher</label>
+                <input type="text" name="q" id="search-input" class="filterbar-select" style="min-width: 200px;" placeholder="Email, Nom..." value="{{ filters.q }}">
+            </div>
+
+            <div class="filterbar-group">
+                <label class="filterbar-label" for="filter-role">Rôle</label>
+                <select class="filterbar-select" id="filter-role" name="role">
+                    <option value="">Tous les rôles</option>
+                    <option value="ROLE_STUDENT" {{ filters.role == 'ROLE_STUDENT' ? 'selected' : '' }}>Étudiant</option>
+                    <option value="ROLE_PROFESSOR" {{ filters.role == 'ROLE_PROFESSOR' ? 'selected' : '' }}>Professeur</option>
+                    <option value="ROLE_ADMIN" {{ filters.role == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrateur</option>
+                </select>
+            </div>
+
+            <div class="filterbar-group">
+                <label class="filterbar-label" for="filter-status">Statut</label>
+                <select class="filterbar-select" id="filter-status" name="status">
+                    <option value="">Tous les statuts</option>
+                    <option value="actif" {{ filters.status == 'actif' ? 'selected' : '' }}>Actif</option>
+                    <option value="inactif" {{ filters.status == 'inactif' ? 'selected' : '' }}>Inactif</option>
+                </select>
+            </div>
+
+            <div class="filterbar-group" style="margin-left: auto; display: flex; gap: 0.5rem; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+                <a href="{{ path('admin_users') }}" class="btn btn-secondary btn-sm">Réinitialiser</a>
+            </div>
+        </div>
+        
+        <div class="filterbar" style="border-top-left-radius: 0; border-top-right-radius: 0; border-top: 1px dashed var(--color-border); background: var(--color-gray-50);">
+            <div class="filterbar-group">
+                <label class="filterbar-label" for="filter-sort">Trier par</label>
+                <select class="filterbar-select" id="filter-sort" name="sort">
+                    <option value="dateInscription" {{ filters.sort == 'dateInscription' ? 'selected' : '' }}>Date d'inscription</option>
+                    <option value="experience" {{ filters.sort == 'experience' ? 'selected' : '' }}>Années d'expérience (Profs)</option>
+                </select>
+            </div>
+
+            <div class="filterbar-group">
+                <label class="filterbar-label" for="filter-direction">Ordre</label>
+                <select class="filterbar-select" id="filter-direction" name="direction">
+                    <option value="DESC" {{ filters.direction == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                    <option value="ASC" {{ filters.direction == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                </select>
+            </div>
+            
+            <div style="margin-left: auto; font-size: 0.75rem; color: var(--color-gray-500); align-self: center;">
+                <i class="fas fa-info-circle"></i> Le tri par expérience ne s'applique qu'aux professeurs.
+            </div>
+        </div>
+    </form>
 
     {# Users Table #}
     <div class="table-container">
@@ -91,8 +184,8 @@
                     <th>Role</th>
                     <th>Statut</th>
                     <th>Pays</th>
-                    <th>Détails (Spécifiques)</th>
-                    <th>Date Inscription</th>
+                    <th>Détails</th>
+                    <th>Inscription</th>
                     <th></th>
                 </tr>
             </thead>
@@ -167,6 +260,12 @@
                             </button>
                             <div class="dropdown-menu">
                                 <a href="{{ path('admin_user_edit', {id: user.id}) }}" class="dropdown-item">Modifier</a>
+                                <form method="post" action="{{ path('admin_user_toggle_status', {id: user.id}) }}" style="display: inline;" onsubmit="return confirm('Voulez-vous {{ user.statut == 'actif' ? 'désactiver' : 'activer' }} cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
+                                    <button type="submit" class="dropdown-item" style="background: none; border: none; padding: 0.5rem 1rem; width: 100%; text-align: left; cursor: pointer;">
+                                        {{ user.statut == 'actif' ? 'Désactiver' : 'Activer' }}
+                                    </button>
+                                </form>
                                 <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
                                     <button type="submit" class="dropdown-item danger" style="background: none; border: none; padding: 0.5rem 1rem; width: 100%; text-align: left; cursor: pointer;">Supprimer</button>
@@ -224,15 +323,133 @@
             {{ form_row(form.nom) }}
             {{ form_row(form.email) }}
             {{ form_row(form.role) }}
-            {{ form_row(form.motDePasse) }}
+            
+            <div id="common-meta-fields" class="drawer-subsection">
+                <h4 class="drawer-subsection-title">Informations Géographiques</h4>
+                {{ form_row(form.pays) }}
+            </div>
+
+            <div id="student-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-primary);">
+                <h4 class="drawer-subsection-title" style="color: var(--color-primary);">📚 Détails Étudiant</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    {{ form_row(form.age) }}
+                    {{ form_row(form.sexe) }}
+                </div>
+                {{ form_row(form.etablissement) }}
+                {{ form_row(form.niveau) }}
+            </div>
+
+            <div id="professor-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-secondary);">
+                <h4 class="drawer-subsection-title" style="color: var(--color-secondary);">🎓 Détails Professeur</h4>
+                {{ form_row(form.specialite) }}
+                {{ form_row(form.niveauEnseignement) }}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    {{ form_row(form.anneesExperience) }}
+                    {{ form_row(form.etablissementProfesseur) }}
+                </div>
+            </div>
+
+            <div class="drawer-subsection" style="background: #fffbeb; border-color: #fde68a;">
+                <h4 class="drawer-subsection-title" style="color: #92400e;">🔐 Sécurité</h4>
+                {{ form_row(form.motDePasse) }}
+            </div>
         </div>
         <div class="drawer-footer">
             <button type="button" class="btn btn-secondary" data-drawer-close>Annuler</button>
-            <button type="submit" class="btn btn-primary">Ajouter</button>
+            <button type="submit" class="btn btn-primary" id="submit-add-user">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Créer l'utilisateur
+            </button>
         </div>
         {{ form_end(form) }}
     {% else %}
         <div class="drawer-body">Formulaire non disponible (Erreur interne)</div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.querySelector('.role-selector-field');
+    const studentFields = document.getElementById('student-only-fields');
+    const professorFields = document.getElementById('professor-only-fields');
+
+    function toggleFields() {
+        const role = roleSelect.value;
+        
+        if (role === 'ROLE_STUDENT') {
+            studentFields.style.display = 'block';
+            professorFields.style.display = 'none';
+        } else if (role === 'ROLE_PROFESSOR') {
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'block';
+        } else {
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'none';
+        }
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', toggleFields);
+        toggleFields(); // Initial state
+    }
+
+    // Dynamic Country -> School/Level Logic
+    const countrySelect = document.querySelector('select[name*="[pays]"]');
+    const schoolSelect = document.querySelector('.school-selector-field');
+    const levelSelect = document.querySelector('.level-selector-field');
+
+    if (countrySelect && schoolSelect && levelSelect) {
+        countrySelect.addEventListener('change', function() {
+            const countryCode = this.value;
+            
+            if (!countryCode) {
+                resetSelect(schoolSelect);
+                resetSelect(levelSelect);
+                return;
+            }
+
+            // Fetch Schools
+            fetch(`/api/location/schools/${countryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateSelect(schoolSelect, data);
+                });
+
+            // Fetch Levels
+            fetch(`/api/location/levels/${countryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateSelect(levelSelect, data);
+                });
+        });
+    }
+
+    function updateSelect(selectElement, items) {
+        selectElement.innerHTML = '';
+        selectElement.disabled = false;
+        
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.text = 'Choisir...';
+        selectElement.appendChild(placeholder);
+
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.text = item;
+            selectElement.appendChild(option);
+        });
+    }
+
+    function resetSelect(selectElement) {
+        selectElement.innerHTML = '<option value="">Choisir un pays d\'abord</option>';
+        selectElement.disabled = true;
+    }
+});
+</script>
 {% endblock %}

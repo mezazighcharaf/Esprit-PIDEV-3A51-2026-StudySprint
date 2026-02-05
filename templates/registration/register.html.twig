@@ -11,7 +11,7 @@
         </div>
     {% endfor %}
 
-    {{ form_start(registrationForm, {'attr': {'class': 'auth-form'}}) }}
+    {{ form_start(registrationForm, {'attr': {'class': 'auth-form', 'novalidate': 'novalidate'}}) }}
 
         {# Custom Role Selector #}
         <div class="role-selector-wrapper">
@@ -98,6 +98,10 @@
             <div class="form-group">
                 {{ form_label(registrationForm.anneesExperience) }}
                 {{ form_widget(registrationForm.anneesExperience, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(registrationForm.etablissementProfesseur) }}
+                {{ form_widget(registrationForm.etablissementProfesseur, {'attr': {'class': 'form-control', 'placeholder': 'Nom de votre établissement'}}) }}
             </div>
         </div>
 

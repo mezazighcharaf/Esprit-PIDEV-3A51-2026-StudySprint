@@ -23,19 +23,17 @@ class DashboardController extends AbstractController
     {
         $state = $request->query->get('state', 'default');
         
-        // Fetch real users
-        $users = $this->userRepository->findAll();
+        // Fetch real statistics
+        $userKpis = $this->userRepository->getUsersKpiData();
+        $recentUsers = $this->userRepository->findRecentUsers(5); // Show last 5
         
-        // Mocking KPI mock data with real data count if possible, or mixing
         $mockData = $this->mockProvider->getDashboardData();
-        
-        // Let's replace the 'recent_users' in mock data with real users for the view
-        // OR better: pass users separately
         
         $viewModel = [
             'state' => $state,
             'data' => $mockData,
-            'users' => $users, // Passing real users
+            'recent_users' => $recentUsers,
+            'user_kpis' => $userKpis,
         ];
 
         return $this->render('bo/dashboard.html.twig', $viewModel);

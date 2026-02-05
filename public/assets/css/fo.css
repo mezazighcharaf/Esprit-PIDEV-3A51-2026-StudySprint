@@ -527,3 +527,30 @@
   font-size: var(--text-xs);
   color: var(--color-gray-500);
 }
+
+/* Form Error Styles */
+.form-group ul {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.form-group ul li {
+  color: #ef4444;
+  font-size: 0.875rem;
+  list-style: none;
+  margin-top: 0.25rem;
+}
+
+/* Red border/background for invalid inputs */
+.auth-form input:invalid,
+.auth-form input.is-invalid,
+.auth-form input.form-control.is-invalid {
+  border: 1px solid #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.form-error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}

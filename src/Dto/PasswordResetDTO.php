@@ -10,7 +10,11 @@ class PasswordResetDTO
     public ?string $verificationCode = null;
 
     #[Assert\NotBlank(message: "Le nouveau mot de passe est obligatoire")]
-    #[Assert\Length(min: 6, minMessage: "Le mot de passe doit faire au moins 6 caractères")]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
+    #[Assert\Regex(
+        pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/",
+        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial"
+    )]
     public ?string $newPassword = null;
 
     #[Assert\NotBlank(message: "La confirmation est obligatoire")]

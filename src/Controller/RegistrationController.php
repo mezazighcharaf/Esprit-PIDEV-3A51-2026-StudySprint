@@ -24,7 +24,9 @@ class RegistrationController extends AbstractController
         $form = $this->createForm(RegistrationType::class, $dto);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+            $dto->email = strtolower($dto->email);
             // Check Uniqueness
             $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $dto->email]);
             if ($existingUser) {
@@ -45,7 +47,8 @@ class RegistrationController extends AbstractController
                 $user->setSpecialite($dto->specialite);
                 $user->setNiveauEnseignement($dto->niveauEnseignement);
                 $user->setAnneesExperience($dto->anneesExperience);
-                $user->setPays($dto->pays);
+                $user->setPays($dto->pays ?? 'TN'); // Default to Tunisia if not provided
+                $user->setEtablissement($dto->etablissementProfesseur);
                 $user->setRole('ROLE_PROFESSOR');
             }
 
@@ -73,6 +76,14 @@ class RegistrationController extends AbstractController
                 return $this->redirectToRoute('app_register');
             }
             } // End else unique
+            } else {
+                // Log Errors
+                $errors = [];
+                foreach ($form->getErrors(true) as $error) {
+                    $errors[] = $error->getMessage() . ' (' . $error->getOrigin()->getName() . ')';
+                }
+                file_put_contents('form_errors.log', date('Y-m-d H:i:s') . ': ' . implode(', ', $errors) . PHP_EOL, FILE_APPEND);
+            }
         }
 
         return $this->render('registration/register.html.twig', [

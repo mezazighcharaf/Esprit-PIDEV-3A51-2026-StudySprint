@@ -2,6 +2,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('assets/css/bo.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/forms.css') }}">
 {% endblock %}
 
 {% block body %}
@@ -121,7 +122,19 @@
                     Exporter
                 </button>
                 {% endblock %}
-                <div class="topbar-avatar" title="Admin">AD</div>
+                <div class="user-menu-container" style="position: relative;">
+                    <div class="topbar-avatar" title="Admin" onclick="document.getElementById('user-dropdown').classList.toggle('active')" style="cursor: pointer; user-select: none;">AD</div>
+                    <div id="user-dropdown" class="user-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 150px; z-index: 100; margin-top: 0.5rem; overflow: hidden;">
+                        <a href="{{ path('app_logout') }}" style="display: block; padding: 0.8rem 1rem; color: #ef4444; text-decoration: none; font-size: 0.9rem; font-weight: 500; background: white; transition: background 0.2s;">
+                            Se déconnecter
+                        </a>
+                    </div>
+                </div>
+
+                <style>
+                    #user-dropdown.active { display: block !important; }
+                    #user-dropdown a:hover { background: #fef2f2 !important; }
+                </style>
             </div>
         </header>
 
