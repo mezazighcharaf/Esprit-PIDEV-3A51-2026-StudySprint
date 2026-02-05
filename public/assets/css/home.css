@@ -346,6 +346,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.step-icon:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(90, 174, 239, 0.4);
+  /* Bleu clair */
 }
 
 .step-icon img {
