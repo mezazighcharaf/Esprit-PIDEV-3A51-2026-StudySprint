@@ -1,0 +1,229 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .chart-container { position: relative; height: 250px; width: 100%; margin-bottom: 1rem; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Statistiques & Analytics</h1>
+    <div class="bo-page-actions">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Imprimer Rapport
+        </button>
+    </div>
+</div>
+
+{# ─── DATA SUMMARY CARDS ─── #}
+<div class="bo-kpi-row">
+    <div class="bo-kpi-card">
+        <div class="bo-kpi-label">TOTAL UTILISATEURS</div>
+        <div class="bo-kpi-value text-center py-4" style="font-size: 3rem;">{{ user_kpis.total_non_admins }}</div>
+    </div>
+    <div class="bo-kpi-card">
+        <div class="bo-kpi-label">ÉTUDIANTS</div>
+        <div class="bo-kpi-value text-primary text-center py-4" style="font-size: 3rem;">{{ user_kpis.students }}</div>
+    </div>
+    <div class="bo-kpi-card">
+        <div class="bo-kpi-label">PROFESSEURS</div>
+        <div class="bo-kpi-value text-secondary text-center py-4" style="font-size: 3rem; color: var(--color-secondary);">{{ user_kpis.professors }}</div>
+    </div>
+    <div class="bo-kpi-card">
+        <div class="bo-kpi-label">ACTIFS / INACTIFS</div>
+        <div class="bo-kpi-value text-center py-4" style="font-size: 2.5rem;">
+            <span class="text-success">{{ user_kpis.active }}</span> <span style="color: var(--color-gray-300);">/</span> <span class="text-error">{{ user_kpis.inactive }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="bo-analytics-grid">
+    <div class="bo-analytics-main">
+        {# ─── REGISTRATION TRENDS (Line Chart) ─── #}
+        <div class="bo-chart-card">
+            <div class="bo-chart-header">
+                <h3 class="bo-chart-title">Inscriptions par année (Courbe)</h3>
+            </div>
+            <div class="bo-chart-body">
+                <div class="chart-container">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ─── AGE DISTRIBUTION (Column Chart) ─── #}
+        <div class="bo-chart-card">
+            <div class="bo-chart-header">
+                <h3 class="bo-chart-title">Répartition par âge Étudiants (Colonnes)</h3>
+            </div>
+            <div class="bo-chart-body">
+                <div class="chart-container">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bo-analytics-side">
+        {# ─── GLOBAL ROLE DISTRIBUTION (Pie Chart) ─── #}
+        <div class="bo-chart-card">
+            <div class="bo-chart-header">
+                <h3 class="bo-chart-title">Répartition Globale (Pie)</h3>
+            </div>
+            <div class="bo-chart-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="rolePieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ─── COUNTRY DISTRIBUTION (Pie Chart) ─── #}
+        <div class="bo-chart-card">
+            <div class="bo-chart-header">
+                <h3 class="bo-chart-title">Répartition par Pays (Pie)</h3>
+            </div>
+            <div class="bo-chart-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="countryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# ─── PROFESSOR EXPERIENCE (Bar Chart) ─── #}
+        <div class="bo-chart-card">
+            <div class="bo-chart-header">
+                <h3 class="bo-chart-title">Expérience Professeurs (Bar)</h3>
+            </div>
+            <div class="bo-chart-body">
+                <div class="chart-container">
+                    <canvas id="experienceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    };
+
+    const colors = ['#3b82f6', '#10b981', '#f472b6', '#60a5fa', '#f59e0b', '#8b5cf6', '#ef4444'];
+
+    // 1. Pie Chart - Roles
+    new Chart(document.getElementById('rolePieChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Étudiants', 'Professeurs'],
+            datasets: [{
+                data: [{{ user_kpis.students }}, {{ user_kpis.professors }}],
+                backgroundColor: [colors[0], colors[1]],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: { legend: { display: true, position: 'bottom' } }
+        }
+    });
+
+    // 2. Line Chart - Registrations (Courbe)
+    new Chart(document.getElementById('registrationChart'), {
+        type: 'line',
+        data: {
+            labels: {{ registration_trends|map(t => t.year)|json_encode|raw }},
+            datasets: [{
+                label: 'Inscriptions',
+                data: {{ registration_trends|map(t => t.count)|json_encode|raw }},
+                borderColor: colors[0],
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: { legend: { display: true, position: 'top' } }
+        }
+    });
+
+    // 4. Bar Chart - Age Distribution (Colonnes)
+    const ageData = {{ age_ranges|json_encode|raw }};
+    const ageLabels = [...new Set(ageData.map(d => d.ageRange))];
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: ageLabels,
+            datasets: [
+                {
+                    label: 'Hommes',
+                    data: ageLabels.map(l => {
+                        const d = ageData.find(x => x.ageRange === l && x.sex === 'H');
+                        return d ? d.count : 0;
+                    }),
+                    backgroundColor: colors[3]
+                },
+                {
+                    label: 'Femmes',
+                    data: ageLabels.map(l => {
+                        const d = ageData.find(x => x.ageRange === l && x.sex === 'F');
+                        return d ? d.count : 0;
+                    }),
+                    backgroundColor: colors[2]
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            plugins: { legend: { display: true, position: 'top' } }
+        }
+    });
+
+    // 5. Pie Chart - Countries
+    new Chart(document.getElementById('countryChart'), {
+        type: 'pie',
+        data: {
+            labels: {{ countries|map(c => c.label)|json_encode|raw }},
+            datasets: [{
+                data: {{ countries|map(c => c.value)|json_encode|raw }},
+                backgroundColor: colors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: { legend: { display: true, position: 'bottom' } }
+        }
+    });
+
+    // 6. Bar Chart - Experience
+    new Chart(document.getElementById('experienceChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ professor_experience|map(e => e.label)|json_encode|raw }},
+            datasets: [{
+                data: {{ professor_experience|map(e => e.value)|json_encode|raw }},
+                backgroundColor: colors[1],
+                borderRadius: 4
+            }]
+        },
+        options: commonOptions
+    });
+});
+</script>
+{% endblock %}

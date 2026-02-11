@@ -318,11 +318,6 @@
     </div>
 </div>
 
-{# Drawer: Join Group #}
-
-
-
-{# Drawers: Group Settings (per group, admin only) #}
 {% for group in data.groups %}
     {% if group.role == 'admin' %}
     <div class="drawer" id="group-settings-drawer-{{ group.id }}">
@@ -369,7 +364,6 @@
                 </div>
             </div>
 
-            {# Members Section #}
             <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                 <h3 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; color: var(--color-gray-900);">Gestion des membres</h3>
                 <div style="max-height: 300px; overflow-y: auto;">
@@ -406,11 +400,9 @@
     </div>
     {% endif %}
 {% endfor %}
-
 {% endblock %}
 
 {% block modals %}
-{# Modals: Invite Members (per group) #}
 {% for group in data.groups %}
 <div class="modal" id="invite-members-modal-{{ group.id }}">
     <div class="modal-dialog" style="width: 90%; max-width: 500px;">
@@ -455,7 +447,6 @@
 </div>
 {% endfor %}
 
-{# Modal: Join Group #}
 <div class="modal" id="join-group-modal">
     <div class="modal-dialog" style="width: 90%; max-width: 500px;">
         <div class="modal-content">
@@ -519,7 +510,7 @@
                             </div>
                         {% else %}
                             <div class="text-center p-4 text-muted text-sm">
-                                Aucun nouveau groupe public disponible pour le moment.
+                                Aucun nouveau groupe public disponible for now.
                             </div>
                         {% endif %}
                     </div>
@@ -532,7 +523,6 @@
     </div>
 </div>
 
-{# Modals: Group Members (per group) - Simple View #}
 {% for group in data.groups %}
 <div class="modal" id="members-modal-{{ group.id }}">
     <div class="modal-dialog" style="width: 90%; max-width: 300px;">
@@ -616,4 +606,9 @@
     </div>
 </div>
 {% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/js/groups.js') }}"></script>
 {% endblock %}

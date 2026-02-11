@@ -96,22 +96,18 @@ class PasswordResetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            file_put_contents('web_debug.log', "FORM VALID. Code: " . $dto->verificationCode . "\n", FILE_APPEND);
-            // Find user by token primarily, as requested ("depends on info in base")
-            $user = $this->userRepository->findOneBy(['resetToken' => trim($dto->verificationCode)]);
+            $logPath = $this->getParameter('kernel.project_dir') . '/public/debug_reset.txt';
+            file_put_contents($logPath, sprintf("[%s] FORM VALID. Code: %s, Email: %s\n", date('Y-m-d H:i:s'), $dto->verificationCode, $email), FILE_APPEND);
+            
+            // Find user by both token and email for maximum reliability
+            $user = $this->userRepository->findOneBy([
+                'resetToken' => trim($dto->verificationCode),
+                'email' => $email
+            ]);
 
             if (!$user) {
-                file_put_contents('web_debug.log', "USER NOT FOUND BY TOKEN: " . $dto->verificationCode . "\n", FILE_APPEND);
-                $this->addFlash('danger', 'Code de vérification invalide ou expiré.');
-                return $this->render('security/password_reset.html.twig', [
-                    'form' => $form->createView(),
-                    'email' => $email,
-                ]);
-            }
-
-            // Optional: double check email if provided in URL for extra security
-            if ($email && strtolower($user->getEmail()) !== strtolower($email)) {
-                $this->addFlash('danger', 'Ce code n\'appartient pas à cet utilisateur.');
+                file_put_contents($logPath, sprintf("[%s] USER NOT FOUND by Token: %s and Email: %s\n", date('Y-m-d H:i:s'), $dto->verificationCode, $email), FILE_APPEND);
+                $this->addFlash('danger', 'Code de vérification invalide ou expiré pour cet email.');
                 return $this->render('security/password_reset.html.twig', [
                     'form' => $form->createView(),
                     'email' => $email,
@@ -124,22 +120,26 @@ class PasswordResetController extends AbstractController
                 return $this->redirectToRoute('app_forgot_password');
             }
 
-            // Reset password
-            $hashedPassword = $this->passwordHasher->hashPassword($user, trim($dto->newPassword));
+            // Reset password - DO NOT trim the password itself to stay consistent with registration
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->newPassword);
+            $user->setMotDePasse($hashedPassword);
+            $user->setResetToken(null);
             $user->setMotDePasse($hashedPassword);
             $user->setResetToken(null);
             $user->setResetTokenExpiresAt(null);
 
-            $this->entityManager->persist($user);
             $this->entityManager->flush();
-            file_put_contents('web_debug.log', "SUCCESSFUL FLUSH FOR USER: " . $user->getEmail() . "\n", FILE_APPEND);
+            
+            $logPath = $this->getParameter('kernel.project_dir') . '/public/debug_reset.txt';
+            file_put_contents($logPath, sprintf("[%s] SUCCESSFUL FLUSH for: %s. New Hash: %s\n", date('Y-m-d H:i:s'), $user->getEmail(), $hashedPassword), FILE_APPEND);
 
             $this->addFlash('success', 'Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
             return $this->redirectToRoute('app_login');
         } elseif ($form->isSubmitted()) {
-            file_put_contents('web_debug.log', "FORM SUBMITTED BUT INVALID\n", FILE_APPEND);
+            $logPath = $this->getParameter('kernel.project_dir') . '/public/debug_reset.txt';
+            file_put_contents($logPath, sprintf("[%s] FORM SUBMITTED BUT INVALID\n", date('Y-m-d H:i:s')), FILE_APPEND);
             foreach ($form->getErrors(true) as $error) {
-                file_put_contents('web_debug.log', "ERROR: " . $error->getMessage() . "\n", FILE_APPEND);
+                file_put_contents($logPath, "ERROR: " . $error->getMessage() . "\n", FILE_APPEND);
             }
         }
 

@@ -60,4 +60,10 @@ class BoUserCreateDTO
     public ?int $anneesExperience = null;
 
     public ?string $etablissementProfesseur = null;
+
+    #[Assert\NotBlank(groups: ['creation'], message: "Le mot de passe est obligatoire pour les nouveaux utilisateurs")]
+    public function getPlainPassword(): ?string
+    {
+        return $this->motDePasse;
+    }
 }

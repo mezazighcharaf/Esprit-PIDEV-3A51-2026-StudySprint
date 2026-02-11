@@ -418,8 +418,15 @@ class GroupsController extends AbstractController
 
         try {
             $this->invitationService->acceptInvitationByCode($code, $user);
-            $this->addFlash('success', 'Vous avez rejoint le groupe avec succès');
+            $message = 'Vous avez rejoint le groupe avec succès';
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true, 'message' => $message]);
+            }
+            $this->addFlash('success', $message);
         } catch (\Exception $e) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+            }
             $this->addFlash('error', $e->getMessage());
         }
 
@@ -447,8 +454,15 @@ class GroupsController extends AbstractController
 
         try {
             $this->groupService->addMember($group, $user, 'member');
-            $this->addFlash('success', 'Bienvenue dans le groupe !');
+            $message = 'Bienvenue dans le groupe !';
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true, 'message' => $message]);
+            }
+            $this->addFlash('success', $message);
         } catch (\Exception $e) {
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+            }
             $this->addFlash('error', $e->getMessage());
         }
 
@@ -817,7 +831,7 @@ class GroupsController extends AbstractController
                         'id' => $user->getId(),
                         'name' => $user->getPrenom() . ' ' . $user->getNom(),
                         'initials' => $this->getInitials($user->getPrenom() . ' ' . $user->getNom()),
-                        'role' => $this->groupService->getGroupRole($group, $user), // Add logic to get role if needed, or simplify
+                        'role' => $this->memberRepository->getUserRoleInGroup($group, $user),
                     ],
                     'createdAt' => $post->getCreatedAt()->format('c'),
                     'timeAgo' => $this->formatTimeAgo($post->getCreatedAt()),

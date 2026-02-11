@@ -2,3 +2,5 @@
 2026-02-09 12:29:30: Le rôle est obligatoire (role), remplire le champs prenom (prenom), Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (motDePasse)
 2026-02-09 12:29:54: Le rôle est obligatoire (role), Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (motDePasse)
 2026-02-09 12:30:23: Le rôle est obligatoire (role), Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (motDePasse)
+2026-02-11 16:28:47: remplire le champ nom (nom), remplire le champs prenom (prenom), Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (motDePasse), obligatoire (pays), obligatoire (specialite), obligatoire (niveauEnseignement), obligatoire (anneesExperience)
+2026-02-11 16:31:12: obligatoire (motDePasse)

@@ -74,10 +74,11 @@ class GroupService
     public function deleteGroup(StudyGroup $group, User $currentUser): void
     {
         // Check permissions - only Admin can delete
+        $isGlobalAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
         $userRole = $this->memberRepository->getUserRoleInGroup($group, $currentUser);
 
-        if ($userRole !== 'admin') {
-            throw new AccessDeniedHttpException('Seuls les administrateurs du groupe peuvent le supprimer');
+        if ($userRole !== 'admin' && !$isGlobalAdmin) {
+            throw new AccessDeniedHttpException('Seuls les administrateurs du groupe ou du site peuvent le supprimer');
         }
 
         // Remove all group invitations first
@@ -241,6 +242,9 @@ class GroupService
      */
     public function canDeleteGroup(StudyGroup $group, User $user): bool
     {
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            return true;
+        }
         $role = $this->memberRepository->getUserRoleInGroup($group, $user);
         return $role === 'admin';
     }

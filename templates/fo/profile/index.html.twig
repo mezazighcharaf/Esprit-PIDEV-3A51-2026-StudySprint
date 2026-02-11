@@ -136,6 +136,41 @@
                     {% endif %}
                 </div>
             </div>
+            {# ─── MY GROUPS ─── #}
+            <div class="glass-card mt-4">
+                <div class="card-v2-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-v2-title">
+                        <i class="fas fa-users"></i>
+                        Mes Groupes
+                    </h3>
+                    <a href="{{ path('app_groups') }}" class="btn-sm-v2 text-decoration-none">Voir tout</a>
+                </div>
+
+                <div class="groups-list-mini">
+                    {% if user_groups is empty %}
+                        <div class="empty-mini text-center p-4">
+                            <p class="text-muted mb-3">Vous n'avez pas encore rejoint de groupe.</p>
+                            <a href="{{ path('app_groups', {state: 'available'}) }}" class="btn-v2 btn-primary-v2 btn-sm">Découvrir des groupes</a>
+                        </div>
+                    {% else %}
+                        <div class="row g-3">
+                            {% for group in user_groups|slice(0, 4) %}
+                                <div class="col-md-6">
+                                    <a href="{{ path('app_group_detail', {id: group.id}) }}" class="group-mini-card">
+                                        <div class="group-mini-icon">
+                                            {{ group.name|slice(0,1)|upper }}
+                                        </div>
+                                        <div class="group-mini-info">
+                                            <div class="group-mini-name">{{ group.name }}</div>
+                                            <div class="group-mini-meta">{{ group.members|length }} membres</div>
+                                        </div>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         {# ─── SIDEBAR STATS ─── #}
@@ -517,6 +552,65 @@
     }
     
     .border-accent { border-left: 5px solid #f59e0b !important; }
+
+    .group-mini-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .group-mini-card:hover {
+        background: white;
+        border-color: #e2e8f0;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .group-mini-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--color-primary);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .group-mini-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .group-mini-meta {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .btn-sm-v2 {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        padding: 4px 12px;
+        background: #f0f7ff;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-sm-v2:hover {
+        background: var(--color-primary);
+        color: white;
+    }
 
     @media (max-width: 768px) {
         .user-name-v2 { font-size: 2.5rem; }

@@ -97,6 +97,7 @@ class UsersController extends AbstractController
             'data' => $mockData,
             'users' => $users,
             'form' => $form->createView(),
+            'has_errors' => $form->isSubmitted() && !$form->isValid(),
             'user_kpis' => $userKpis,
             'filters' => [
                 'q' => $query,

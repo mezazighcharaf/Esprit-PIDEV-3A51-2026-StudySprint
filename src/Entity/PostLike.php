@@ -15,7 +15,7 @@ class PostLike
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: GroupPost::class)]
+    #[ORM\ManyToOne(targetEntity: GroupPost::class, inversedBy: 'likes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?GroupPost $post = null;
 

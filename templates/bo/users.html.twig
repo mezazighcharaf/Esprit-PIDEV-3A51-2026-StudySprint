@@ -632,6 +632,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const studentFields = document.getElementById('student-only-fields');
     const professorFields = document.getElementById('professor-only-fields');
 
+    // Auto-open drawer if there are form errors
+    {% if has_errors|default(false) %}
+        StudySprint.Drawer.open('add-user-drawer');
+    {% endif %}
+
     function toggleFields() {
         const role = roleSelect.value;
         

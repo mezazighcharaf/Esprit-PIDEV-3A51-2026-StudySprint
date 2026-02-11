@@ -6,6 +6,7 @@ use App\Dto\ProfileDTO;
 use App\Entity\Student;
 use App\Entity\Professor;
 use App\Form\ProfileType;
+use App\Repository\GroupMemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,7 +23,8 @@ class ProfileController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MailerInterface $mailer,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private GroupMemberRepository $memberRepository
     ) {}
 
     #[Route('', name: 'app_profile')]
@@ -32,8 +34,15 @@ class ProfileController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
+        $groupMemberships = $this->memberRepository->findGroupsByUser($user);
+        $userGroups = [];
+        foreach ($groupMemberships as $membership) {
+            $userGroups[] = $membership->getGroup();
+        }
+
         return $this->render('fo/profile/index.html.twig', [
             'user' => $user,
+            'user_groups' => $userGroups,
         ]);
     }
 

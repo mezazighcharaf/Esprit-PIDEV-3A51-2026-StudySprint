@@ -1,0 +1,51 @@
+{% if is_member %}
+{% if is_member %}
+<div class="glass-card mb-6 p-6">
+    <div style="display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-6);">
+        <div class="avatar avatar-md avatar-initials" style="flex-shrink: 0; box-shadow: var(--shadow-sm);">{{ user.initials }}</div>
+        <div style="flex: 1;">
+            <h3 style="font-size: var(--text-lg); font-weight: var(--font-semibold); color: var(--color-gray-900); margin-bottom: 2px;">Publier une annonce</h3>
+            <p style="font-size: var(--text-sm); color: var(--color-gray-500);">Partagez vos notes, ressources ou devoirs avec le groupe.</p>
+        </div>
+    </div>
+    
+    <div class="post-type-tabs mb-6">
+        <button type="button" class="post-type-btn active" data-type="note">
+            <i class="fa-solid fa-message"></i>
+            Note
+        </button>
+        <button type="button" class="post-type-btn" data-type="resource">
+            <i class="fa-solid fa-file-lines"></i>
+            Ressource
+        </button>
+        <button type="button" class="post-type-btn" data-type="assignment">
+            <i class="fa-solid fa-paperclip"></i>
+            Devoir
+        </button>
+    </div>
+
+    <form id="new-post-form" class="new-post-form">
+        <div class="form-group mb-4">
+            <input type="text" id="post-title" class="form-input" style="border-radius: var(--border-radius-md); border-color: var(--color-gray-200); background: var(--color-white);" placeholder="Titre de votre post (optionnel)" maxlength="200">
+        </div>
+        <div class="form-group mb-4">
+            <textarea id="post-body" class="form-textarea" style="border-radius: var(--border-radius-md); border-color: var(--color-gray-200); background: var(--color-white);" placeholder="Que voulez-vous dire ?" rows="4" required></textarea>
+        </div>
+        <div class="form-group mb-4 d-none" id="attachment-field">
+            <label class="form-label" style="font-weight: var(--font-medium); color: var(--color-gray-700);">URL de la ressource</label>
+            <div style="position: relative;">
+                <span style="position: absolute; left: 12px; top: 50%; translate: 0 -50%; color: var(--color-gray-400);">
+                    <i class="fa-solid fa-link"></i>
+                </span>
+                <input type="url" id="post-attachment" class="form-input" style="padding-left: 36px; border-radius: var(--border-radius-md); border-color: var(--color-gray-200);" placeholder="https://votre-lien-ici.com">
+            </div>
+        </div>
+        <div class="d-flex justify-content-end pt-2">
+            <button type="submit" class="btn btn-primary" id="submit-post" style="padding: var(--space-2) var(--space-8); border-radius: var(--border-radius-full); box-shadow: var(--shadow-sm);">
+                Publier le post
+            </button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endif %}

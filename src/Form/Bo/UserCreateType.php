@@ -197,6 +197,11 @@ class UserCreateType extends AbstractType
             'validation_groups' => function (\Symfony\Component\Form\FormInterface $form) {
                 $data = $form->getData();
                 $groups = ['Default'];
+                
+                // Add creation group if it's a new submission (no ID yet)
+                // In our case, this DTO is only used for creation in this controller
+                $groups[] = 'creation';
+
                 if ($data instanceof BoUserCreateDTO) {
                     if ($data->role === 'ROLE_STUDENT') {
                         $groups[] = 'student';
