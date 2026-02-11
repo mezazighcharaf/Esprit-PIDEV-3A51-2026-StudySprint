@@ -1,0 +1,556 @@
+/* ============================================
+   STUDYSPRINT — FRONT OFFICE SPECIFICS
+   ============================================ */
+
+/* ─── FO SIDEBAR ─── */
+.fo-sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+}
+
+.fo-sidebar .sidebar-header {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fo-sidebar .sidebar-logo {
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fo-sidebar .sidebar-logo .logo-image {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.fo-sidebar .sidebar-logo .logo-text {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.fo-sidebar .sidebar-section-title {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fo-sidebar .sidebar-link {
+  color: var(--color-text);
+  margin: 0 var(--space-2);
+}
+
+.fo-sidebar .sidebar-link:hover {
+  background: var(--bg-hover);
+  color: var(--color-primary);
+}
+
+.fo-sidebar .sidebar-link.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: var(--font-medium);
+}
+
+.fo-sidebar .sidebar-link:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.fo-sidebar .sidebar-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+/* ─── FO USER CARD ─── */
+.fo-user-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.fo-user-card:hover {
+  background: var(--bg-hover);
+}
+
+.fo-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+.fo-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fo-user-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fo-user-role {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ─── FO PRIORITY SECTION ─── */
+.fo-priority-card {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: var(--color-white);
+  padding: var(--space-5);
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--space-6);
+}
+
+.fo-priority-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+.fo-priority-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-1);
+}
+
+.fo-priority-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-4);
+}
+
+.fo-priority-progress {
+  background: rgba(255, 255, 255, 0.2);
+  height: 8px;
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.fo-priority-progress-bar {
+  height: 100%;
+  background: var(--color-white);
+  border-radius: var(--border-radius-full);
+  transition: width var(--transition-slow);
+}
+
+.fo-priority-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.fo-priority-btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--border-radius);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.fo-priority-btn-primary {
+  background: var(--color-white);
+  color: var(--color-primary);
+}
+
+.fo-priority-btn-primary:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.fo-priority-btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+}
+
+.fo-priority-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ─── FO TODO LIST ─── */
+.fo-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fo-todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+}
+
+.fo-todo-item:hover {
+  border-color: var(--color-primary);
+}
+
+.fo-todo-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color-dark);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+  margin-top: 2px;
+}
+
+.fo-todo-checkbox:hover {
+  border-color: var(--color-primary);
+}
+
+.fo-todo-checkbox.checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.fo-todo-checkbox.checked svg {
+  color: var(--color-white);
+  width: 14px;
+  height: 14px;
+}
+
+.fo-todo-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fo-todo-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-gray-800);
+  margin-bottom: 2px;
+}
+
+.fo-todo-item.completed .fo-todo-title {
+  text-decoration: line-through;
+  color: var(--color-gray-400);
+}
+
+.fo-todo-meta {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+}
+
+.fo-todo-badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+/* ─── FO ACTIVITY FEED ─── */
+.fo-activity-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.fo-activity-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fo-activity-item:last-child {
+  border-bottom: none;
+}
+
+.fo-activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fo-activity-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fo-activity-icon.quiz {
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+}
+
+.fo-activity-icon.session {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.fo-activity-icon.group {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.fo-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fo-activity-text {
+  font-size: var(--text-sm);
+  color: var(--color-gray-700);
+}
+
+.fo-activity-text strong {
+  font-weight: var(--font-medium);
+  color: var(--color-gray-900);
+}
+
+.fo-activity-time {
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
+  margin-top: 2px;
+}
+
+/* ─── FO CALENDAR ─── */
+.fo-calendar {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--bg-card);
+}
+
+.fo-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fo-calendar-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+}
+
+.fo-calendar-nav {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.fo-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.fo-calendar-day-header {
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-gray-500);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fo-calendar-day {
+  aspect-ratio: 1;
+  padding: var(--space-2);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.fo-calendar-day:nth-child(7n) {
+  border-right: none;
+}
+
+.fo-calendar-day:hover {
+  background: var(--bg-hover);
+}
+
+.fo-calendar-day.other-month {
+  color: var(--color-gray-300);
+}
+
+.fo-calendar-day.today {
+  background: var(--color-primary-light);
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+}
+
+.fo-calendar-day.has-event::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  margin: 4px auto 0;
+}
+
+/* ─── FO DECK CARD ─── */
+.fo-deck-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.fo-deck-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.fo-deck-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.fo-deck-subject {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-primary);
+}
+
+.fo-deck-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-900);
+  margin-top: var(--space-1);
+}
+
+.fo-deck-stats {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+}
+
+.fo-deck-progress {
+  margin-top: auto;
+}
+
+.fo-deck-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-1);
+}
+
+/* ─── FO GROUP CARD ─── */
+.fo-group-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+}
+
+.fo-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.fo-group-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius);
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+}
+
+.fo-group-info {
+  flex: 1;
+}
+
+.fo-group-name {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-gray-900);
+}
+
+.fo-group-meta {
+  font-size: var(--text-sm);
+  color: var(--color-gray-500);
+}
+
+.fo-group-members {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-color);
+}
+
+.fo-group-members-label {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
+}
+
+/* Form Error Styles */
+.form-group ul {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.form-group ul li {
+  color: #ef4444;
+  font-size: 0.875rem;
+  list-style: none;
+  margin-top: 0.25rem;
+}
+
+/* Red border/background for invalid inputs */
+.auth-form input:invalid,
+.auth-form input.is-invalid,
+.auth-form input.form-control.is-invalid {
+  border: 1px solid #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.form-error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}

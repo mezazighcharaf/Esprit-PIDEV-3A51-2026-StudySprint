@@ -1,0 +1,36 @@
+{#
+  Tabs Component
+  Usage:
+  {{ include('components/_tabs.html.twig', {
+      id: 'my-tabs',
+      tabs: [
+          { id: 'tab1', label: 'Onglet 1', count: 12, active: true },
+          { id: 'tab2', label: 'Onglet 2', count: 5 },
+          { id: 'tab3', label: 'Onglet 3' }
+      ],
+      variant: 'default' // 'default' | 'bo'
+  }) }}
+
+  Then create content panels with:
+  <div data-tab-content="my-tabs">
+      <div data-tab-panel="tab1" class="tab-content active">Content 1</div>
+      <div data-tab-panel="tab2" class="tab-content">Content 2</div>
+  </div>
+#}
+
+<div class="{{ variant|default('default') == 'bo' ? 'bo-tabs' : 'tabs' }}" data-tabs="{{ id }}" role="tablist">
+    {% for tab in tabs %}
+    <button
+        class="{{ variant|default('default') == 'bo' ? 'bo-tab' : 'tab' }} {{ tab.active|default(false) ? 'active' : '' }}"
+        data-tab="{{ tab.id }}"
+        role="tab"
+        aria-selected="{{ tab.active|default(false) ? 'true' : 'false' }}"
+        aria-controls="panel-{{ tab.id }}"
+    >
+        {{ tab.label }}
+        {% if tab.count is defined %}
+        <span class="{{ variant|default('default') == 'bo' ? 'bo-tab-count' : '' }}">{{ tab.count }}</span>
+        {% endif %}
+    </button>
+    {% endfor %}
+</div>

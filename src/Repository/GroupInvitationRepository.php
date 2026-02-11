@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\GroupInvitation;
+use App\Entity\StudyGroup;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @extends ServiceEntityRepository<GroupInvitation>
+ */
+class GroupInvitationRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, GroupInvitation::class);
+    }
+
+    /**
+     * Find a valid invitation by code
+     */
+    public function findValidByCode(string $code): ?GroupInvitation
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.code = :code')
+            ->andWhere('i.status = :status')
+            ->setParameter('code', $code)
+            ->setParameter('status', 'pending')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Find pending invitations for a given email
+     */
+    public function findPendingByEmail(string $email): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.email = :email')
+            ->andWhere('i.status = :status')
+            ->setParameter('email', $email)
+            ->setParameter('status', 'pending')
+            ->orderBy('i.invitedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find an invitation by group and email (any status)
+     */
+    public function findOneByGroupAndEmail(StudyGroup $group, string $email): ?GroupInvitation
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.group = :group')
+            ->andWhere('LOWER(i.email) = LOWER(:email)')
+            ->setParameter('group', $group)
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Check if a user is already invited to a group
+     */
+    public function existsForGroupAndEmail(StudyGroup $group, string $email): bool
+    {
+        return (bool) $this->createQueryBuilder('i')
+            ->select('1')
+            ->andWhere('i.group = :group')
+            ->andWhere('LOWER(i.email) = LOWER(:email)')
+            ->setParameter('group', $group)
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findReceived(User $user): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('LOWER(i.email) = LOWER(:email)')
+            ->andWhere('i.status = :status')
+            ->setParameters([
+                'email' => $user->getEmail(),
+                'status' => 'pending',
+            ])
+            ->orderBy('i.invitedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findSent(User $user): array
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.invitedBy = :user')
+            ->orderBy('i.invitedAt', 'DESC')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
+
+}

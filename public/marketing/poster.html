@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySprint - Poster A3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Palette officielle */
+        :root {
+            --primary-blue: #1D4ED8;
+            --cyan: #0891B2;
+            --green: #10B981;
+            --yellow: #EAB308;
+            --bg-light: #F8FAFC;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+        }
+
+        /* A3 Portrait: 297mm x 420mm */
+        .poster {
+            width: 297mm;
+            height: 420mm;
+            background: linear-gradient(180deg, var(--bg-light) 0%, #EFF6FF 100%);
+            display: grid;
+            grid-template-rows: auto auto auto 1fr auto;
+            padding: 18mm 24mm;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative background */
+        .bg-circle-1 {
+            position: absolute;
+            top: -60mm;
+            right: -40mm;
+            width: 200mm;
+            height: 200mm;
+            background: radial-gradient(circle, rgba(29, 78, 216, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-circle-2 {
+            position: absolute;
+            bottom: -50mm;
+            left: -50mm;
+            width: 200mm;
+            height: 200mm;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-circle-3 {
+            position: absolute;
+            top: 40%;
+            right: -30mm;
+            width: 150mm;
+            height: 150mm;
+            background: radial-gradient(circle, rgba(234, 179, 8, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .bg-circle-4 {
+            position: absolute;
+            top: 25%;
+            left: -40mm;
+            width: 120mm;
+            height: 120mm;
+            background: radial-gradient(circle, rgba(8, 145, 178, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Header Section */
+        .header {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 12mm;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18mm;
+        }
+
+        .logo svg {
+            width: 72px;
+            height: 46px;
+        }
+
+        .logo-text {
+            font-size: 44px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--cyan) 35%, var(--green) 65%, var(--yellow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pain-point {
+            font-size: 32px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 10mm;
+        }
+
+        .headline {
+            font-size: 88px;
+            font-weight: 900;
+            color: var(--text-dark);
+            line-height: 1.0;
+            letter-spacing: -0.03em;
+        }
+
+        .headline .highlight {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--cyan) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* What is section */
+        .what-is {
+            position: relative;
+            z-index: 1;
+            background: white;
+            border: 2px solid rgba(29, 78, 216, 0.1);
+            padding: 24px 32px;
+            border-radius: 24px;
+            margin-bottom: 14mm;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+        }
+
+        .what-is-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .what-is-desc {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Features Section */
+        .features {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16mm;
+            padding: 8mm 0;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            background: white;
+            border: 2px solid rgba(29, 78, 216, 0.08);
+            padding: 32px 36px;
+            border-radius: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .feature-icon {
+            width: 90px;
+            height: 90px;
+            min-width: 90px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon.blue {
+            background: linear-gradient(135deg, var(--primary-blue), #3B82F6);
+        }
+
+        .feature-icon.cyan {
+            background: linear-gradient(135deg, var(--cyan), #22D3EE);
+        }
+
+        .feature-icon.green {
+            background: linear-gradient(135deg, var(--green), #34D399);
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Bottom section */
+        .bottom {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10mm;
+        }
+
+        .audience {
+            background: linear-gradient(135deg, var(--primary-blue), var(--cyan));
+            padding: 22px 44px;
+            border-radius: 60px;
+            font-size: 26px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 8px 32px rgba(29, 78, 216, 0.35);
+        }
+
+        .footer {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        @media print {
+            .poster {
+                width: 297mm;
+                height: 420mm;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="poster">
+        <!-- Background -->
+        <div class="bg-circle-1"></div>
+        <div class="bg-circle-2"></div>
+        <div class="bg-circle-3"></div>
+        <div class="bg-circle-4"></div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <svg viewBox="0 0 56 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logo-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                            <stop offset="0%" stop-color="#1D4ED8"/>
+                            <stop offset="35%" stop-color="#0891B2"/>
+                            <stop offset="65%" stop-color="#10B981"/>
+                            <stop offset="100%" stop-color="#EAB308"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M28 16C28 16 22 4 13 4C6 4 2 9 2 16C2 23 6 28 13 28C22 28 28 16 28 16C28 16 34 28 43 28C50 28 54 23 54 16C54 9 50 4 43 4C34 4 28 16 28 16Z"
+                          stroke="url(#logo-gradient)"
+                          stroke-width="4.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          fill="none"/>
+                </svg>
+                <span class="logo-text">StudySprint</span>
+            </div>
+            <p class="pain-point">Fatigué de réviser sans résultats ?</p>
+            <h1 class="headline">
+                Reprends le <span class="highlight">contrôle.</span>
+            </h1>
+        </div>
+
+        <!-- What is -->
+        <div class="what-is">
+            <p class="what-is-title">StudySprint, c'est quoi ?</p>
+            <p class="what-is-desc">L'application qui t'aide à organiser tes révisions et suivre ta progression jusqu'aux examens.</p>
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon blue">
+                    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <div class="feature-content">
+                    <p class="feature-title">Planning intelligent</p>
+                    <p class="feature-desc">Génère ton planning personnalisé en fonction de tes matières et de ton temps disponible.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon cyan">
+                    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                </div>
+                <div class="feature-content">
+                    <p class="feature-title">Quiz adaptatifs</p>
+                    <p class="feature-desc">Des questions générées par IA qui ciblent tes points faibles pour réviser efficacement.</p>
+                </div>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon green">
+                    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="feature-content">
+                    <p class="feature-title">Suivi de progression</p>
+                    <p class="feature-desc">Visualise tes progrès chaque jour et reste motivé jusqu'au jour de l'examen.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom -->
+        <div class="bottom">
+            <div class="audience">
+                Pour les étudiants qui veulent réussir
+            </div>
+            <div class="footer">
+                @StudySprint
+            </div>
+        </div>
+    </div>
+</body>
+</html>

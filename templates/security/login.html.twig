@@ -1,0 +1,57 @@
+{% extends 'layouts/auth.html.twig' %}
+
+{% block title %}Connexion - StudySprint{% endblock %}
+
+{% block content %}
+    <h1 class="auth-title">Connexion</h1>
+
+    <form method="post" class="auth-form">
+        {% if error %}
+            <div class="alert alert-danger" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="inputEmail">Email</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus placeholder="Votre email">
+        </div>
+
+        <div class="form-group">
+            <label for="inputPassword">Mot de passe</label>
+            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required placeholder="••••••••">
+            <div style="text-align: right; margin-top: 0.5rem;">
+                <a href="{{ path('app_forgot_password') }}" style="color: var(--color-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <div style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+                Se connecter
+            </button>
+        </div>
+
+        <p style="text-align: center; margin-top: 1.5rem; color: #64748b; font-size: 0.9rem;">
+            Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">S'inscrire</a>
+        </p>
+    </form>
+
+    {% if error and error.messageKey == 'Votre compte est désactivé. Veuillez demander la réactivation pour continuer.' %}
+        <div style="margin-top: 1.5rem; text-align: center; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 6px; background: white;">
+            <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #475569;">
+                Contacter l'administration via ce mail : <strong>studysprintcontact@gmail.com</strong>
+            </p>
+            <form action="{{ path('app_request_reactivation') }}" method="post">
+                <input type="hidden" name="email" value="{{ last_username }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('request_reactivation') }}">
+                <button type="submit" class="btn btn-secondary" style="background: #64748b; color: white; width: 100%; justify-content: center; padding: 0.8rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                    Demander la réactivation
+                </button>
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}

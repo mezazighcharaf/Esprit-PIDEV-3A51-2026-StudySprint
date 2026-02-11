@@ -1,0 +1,47 @@
+{% extends 'layouts/auth.html.twig' %}
+
+{% block title %}Demande envoyée - StudySprint{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <div style="margin-bottom: 2rem;">
+            <div style="width: 64px; height: 64px; background: #ecfdf5; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="32" height="32">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Demande envoyée !</h1>
+            <p style="color: #64748b; line-height: 1.6; margin-bottom: 1.5rem;">
+                Votre demande de réactivation a été transmise avec succès à l'administration. 
+                Veuillez patienter pendant le traitement de votre demande.
+            </p>
+        </div>
+
+        <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 2rem;">
+            <p style="font-size: 0.9rem; color: #475569; margin-bottom: 0.5rem;">
+                Vous allez être redirigé vers l'accueil dans
+            </p>
+            <div id="countdown" style="font-size: 2.5rem; font-weight: 800; color: var(--color-primary);">10</div>
+            <p style="font-size: 0.9rem; color: #475569; margin-top: 0.5rem;">secondes</p>
+        </div>
+
+        <a href="{{ path('app_home') }}" class="btn btn-secondary" style="width: 100%; justify-content: center; padding: 0.8rem; background: #e2e8f0; color: #475569; border: none; text-decoration: none; display: inline-flex; align-items: center; font-weight: 600;">
+            Retour immédiat à l'accueil
+        </a>
+    </div>
+
+    <script>
+        let seconds = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const interval = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = "{{ path('app_home') }}";
+            }
+        }, 1000);
+    </script>
+{% endblock %}

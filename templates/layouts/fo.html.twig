@@ -1,0 +1,103 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR FO ─── #}
+    <aside class="app-sidebar fo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('app_profile') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Navigation</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('app_profile') }}" class="sidebar-link {{ app.request.get('_route') == 'app_profile' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Mon Profil</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Raccourcis</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span>Sessions recentes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Favoris</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('app_profile') }}" class="fo-user-card" style="text-decoration: none; color: inherit; display: flex;">
+                {% if app.user %}
+                    <div class="fo-user-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                        <div class="fo-user-role">{{ app.user.role|capitalize }}</div>
+                    </div>
+                {% else %}
+                    <div class="fo-user-avatar">?</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">Invité</div>
+                    </div>
+                {% endif %}
+            </a>
+        </div>
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                {% block topbar_actions %}{% endblock %}
+                <div class="topbar-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+            </div>
+        </header>
+
+        <div class="app-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{% block drawers %}{% endblock %}
+{% endblock %}

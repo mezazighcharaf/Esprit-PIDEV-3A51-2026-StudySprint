@@ -1,0 +1,104 @@
+[debug] Notified event "console.command" to listener "Symfony\Bundle\FrameworkBundle\EventListener\ConsoleProfilerListener::initialize".
+[debug] Notified event "console.command" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[debug] Notified event "console.command" to listener "Doctrine\Bundle\MigrationsBundle\EventListener\SchemaFilterListener::onConsoleCommand".
+[info] User Deprecated: Support for MariaDB < 10.5.2 is deprecated and will be removed in DBAL 5 (AbstractMySQLDriver.php:56 called by AbstractDriverMiddleware.php:32, https://github.com/doctrine/dbal/pull/6343, package doctrine/dbal)
+[critical] Error thrown while running command "doctrine:migrations:migrate -vvv". Message: "An exception occurred in the driver: SQLSTATE[HY000] [2002] Aucune connexion n’a pu être établie car l’ordinateur cible l’a expressément refusée"
+[debug] Notified event "console.error" to listener "Symfony\Bundle\FrameworkBundle\EventListener\SuggestMissingPackageSubscriber::onConsoleError".
+[debug] Notified event "console.error" to listener "Symfony\Bundle\MakerBundle\Event\ConsoleErrorSubscriber::onConsoleError".
+[debug] Notified event "console.error" to listener "Symfony\Component\Console\EventListener\ErrorListener::onConsoleError".
+[debug] Notified event "console.error" to listener "Symfony\Bundle\FrameworkBundle\EventListener\ConsoleProfilerListener::catch".
+[debug] Command "doctrine:migrations:migrate -vvv" exited with code "2002"
+[debug] Notified event "console.terminate" to listener "Symfony\Bundle\MakerBundle\Event\ConsoleErrorSubscriber::onConsoleTerminate".
+[debug] Notified event "console.terminate" to listener "Symfony\Component\Console\EventListener\ErrorListener::onConsoleTerminate".
+[debug] Notified event "console.terminate" to listener "Symfony\Bundle\FrameworkBundle\EventListener\ConsoleProfilerListener::profile".
+
+In ExceptionConverter.php line 80:
+                                                        
+  [Doctrine\DBAL\Exception\ConnectionException (2002)]  
+  An exception occurred in the driv                     
+  er: SQLSTATE[HY000] [2002] Aucune                     
+   connexion n’a pu être établie ca                     
+  r l’ordinateur cible l’a expressé                     
+  ment refusée                                          
+                                                        
+
+Exception trace:
+  at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\API\MySQL\ExceptionConverter.php:80
+ Doctrine\DBAL\Driver\API\MySQL\ExceptionConverter->convert() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:1418
+ Doctrine\DBAL\Connection->handleDriverException() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:1366
+ Doctrine\DBAL\Connection->convertException() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:227
+ Doctrine\DBAL\Connection->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:770
+ Doctrine\DBAL\Connection->executeQuery() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:336
+ Doctrine\DBAL\Connection->fetchOne() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:160
+ Doctrine\DBAL\Connection->getDatabase() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\migrations\src\Tools\Console\Command\MigrateCommand.php:147
+ Doctrine\Migrations\Tools\Console\Command\MigrateCommand->execute() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Command\Command.php:326
+ Symfony\Component\Console\Command\Command->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:1106
+ Symfony\Component\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:126
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:324
+ Symfony\Component\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:80
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:175
+ Symfony\Component\Console\Application->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\runtime\Runner\Symfony\ConsoleApplicationRunner.php:49
+ Symfony\Component\Runtime\Runner\Symfony\ConsoleApplicationRunner->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\autoload_runtime.php:29
+ require_once() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\bin\console:15
+
+In Exception.php line 24:
+                                               
+  [Doctrine\DBAL\Driver\PDO\Exception (2002)]  
+  SQLSTATE[HY000] [2002] Aucune con            
+  nexion n’a pu être établie car l’            
+  ordinateur cible l’a expressément            
+   refusée                                     
+                                               
+
+Exception trace:
+  at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\PDO\Exception.php:24
+ Doctrine\DBAL\Driver\PDO\Exception::new() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\PDO\MySQL\Driver.php:52
+ Doctrine\DBAL\Driver\PDO\MySQL\Driver->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\Middleware\AbstractDriverMiddleware.php:27
+ Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\doctrine-bridge\Middleware\Debug\Driver.php:37
+ Symfony\Bridge\Doctrine\Middleware\Debug\Driver->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:225
+ Doctrine\DBAL\Connection->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:770
+ Doctrine\DBAL\Connection->executeQuery() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:336
+ Doctrine\DBAL\Connection->fetchOne() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:160
+ Doctrine\DBAL\Connection->getDatabase() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\migrations\src\Tools\Console\Command\MigrateCommand.php:147
+ Doctrine\Migrations\Tools\Console\Command\MigrateCommand->execute() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Command\Command.php:326
+ Symfony\Component\Console\Command\Command->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:1106
+ Symfony\Component\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:126
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:324
+ Symfony\Component\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:80
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:175
+ Symfony\Component\Console\Application->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\runtime\Runner\Symfony\ConsoleApplicationRunner.php:49
+ Symfony\Component\Runtime\Runner\Symfony\ConsoleApplicationRunner->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\autoload_runtime.php:29
+ require_once() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\bin\console:15
+
+In PDOConnect.php line 22:
+                                     
+  [PDOException (2002)]              
+  SQLSTATE[HY000] [2002] Aucune con  
+  nexion n’a pu être établie car l’  
+  ordinateur cible l’a expressément  
+   refusée                           
+                                     
+
+Exception trace:
+  at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\PDO\PDOConnect.php:22
+ PDO->__construct() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\PDO\PDOConnect.php:22
+ Doctrine\DBAL\Driver\PDO\MySQL\Driver->doConnect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\PDO\MySQL\Driver.php:46
+ Doctrine\DBAL\Driver\PDO\MySQL\Driver->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Driver\Middleware\AbstractDriverMiddleware.php:27
+ Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\doctrine-bridge\Middleware\Debug\Driver.php:37
+ Symfony\Bridge\Doctrine\Middleware\Debug\Driver->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:225
+ Doctrine\DBAL\Connection->connect() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:770
+ Doctrine\DBAL\Connection->executeQuery() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:336
+ Doctrine\DBAL\Connection->fetchOne() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\dbal\src\Connection.php:160
+ Doctrine\DBAL\Connection->getDatabase() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\doctrine\migrations\src\Tools\Console\Command\MigrateCommand.php:147
+ Doctrine\Migrations\Tools\Console\Command\MigrateCommand->execute() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Command\Command.php:326
+ Symfony\Component\Console\Command\Command->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:1106
+ Symfony\Component\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:126
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRunCommand() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:324
+ Symfony\Component\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\framework-bundle\Console\Application.php:80
+ Symfony\Bundle\FrameworkBundle\Console\Application->doRun() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\console\Application.php:175
+ Symfony\Component\Console\Application->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\symfony\runtime\Runner\Symfony\ConsoleApplicationRunner.php:49
+ Symfony\Component\Runtime\Runner\Symfony\ConsoleApplicationRunner->run() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\vendor\autoload_runtime.php:29
+ require_once() at C:\Users\MeriemDimassi\Downloads\StudySprint-gestion-user\StudySprint-gestion-user\bin\console:15
+
+doctrine:migrations:migrate [--write-sql [WRITE-SQL]] [--dry-run] [--query-time] [--allow-no-migration] [--all-or-nothing [ALL-OR-NOTHING]] [--no-all-or-nothing] [--configuration CONFIGURATION] [--em EM] [--conn CONN] [--] [<version>]
+

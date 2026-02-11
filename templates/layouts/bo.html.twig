@@ -1,0 +1,102 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/bo.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/forms.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR BO ─── #}
+    <aside class="app-sidebar bo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('admin_dashboard') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('admin_dashboard') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9"/>
+                                <rect x="14" y="3" width="7" height="5"/>
+                                <rect x="14" y="12" width="7" height="9"/>
+                                <rect x="3" y="16" width="7" height="5"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('admin_users') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_users' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Utilisateurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <nav class="topbar-breadcrumb">
+                <a href="{{ path('admin_dashboard') }}">Back-Office</a>
+                <span>/</span>
+                <span>{% block breadcrumb %}Dashboard{% endblock %}</span>
+            </nav>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                <div class="topbar-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="Rechercher un utilisateur...">
+                </div>
+                {% block topbar_actions %}
+                <button class="btn btn-secondary btn-sm">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Exporter
+                </button>
+                {% endblock %}
+                <div class="user-menu-container" style="position: relative;">
+                    <div class="topbar-avatar" title="Admin" onclick="document.getElementById('user-dropdown').classList.toggle('active')" style="cursor: pointer; user-select: none;">AD</div>
+                    <div id="user-dropdown" class="user-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 150px; z-index: 100; margin-top: 0.5rem; overflow: hidden;">
+                        <a href="{{ path('app_logout') }}" style="display: block; padding: 0.8rem 1rem; color: #ef4444; text-decoration: none; font-size: 0.9rem; font-weight: 500; background: white; transition: background 0.2s;">
+                            Se déconnecter
+                        </a>
+                    </div>
+                </div>
+
+                <style>
+                    #user-dropdown.active { display: block !important; }
+                    #user-dropdown a:hover { background: #fef2f2 !important; }
+                </style>
+            </div>
+        </header>
+
+        <div class="app-content bo-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{% block drawers %}{% endblock %}
+{% endblock %}
