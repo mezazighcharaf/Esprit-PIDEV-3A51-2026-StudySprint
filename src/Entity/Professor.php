@@ -16,15 +16,10 @@ class Professor extends User
     #[Assert\NotBlank(groups: ['professor'])]
     private ?string $niveauEnseignement = null;
 
-    #[ORM\Column]
-    #[Assert\NotNull(groups: ['professor'])]
-    #[Assert\PositiveOrZero(groups: ['professor'])]
-    private ?int $anneesExperience = null;
 
-    #[ORM\Column(length: 2)]
-    #[Assert\NotBlank(groups: ['professor'])]
-    #[Assert\Country(groups: ['professor'])]
-    private ?string $pays = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $etablissement = null;
+
 
     public function getSpecialite(): ?string
     {
@@ -50,26 +45,15 @@ class Professor extends User
         return $this;
     }
 
-    public function getAnneesExperience(): ?int
+
+    public function getEtablissement(): ?string
     {
-        return $this->anneesExperience;
+        return $this->etablissement;
     }
 
-    public function setAnneesExperience(int $anneesExperience): static
+    public function setEtablissement(?string $etablissement): static
     {
-        $this->anneesExperience = $anneesExperience;
-
-        return $this;
-    }
-
-    public function getPays(): ?string
-    {
-        return $this->pays;
-    }
-
-    public function setPays(string $pays): static
-    {
-        $this->pays = $pays;
+        $this->etablissement = $etablissement;
 
         return $this;
     }

@@ -33,7 +33,6 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 6)]
     private ?string $motDePasse = null;
 
     #[ORM\Column(length: 255)]
@@ -50,6 +49,20 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastActivityAt = null;
+
+    #[ORM\Column(length: 2, nullable: true)]
+    #[Assert\NotBlank(message: "Le pays est obligatoire")]
+    #[Assert\Country]
+    private ?string $pays = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    #[Assert\NotBlank(groups: ['professor'], message: "Les années d'expérience sont obligatoires")]
+    private ?int $anneesExperience = null;
+
 
     public function __construct()
     {
@@ -204,5 +217,50 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
         return $this;
+    }
+
+    public function getLastActivityAt(): ?\DateTimeImmutable
+    {
+        return $this->lastActivityAt;
+    }
+
+    public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
+    {
+        $this->lastActivityAt = $lastActivityAt;
+        return $this;
+    }
+
+    public function getPays(): ?string
+    {
+        return $this->pays;
+    }
+
+    public function setPays(?string $pays): static
+    {
+        $this->pays = $pays;
+        return $this;
+    }
+
+    public function getAnneesExperience(): ?int
+    {
+        return $this->anneesExperience;
+    }
+
+    public function setAnneesExperience(?int $anneesExperience): static
+    {
+        $this->anneesExperience = $anneesExperience;
+        return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return trim($this->prenom . ' ' . $this->nom);
+    }
+
+    public function getInitials(): string
+    {
+        $prenom = $this->prenom ? strtoupper(substr($this->prenom, 0, 1)) : '';
+        $nom = $this->nom ? strtoupper(substr($this->nom, 0, 1)) : '';
+        return $prenom . $nom;
     }
 }

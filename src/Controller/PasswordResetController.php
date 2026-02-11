@@ -22,7 +22,7 @@ class PasswordResetController extends AbstractController
         private UserRepository $userRepository,
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
-        private ?MailerInterface $mailer = null
+        private MailerInterface $mailer
     ) {}
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
@@ -33,6 +33,7 @@ class PasswordResetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $dto->email = strtolower($dto->email);
             $user = $this->userRepository->findOneBy(['email' => $dto->email]);
 
             if ($user) {
@@ -46,28 +47,23 @@ class PasswordResetController extends AbstractController
                 $this->entityManager->flush();
 
                 // Send email with verification code
-                if ($this->mailer) {
-                    try {
-                        $email = (new TemplatedEmail())
-                            ->from('noreply@studysprint.com')
-                            ->to($user->getEmail())
-                            ->subject('Réinitialisation de votre mot de passe - StudySprint')
-                            ->htmlTemplate('emails/password_reset.html.twig')
-                            ->context([
-                                'user' => $user,
-                                'verificationCode' => $verificationCode,
-                            ]);
+                try {
+                    $email = (new TemplatedEmail())
+                        ->from('noreply@studysprint.com')
+                        ->to($user->getEmail())
+                        ->subject('Réinitialisation de votre mot de passe - StudySprint')
+                        ->htmlTemplate('emails/password_reset.html.twig')
+                        ->context([
+                            'user' => $user,
+                            'verificationCode' => $verificationCode,
+                        ]);
 
-                        $this->mailer->send($email);
-                        
-                        $this->addFlash('success', 'Un code de vérification a été envoyé à votre adresse email.');
-                    } catch (\Exception $e) {
-                        // If email fails, show the code in flash message for development
-                        $this->addFlash('warning', "Erreur d'envoi d'email. Code de vérification (DEV ONLY): {$verificationCode}");
-                    }
-                } else {
-                    // If mailer not configured, show the code in flash message for development
-                    $this->addFlash('warning', "Email non configuré. Code de vérification (DEV ONLY): {$verificationCode}");
+                    $this->mailer->send($email);
+                    
+                    $this->addFlash('success', 'Un code de vérification a été envoyé à votre adresse email.');
+                } catch (\Exception $e) {
+                    // If email fails, show a generic error to the user
+                    $this->addFlash('danger', "Une erreur est survenue lors de l'envoi de l'email. Veuillez réessayer plus tard.");
                 }
 
                 return $this->redirectToRoute('app_reset_password', ['email' => $user->getEmail()]);
@@ -86,7 +82,7 @@ class PasswordResetController extends AbstractController
     #[Route('/reset-password', name: 'app_reset_password')]
     public function reset(Request $request): Response
     {
-        $email = $request->query->get('email');
+        $email = strtolower($request->query->get('email', ''));
         
         if (!$email) {
             return $this->redirectToRoute('app_forgot_password');

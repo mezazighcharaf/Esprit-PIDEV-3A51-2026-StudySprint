@@ -1,0 +1,87 @@
+{% for post in posts %}
+<article class="fo-post-card" data-post-id="{{ post.id }}">
+    <div class="fo-post-header">
+        <div class="fo-post-author">
+            <div class="avatar avatar-sm avatar-initials">{{ post.author_initials }}</div>
+            <div class="fo-post-meta">
+                <div class="fo-post-author-name">
+                    {{ post.author }}
+                    {% if post.author_role == 'admin' %}
+                    <span class="badge-role-admin">Admin</span>
+                    {% elseif post.author_role == 'moderator' %}
+                    <span class="badge-role-moderator">Mod</span>
+                    {% else %}
+                    <span class="badge-role-member">Membre</span>
+                    {% endif %}
+                </div>
+                <div class="fo-post-date">{{ post.created_at }}</div>
+            </div>
+        </div>
+        {% if post.can_delete %}
+        <button class="btn btn-ghost btn-icon btn-xs" data-post-delete="{{ post.id }}" title="Supprimer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="fo-post-body-content">
+        {% if post.title %}
+        <h3 class="fo-post-title">{{ post.title }}</h3>
+        {% endif %}
+        <p class="fo-post-text">{{ post.body }}</p>
+        {% if post.attachment_url %}
+        <a href="{{ post.attachment_url }}" target="_blank" class="fo-post-attachment">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            {{ post.attachment_url }}
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="fo-post-actions">
+        <button class="fo-post-action-btn {{ post.user_liked ? 'liked' : '' }}" data-post-like="{{ post.id }}" data-liked="{{ post.user_liked ? 'true' : 'false' }}">
+            <svg viewBox="0 0 24 24" fill="{{ post.user_liked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span data-likes-count="{{ post.id }}">{{ post.likes_count }}</span>
+        </button>
+        
+        <button class="fo-post-action-btn" data-comments-toggle="{{ post.id }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2-2z"/>
+            </svg>
+            <span data-comments-count="{{ post.id }}">{{ post.comments_count }}</span>
+        </button>
+
+        <div class="fo-rating" data-post-rating="{{ post.id }}">
+            {% for i in 1..5 %}
+            <svg class="fo-rating-star {{ post.user_rating >= i ? 'filled' : '' }}" 
+                    data-rate-post="{{ post.id }}" 
+                    data-rating="{{ i }}" 
+                    viewBox="0 0 24 24" 
+                    fill="{{ post.user_rating >= i ? 'currentColor' : 'none' }}" 
+                    stroke="currentColor" 
+                    stroke-width="2" 
+                    width="16" 
+                    height="16">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            {% endfor %}
+            <span class="text-xs text-muted ml-1" data-avg-rating="{{ post.id }}">{{ post.avg_rating|number_format(1) }}</span>
+        </div>
+    </div>
+
+    <div class="fo-comments-section" data-comments-section="{{ post.id }}" style="display: none;">
+        <div class="fo-comment-list" data-comments-list="{{ post.id }}"></div>
+        <form class="fo-comment-form" data-comment-form="{{ post.id }}">
+            <textarea class="form-input" name="body" placeholder="Ajouter un commentaire..." rows="1" required></textarea>
+            <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+        </form>
+    </div>
+</article>
+{% endfor %}

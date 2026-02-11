@@ -10,7 +10,7 @@ class Student extends User
 {
     #[ORM\Column]
     #[Assert\NotNull(groups: ['student'])]
-    #[Assert\Range(min: 10, max: 100, groups: ['student'])]
+    #[Assert\Range(min: 16, groups: ['student'], minMessage: "L'âge doit être supérieur à 15 ans")]
     private ?int $age = null;
 
     #[ORM\Column(length: 10)]
@@ -24,11 +24,6 @@ class Student extends User
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank(groups: ['student'])]
     private ?string $niveau = null;
-
-    #[ORM\Column(length: 2)]
-    #[Assert\NotBlank(groups: ['student'])]
-    #[Assert\Country(groups: ['student'])]
-    private ?string $pays = null;
 
     public function getAge(): ?int
     {
@@ -74,18 +69,6 @@ class Student extends User
     public function setNiveau(string $niveau): static
     {
         $this->niveau = $niveau;
-
-        return $this;
-    }
-
-    public function getPays(): ?string
-    {
-        return $this->pays;
-    }
-
-    public function setPays(string $pays): static
-    {
-        $this->pays = $pays;
 
         return $this;
     }

@@ -5,54 +5,38 @@
 {% block content %}
     <h1 class="auth-title">Connexion</h1>
 
-    {% if app.user %}
-        <div class="alert alert-info" style="background: #e0f2fe; color: #0369a1; padding: 1.5rem; border-radius: 8px; text-align: center;">
-            <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">
-                Vous êtes déjà connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>
-            </p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <a href="{{ path('app_post_login') }}" class="btn btn-primary">
-                    Accéder au tableau de bord
-                </a>
-                <a href="{{ path('app_logout') }}" class="btn" style="background: white; border: 1px solid #cbd5e1; color: #475569;">
-                    Se déconnecter
+    <form method="post" class="auth-form">
+        {% if error %}
+            <div class="alert alert-danger" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="inputEmail">Email</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus placeholder="Votre email">
+        </div>
+
+        <div class="form-group">
+            <label for="inputPassword">Mot de passe</label>
+            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required placeholder="••••••••">
+            <div style="text-align: right; margin-top: 0.5rem;">
+                <a href="{{ path('app_forgot_password') }}" style="color: var(--color-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                    Mot de passe oublié ?
                 </a>
             </div>
         </div>
-    {% else %}
-        <form method="post" class="auth-form">
-            {% if error %}
-                <div class="alert alert-danger" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
-                </div>
-            {% endif %}
 
-            <div class="form-group">
-                <label for="inputEmail">Email</label>
-                <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus placeholder="Votre email">
-            </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <div class="form-group">
-                <label for="inputPassword">Mot de passe</label>
-                <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required placeholder="••••••••">
-                <div style="text-align: right; margin-top: 0.5rem;">
-                    <a href="{{ path('app_forgot_password') }}" style="color: var(--color-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
-                        Mot de passe oublié ?
-                    </a>
-                </div>
-            </div>
+        <div style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+                Se connecter
+            </button>
+        </div>
 
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-            <div style="margin-top: 2rem;">
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
-                    Se connecter
-                </button>
-            </div>
-
-            <p style="text-align: center; margin-top: 1.5rem; color: #64748b; font-size: 0.9rem;">
-                Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">S'inscrire</a>
-            </p>
-        </form>
-    {% endif %}
+        <p style="text-align: center; margin-top: 1.5rem; color: #64748b; font-size: 0.9rem;">
+            Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">S'inscrire</a>
+        </p>
+    </form>
 {% endblock %}

@@ -105,6 +105,12 @@ class RegistrationType extends AbstractType
                 'attr' => ['class' => 'professor-field'],
                 'row_attr' => ['class' => 'professor-field-row'],
             ])
+            ->add('etablissementProfesseur', TextType::class, [
+                'required' => false,
+                'label' => 'Établissement',
+                'attr' => ['class' => 'professor-field', 'placeholder' => 'Nom de votre établissement'],
+                'row_attr' => ['class' => 'professor-field-row'],
+            ])
         ;
 
         // Fix for "Invalid choice" error when submitting dynamic choices:
