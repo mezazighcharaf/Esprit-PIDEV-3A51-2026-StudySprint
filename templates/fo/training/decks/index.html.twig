@@ -1,0 +1,121 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Decks de Flashcards - StudySprint{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0;">Decks de Flashcards</h1>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">Révisez avec la répétition espacée</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ path('fo_training_decks_ai_generate_form') }}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Générer un deck (IA)
+        </a>
+        <a href="{{ path('fo_training_decks_manage_my_decks') }}" class="btn btn-primary">
+            <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Mes Decks
+        </a>
+    </div>
+</div>
+
+{# Search + Filter Bar #}
+<form method="get" action="{{ path('fo_training_decks_index') }}" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; align-items: center;">
+    <div style="flex: 1; min-width: 200px; position: relative;">
+        <svg style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un deck..." style="width: 100%; padding: 0.625rem 0.75rem 0.625rem 2.25rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;" />
+    </div>
+    <select name="subject" style="padding: 0.625rem 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white;">
+        <option value="">Toutes matières</option>
+        {% for subject in subjects %}
+        <option value="{{ subject.id }}" {{ subjectId == subject.id ? 'selected' }}>{{ subject.name }}</option>
+        {% endfor %}
+    </select>
+    <select name="sort" style="padding: 0.625rem 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white;">
+        <option value="newest" {{ sort == 'newest' ? 'selected' }}>Plus récents</option>
+        <option value="oldest" {{ sort == 'oldest' ? 'selected' }}>Plus anciens</option>
+        <option value="title" {{ sort == 'title' ? 'selected' }}>Alphabétique</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+    {% if q or subjectId or sort != 'newest' %}
+    <a href="{{ path('fo_training_decks_index') }}" class="btn btn-ghost btn-sm">Réinitialiser</a>
+    {% endif %}
+</form>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% if pagination.totalItemCount == 0 %}
+        <div style="grid-column: 1 / -1;">
+            <div class="card" style="text-align: center; padding: 4rem 2rem; border-radius: 12px;">
+                <svg style="width: 80px; height: 80px; color: #d1d5db; margin: 0 auto 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">Aucun deck disponible</h3>
+                <p style="color: #6b7280; margin: 0;">Les decks seront bientôt publiés</p>
+            </div>
+        </div>
+    {% else %}
+        {% set bgColors = ['linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%)', 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)', 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)', 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'] %}
+        {% for deck in pagination %}
+        {% set bgColor = bgColors[loop.index0 % 6] %}
+        <div class="card" style="border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 28px rgba(0,0,0,0.12)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+            <div style="height: 100px; background: {{ bgColor }}; display: flex; align-items: center; justify-content: center; position: relative;">
+                <svg style="width: 56px; height: 56px; opacity: 0.35;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.9); border-radius: 6px; padding: 0.25rem 0.625rem; font-size: 11px; font-weight: 600; color: #374151;">
+                    {{ deck.cards|length }} cartes
+                </div>
+            </div>
+            
+            <div style="padding: 1.25rem;">
+                <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 0.875rem 0; line-height: 1.4;">{{ deck.title }}</h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 13px; color: #6b7280;">
+                        <svg style="width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        {{ deck.subject ? deck.subject.name : 'N/A' }}
+                    </div>
+                    {% if deck.chapter %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 13px; color: #6b7280;">
+                        <svg style="width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {{ deck.chapter.title }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <a href="{{ path('fo_training_decks_show', {id: deck.id}) }}" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">Réviser</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{# Pagination #}
+{% if pagination.pageCount > 1 %}
+<div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 2rem;">
+    {% if pagination.currentPageNumber > 1 %}
+        <a href="{{ path('fo_training_decks_index', app.request.query.all|merge({page: pagination.currentPageNumber - 1})) }}" class="btn btn-ghost btn-sm">&laquo; Précédent</a>
+    {% endif %}
+    {% for page in 1..pagination.pageCount %}
+        {% if page == pagination.currentPageNumber %}
+            <span class="btn btn-primary btn-sm">{{ page }}</span>
+        {% else %}
+            <a href="{{ path('fo_training_decks_index', app.request.query.all|merge({page: page})) }}" class="btn btn-ghost btn-sm">{{ page }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if pagination.currentPageNumber < pagination.pageCount %}
+        <a href="{{ path('fo_training_decks_index', app.request.query.all|merge({page: pagination.currentPageNumber + 1})) }}" class="btn btn-ghost btn-sm">Suivant &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

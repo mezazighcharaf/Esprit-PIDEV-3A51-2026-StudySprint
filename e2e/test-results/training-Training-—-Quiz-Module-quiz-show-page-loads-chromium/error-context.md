@@ -1,0 +1,168 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "StudySprint" [ref=e5] [cursor=pointer]:
+        - /url: /fo/subjects
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e9]: StudySprint
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Navigation
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - link "Matières" [ref=e15] [cursor=pointer]:
+                - /url: /fo/subjects
+                - img [ref=e16]
+                - generic [ref=e19]: Matières
+            - listitem [ref=e20]:
+              - link "Planning" [ref=e21] [cursor=pointer]:
+                - /url: /fo/planning
+                - img [ref=e22]
+                - generic [ref=e24]: Planning
+            - listitem [ref=e25]:
+              - link "Groupes" [ref=e26] [cursor=pointer]:
+                - /url: /fo/groups
+                - img [ref=e27]
+                - generic [ref=e32]: Groupes
+        - generic [ref=e33]:
+          - generic [ref=e34]: Training
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Quiz" [ref=e37] [cursor=pointer]:
+                - /url: /fo/training/quizzes
+                - img [ref=e38]
+                - generic [ref=e41]: Quiz
+            - listitem [ref=e42]:
+              - link "Flashcards" [ref=e43] [cursor=pointer]:
+                - /url: /fo/training/decks
+                - img [ref=e44]
+                - generic [ref=e47]: Flashcards
+      - generic [ref=e48]:
+        - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+          - /url: /fo/profile
+          - generic [ref=e50]: CH
+          - generic [ref=e51]:
+            - generic [ref=e52]: charaf mezazigh
+            - generic [ref=e53]: STUDENT
+        - link "Déconnexion" [ref=e54] [cursor=pointer]:
+          - /url: /logout
+          - img [ref=e55]
+          - generic [ref=e58]: Déconnexion
+    - main [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Dashboard" [level=1] [ref=e61]
+        - generic [ref=e63]:
+          - img
+          - textbox "Rechercher..." [ref=e64]
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - link "Retour aux quiz" [ref=e68] [cursor=pointer]:
+            - /url: /fo/training/quizzes
+            - img [ref=e69]
+            - text: Retour aux quiz
+          - generic [ref=e72]:
+            - img [ref=e73]
+            - generic [ref=e75]:
+              - heading "Générer un Quiz avec l'IA" [level=1] [ref=e76]
+              - paragraph [ref=e77]: L'IA créera des questions personnalisées en quelques secondes
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: Matière *
+            - combobox [ref=e81]:
+              - option "Sélectionnez une matière" [selected]
+              - option "Mathématiques Avancées"
+              - option "Physique Quantique"
+              - option "Chimie Organique"
+              - option "E2E Matière 1770331155823"
+          - generic [ref=e82]:
+            - generic [ref=e83]: Chapitre (optionnel)
+            - combobox [ref=e84]:
+              - option "Tous les chapitres" [selected]
+              - option "Suites et séries (Mathématiques Avancées)"
+              - option "Intégrales (Mathématiques Avancées)"
+              - option "Équations différentielles (Mathématiques Avancées)"
+              - option "Postulats de la MQ (Physique Quantique)"
+              - option "Opérateurs et observables (Physique Quantique)"
+              - option "Atome d'hydrogène (Physique Quantique)"
+              - option "Alcènes et alcynes (Chimie Organique)"
+              - option "Mécanismes réactionnels (Chimie Organique)"
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e87]: Nombre de questions *
+              - spinbutton [ref=e88]: "5"
+            - generic [ref=e89]:
+              - generic [ref=e90]: Difficulté *
+              - combobox [ref=e91]:
+                - option "Facile"
+                - option "Moyen" [selected]
+                - option "Difficile"
+          - generic [ref=e92]:
+            - generic [ref=e93]: Sujet spécifique (optionnel)
+            - 'textbox "Ex: Les équations du second degré, La Révolution française..." [ref=e94]'
+            - paragraph [ref=e95]: Précisez un thème pour des questions plus ciblées
+          - generic [ref=e97]:
+            - img [ref=e98]
+            - generic [ref=e100]:
+              - strong [ref=e101]: "Temps de génération :"
+              - text: La création du quiz peut prendre entre 30 secondes et 2 minutes selon la complexité. Le quiz sera ensuite accessible dans "Mes Quiz".
+          - generic [ref=e102]:
+            - button "Générer le quiz" [ref=e103] [cursor=pointer]:
+              - img [ref=e104]
+              - generic [ref=e106]: Générer le quiz
+            - link "Annuler" [ref=e107] [cursor=pointer]:
+              - /url: /fo/training/quizzes
+  - region "Symfony Web Debug Toolbar" [ref=e108]:
+    - generic [ref=e110]:
+      - link "200 @ fo_training_quizzes_ai_generate_form" [ref=e112] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=request
+        - generic [ref=e113]:
+          - generic [ref=e114]: "200"
+          - generic [ref=e115]: "@"
+          - generic [ref=e116]: fo_training_quizzes_ai_generate_form
+      - link "264 ms" [ref=e118] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=time
+        - generic [ref=e119]:
+          - generic [ref=e120]: "264"
+          - generic [ref=e121]: ms
+      - link "24.0 MiB" [ref=e123] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=time
+        - generic [ref=e124]:
+          - generic [ref=e125]: "24.0"
+          - generic [ref=e126]: MiB
+      - link "Logger 14" [ref=e128] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=logger
+        - generic [ref=e129]:
+          - img "Logger" [ref=e130]
+          - generic [ref=e134]: "14"
+      - link "Security alice.martin@studysprint.local" [ref=e136] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=security
+        - generic [ref=e137]:
+          - img "Security"
+          - generic [ref=e141]: alice.martin@studysprint.local
+      - link "Twig 14 ms" [ref=e143] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=twig
+        - generic [ref=e144]:
+          - img "Twig" [ref=e145]
+          - generic [ref=e149]: "14"
+          - generic [ref=e150]: ms
+      - link "3 in 0.97 ms" [ref=e152] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=db
+        - generic [ref=e153]:
+          - img [ref=e154]
+          - generic [ref=e159]: "3"
+          - generic [ref=e160]: in 0.97 ms
+      - link "6.4.33" [ref=e162] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/f1599f?panel=config
+        - generic [ref=e163]:
+          - img [ref=e165]
+          - generic [ref=e167]: 6.4.33
+      - generic [ref=e169]:
+        - img [ref=e171]
+        - generic [ref=e174]: Server
+      - button "Close Toolbar" [expanded] [ref=e175] [cursor=pointer]:
+        - img [ref=e176]
+```

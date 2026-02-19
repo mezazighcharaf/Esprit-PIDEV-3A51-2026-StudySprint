@@ -1,0 +1,311 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% set user = data.user %}
+
+{% block title %}Dashboard - StudySprint{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary" data-drawer-open="add-session-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nouvelle session
+</button>
+{% endblock %}
+
+{% block content %}
+{# Hero Section Moderne #}
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; color: white; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);"></div>
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1;">
+        <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                <h1 style="font-size: 28px; font-weight: 700; margin: 0;">Bonjour {{ user.fullName|split(' ')|first }} 👋</h1>
+            </div>
+            <p style="font-size: 14px; opacity: 0.9; margin: 0 0 1.5rem 0;">
+                {% set now = 'now'|date('l d F Y • H:i') %}
+                {{ now|replace({'Monday': 'Lundi', 'Tuesday': 'Mardi', 'Wednesday': 'Mercredi', 'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi', 'Sunday': 'Dimanche', 'January': 'Janvier', 'February': 'Février', 'March': 'Mars', 'April': 'Avril', 'May': 'Mai', 'June': 'Juin', 'July': 'Juillet', 'August': 'Août', 'September': 'Septembre', 'October': 'Octobre', 'November': 'Novembre', 'December': 'Décembre'}) }}
+            </p>
+            
+            <div style="display: flex; gap: 2rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="font-size: 24px;">🔥</div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700;">7</div>
+                        <div style="font-size: 12px; opacity: 0.8;">jours série</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="font-size: 24px;">🎯</div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700;">5/8</div>
+                        <div style="font-size: 12px; opacity: 0.8;">objectifs</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="font-size: 24px;">⚡</div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700;">+15%</div>
+                        <div style="font-size: 12px; opacity: 0.8;">cette semaine</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; backdrop-filter: blur(10px); border: 3px solid rgba(255,255,255,0.3);">
+            {{ user.fullName|slice(0,1)|upper }}
+        </div>
+    </div>
+</div>
+
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="grid grid-4 gap-4 mt-6">
+        {{ include('components/_skeleton.html.twig', { type: 'kpi', count: 4 }) }}
+    </div>
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'calendar',
+        title: 'Aucune activite recente',
+        description: 'Commencez par creer votre premiere session d\'etude pour suivre votre progression.',
+        cta_text: 'Creer une session',
+        cta_url: '#'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+
+    {# Priorité intelligente #}
+    <div class="card" style="border-radius: 12px; overflow: hidden; margin-bottom: 2rem; border-left: 4px solid #f59e0b;">
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <svg style="width: 24px; height: 24px; color: #f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-size: 12px; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em;">Priorité du jour</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #78350f; margin-top: 0.125rem;">{{ data.priority.subject ?? 'Mathématiques' }} - {{ data.priority.chapter ?? 'Algèbre linéaire' }}</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 13px; color: #92400e;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ data.priority.time_remaining ?? '2h 30min' }} restantes</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 13px; color: #92400e;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Échéance : {{ data.priority.deadline ?? 'Demain 18h00' }}</span>
+                </div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.5); border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 1rem;">
+                <div style="height: 100%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); width: {{ data.priority.progress ?? 65 }}%; transition: width 0.3s;"></div>
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-primary" style="flex: 1; background: #f59e0b; border: none;">
+                    <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Continuer
+                </button>
+                <button class="btn btn-ghost" style="background: white; color: #92400e; border: 1px solid rgba(146,64,14,0.2);">Reporter</button>
+            </div>
+        </div>
+    </div>
+
+    {# KPI Cards Gradient Modernes #}
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ data.kpis[0].value ?? '125h' }}</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">Heures d'étude</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7);">↑ +12% vs mois dernier</div>
+        </div>
+        
+        <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ data.kpis[1].value ?? '42' }}</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">Quiz complétés</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7);">↑ +8 cette semaine</div>
+        </div>
+        
+        <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ data.kpis[2].value ?? '87%' }}</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">Taux de réussite</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7);">↑ +3% ce mois</div>
+        </div>
+        
+        <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9); flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <div style="font-size: 28px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ data.kpis[3].value ?? '5' }}</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">Groupes actifs</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.7);">3 nouvelles publications</div>
+        </div>
+    </div>
+
+    {# Sections Modernes #}
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        {# Todo List Moderne #}
+        <div class="card" style="border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6;">
+                <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">À faire aujourd'hui</h3>
+                <button class="btn btn-ghost btn-sm">Voir tout</button>
+            </div>
+            <div style="padding: 1rem 1.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+                    {% for todo in data.todos|default([{'title': 'Réviser Chapitre 3', 'subject': 'Maths', 'due': '14:00', 'completed': false, 'priority': 'high'}, {'title': 'Quiz Physique', 'subject': 'Physique', 'due': '16:30', 'completed': false, 'priority': 'medium'}, {'title': 'Flashcards Chimie', 'subject': 'Chimie', 'due': '18:00', 'completed': true, 'priority': 'low'}]) %}
+                    <div style="display: flex; align-items: start; gap: 0.75rem; padding: 0.875rem; background: {{ todo.completed ? '#f0fdf4' : '#f9fafb' }}; border-radius: 8px; border-left: 3px solid {{ todo.priority == 'high' ? '#ef4444' : (todo.priority == 'medium' ? '#f59e0b' : '#10b981') }}; transition: all 0.2s;" onmouseover="this.style.background='{{ todo.completed ? '#dcfce7' : '#f3f4f6' }}';" onmouseout="this.style.background='{{ todo.completed ? '#f0fdf4' : '#f9fafb' }}';">
+                        <div style="width: 20px; height: 20px; border-radius: 6px; border: 2px solid {{ todo.completed ? '#10b981' : '#d1d5db' }}; background: {{ todo.completed ? '#10b981' : 'white' }}; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 2px;">
+                            {% if todo.completed %}
+                            <svg style="width: 12px; height: 12px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 500; color: {{ todo.completed ? '#6b7280' : '#111827' }}; margin-bottom: 0.375rem; {{ todo.completed ? 'text-decoration: line-through; opacity: 0.7;' : '' }}">{{ todo.title }}</div>
+                            <div style="display: flex; align-items: center; gap: 0.625rem;">
+                                <span class="badge badge-{{ todo.priority == 'high' ? 'danger' : (todo.priority == 'medium' ? 'warning' : 'success') }}" style="font-size: 11px;">{{ todo.subject }}</span>
+                                <span style="font-size: 12px; color: #9ca3af;">{{ todo.due }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# Activité Récente Moderne #}
+        <div class="card" style="border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6;">
+                <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Activité récente</h3>
+                <button class="btn btn-ghost btn-sm">Historique</button>
+            </div>
+            <div style="padding: 1rem 1.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% for activity in data.activities|default([{'type': 'quiz', 'title': 'Quiz Algèbre', 'description': 'Score: 18/20 (90%)', 'time': 'Il y a 2h'}, {'type': 'session', 'title': 'Session d\'étude', 'description': 'Physique - 45min', 'time': 'Il y a 4h'}, {'type': 'group', 'title': 'Groupe Maths', 'description': '3 nouvelles publications', 'time': 'Il y a 5h'}]) %}
+                    <div style="display: flex; align-items: start; gap: 0.875rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ activity.type == 'quiz' ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' : (activity.type == 'session' ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' : 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)') }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            {% if activity.type == 'quiz' %}
+                            <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {% elseif activity.type == 'session' %}
+                            <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {% else %}
+                            <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 14px; font-weight: 500; color: #111827; margin-bottom: 0.25rem;">{{ activity.title }}</div>
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 0.375rem;">{{ activity.description }}</div>
+                            <div style="font-size: 12px; color: #9ca3af;">{{ activity.time }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Ajouter une session #}
+<div class="drawer" id="add-session-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Nouvelle session d'etude</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Titre de la session</label>
+            <input type="text" class="form-input" placeholder="Ex: Revision Mathematiques">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Matiere</label>
+            <select class="form-select">
+                <option value="">Selectionner une matiere</option>
+                <option value="math">Mathematiques</option>
+                <option value="physics">Physique</option>
+                <option value="chemistry">Chimie</option>
+                <option value="english">Anglais</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Chapitre</label>
+            <select class="form-select">
+                <option value="">Selectionner un chapitre</option>
+            </select>
+        </div>
+        <div class="grid grid-2 gap-4">
+            <div class="form-group">
+                <label class="form-label required">Date</label>
+                <input type="date" class="form-input" value="2026-01-24">
+            </div>
+            <div class="form-group">
+                <label class="form-label required">Heure</label>
+                <input type="time" class="form-input" value="14:00">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Duree estimee</label>
+            <select class="form-select">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>1 heure</option>
+                <option value="90">1h30</option>
+                <option value="120">2 heures</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-textarea" placeholder="Objectifs, points a revoir..."></textarea>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Creer la session</button>
+    </div>
+</div>
+{% endblock %}

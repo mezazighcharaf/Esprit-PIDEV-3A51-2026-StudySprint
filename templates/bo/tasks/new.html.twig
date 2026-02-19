@@ -1,0 +1,12 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Nouvelle Tâche - BO{% endblock %}
+{% block breadcrumb %}Tâches / Nouvelle{% endblock %}
+{% block content %}
+<div class="bo-page-header"><h1 class="bo-page-title">Nouvelle Tâche</h1></div>
+<div class="card"><div class="card-body">
+    {{ form_start(form) }}
+    {% for field in form %}{% if field.vars.name != '_token' %}<div class="form-group">{{ form_label(field) }}{{ form_widget(field, {'attr': {'class': field.vars.block_prefixes[1] == 'textarea' ? 'form-textarea' : (field.vars.block_prefixes[1] == 'choice' or field.vars.block_prefixes[1] == 'entity' ? 'form-select' : 'form-input')}}) }}{{ form_errors(field) }}</div>{% endif %}{% endfor %}
+    <div class="flex gap-4 mt-6"><button type="submit" class="btn btn-primary">Créer</button><a href="{{ path('bo_tasks_index') }}" class="btn btn-secondary">Annuler</a></div>
+    {{ form_end(form) }}
+</div></div>
+{% endblock %}

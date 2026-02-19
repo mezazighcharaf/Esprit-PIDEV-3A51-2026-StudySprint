@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Helvetica, Arial, sans-serif; background: #fff; }
+        .certificate { width: 100%; padding: 40px; text-align: center; border: 8px double #667eea; position: relative; }
+        .header-line { height: 4px; background: linear-gradient(90deg, #667eea, #764ba2); margin-bottom: 30px; }
+        .logo { font-size: 28px; font-weight: 700; color: #667eea; margin-bottom: 5px; }
+        .subtitle { font-size: 12px; color: #6b7280; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+        .title { font-size: 32px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+        .awarded-to { font-size: 14px; color: #6b7280; margin-bottom: 15px; }
+        .name { font-size: 36px; font-weight: 700; color: #667eea; margin-bottom: 25px; border-bottom: 2px solid #667eea; display: inline-block; padding-bottom: 5px; }
+        .details { font-size: 14px; color: #374151; margin-bottom: 8px; }
+        .score { font-size: 48px; font-weight: 700; margin: 20px 0; }
+        .score.pass { color: #10b981; }
+        .info-grid { display: flex; justify-content: center; gap: 40px; margin: 25px 0; }
+        .info-item { text-align: center; }
+        .info-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+        .info-value { font-size: 16px; font-weight: 600; color: #1f2937; margin-top: 4px; }
+        .footer { margin-top: 40px; font-size: 11px; color: #9ca3af; }
+        .badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; background: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <div class="header-line"></div>
+        <div class="logo">StudySprint</div>
+        <div class="subtitle">Plateforme d'apprentissage</div>
+
+        <div class="title">Certificat de Reussite</div>
+        <div class="awarded-to">Ce certificat est decerne a</div>
+        <div class="name">{{ user.fullName ?? user.email }}</div>
+
+        <div class="details">Pour avoir reussi le quiz</div>
+        <div class="details" style="font-size: 20px; font-weight: 600; color: #1f2937; margin: 10px 0;">{{ quiz.title }}</div>
+
+        <div class="score pass">{{ score }}%</div>
+        <div class="badge">Quiz Reussi</div>
+
+        <table style="width: 80%; margin: 25px auto; border-collapse: collapse;">
+            <tr>
+                <td style="text-align: center; padding: 10px;">
+                    <div class="info-label">Matiere</div>
+                    <div class="info-value">{{ quiz.subject ? quiz.subject.name : 'N/A' }}</div>
+                </td>
+                <td style="text-align: center; padding: 10px;">
+                    <div class="info-label">Difficulte</div>
+                    <div class="info-value">{{ quiz.difficulty }}</div>
+                </td>
+                <td style="text-align: center; padding: 10px;">
+                    <div class="info-label">Questions</div>
+                    <div class="info-value">{{ correctCount }}/{{ totalQuestions }}</div>
+                </td>
+                <td style="text-align: center; padding: 10px;">
+                    <div class="info-label">Date</div>
+                    <div class="info-value">{{ date|date('d/m/Y') }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer">
+            Genere automatiquement par StudySprint le {{ "now"|date('d/m/Y a H:i') }}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Nouveau Plan - StudySprint{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_planning_index') }}" style="color: #6366f1; text-decoration: none; font-size: 14px;">
+        ← Retour au planning
+    </a>
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 28px; font-weight: 700; color: #1f2937; margin: 0 0 0.5rem 0;">Nouveau Plan de Révision</h1>
+    <p style="color: #6b7280;">Créez un plan pour organiser vos révisions</p>
+</div>
+
+<div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; max-width: 600px;">
+    {{ form_start(form) }}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                {{ form_label(form.title, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.title, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <div>
+                {{ form_label(form.subject, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.subject, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.subject) }}
+            </div>
+
+            <div>
+                {{ form_label(form.chapter, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.chapter, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.chapter) }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    {{ form_label(form.startDate, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                    {{ form_widget(form.startDate, {'attr': {'style': 'width: 100%;'}}) }}
+                    {{ form_errors(form.startDate) }}
+                </div>
+                <div>
+                    {{ form_label(form.endDate, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                    {{ form_widget(form.endDate, {'attr': {'style': 'width: 100%;'}}) }}
+                    {{ form_errors(form.endDate) }}
+                </div>
+            </div>
+
+            <div>
+                {{ form_label(form.status, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.status, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.status) }}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                <a href="{{ path('fo_planning_index') }}" class="btn btn-ghost">Annuler</a>
+                <button type="submit" class="btn btn-primary">Créer le plan</button>
+            </div>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

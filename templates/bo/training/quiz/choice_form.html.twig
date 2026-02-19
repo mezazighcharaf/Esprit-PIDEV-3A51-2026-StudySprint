@@ -1,0 +1,44 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}{% if is_new %}Nouveau Choix{% else %}Modifier Choix{% endif %} - Administration{% endblock %}
+{% block breadcrumb %}Training > Quiz > Question > {% if is_new %}Nouveau Choix{% else %}Modifier{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if is_new %}Ajouter un Choix de Reponse{% else %}Modifier le Choix{% endif %}</h1>
+    <p class="text-muted">Question: {{ question.questionText|slice(0, 80) }}{% if question.questionText|length > 80 %}...{% endif %}</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+            <div class="form-group">
+                {{ form_label(form.label) }}
+                {{ form_widget(form.label, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.label) }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <div class="form-check">
+                        {{ form_widget(form.isCorrect, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.isCorrect, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                    {{ form_errors(form.isCorrect) }}
+                </div>
+
+                <div class="form-group col-md-6">
+                    {{ form_label(form.position) }}
+                    {{ form_widget(form.position, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.position) }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('admin_training_quiz_show', {id: question.quiz.id}) }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">{% if is_new %}Ajouter{% else %}Enregistrer{% endif %}</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

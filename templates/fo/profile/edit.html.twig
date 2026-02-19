@@ -1,0 +1,69 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Modifier mon profil - StudySprint{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_profile_show') }}" style="color: #6b7280; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 0.25rem;">
+        <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour au profil
+    </a>
+</div>
+
+<h1 style="font-size: 1.875rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem;">Modifier mon profil</h1>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                {{ form_label(form.fullName) }}
+                {{ form_widget(form.fullName) }}
+                {{ form_errors(form.fullName) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.avatarFile) }}
+                {{ form_widget(form.avatarFile) }}
+                {{ form_errors(form.avatarFile) }}
+                <div style="font-size: 12px; color: #6b7280; margin-top: 0.25rem;">JPG, PNG ou WEBP (max 3 Mo)</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div class="form-group">
+                {{ form_label(form.level) }}
+                {{ form_widget(form.level) }}
+                {{ form_errors(form.level) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.specialty) }}
+                {{ form_widget(form.specialty) }}
+                {{ form_errors(form.specialty) }}
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+            {{ form_label(form.bio) }}
+            {{ form_widget(form.bio) }}
+            {{ form_errors(form.bio) }}
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+            <button type="submit" class="btn btn-primary">
+                <svg style="width: 16px; height: 16px; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Enregistrer
+            </button>
+            <a href="{{ path('fo_profile_show') }}" class="btn btn-ghost">Annuler</a>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

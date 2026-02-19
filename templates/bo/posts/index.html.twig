@@ -1,0 +1,48 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Publications - BO{% endblock %}
+{% block breadcrumb %}Publications{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Publications</h1>
+    <div class="bo-page-actions"><a href="{{ path('bo_posts_new') }}" class="btn btn-primary">+ Nouvelle</a></div>
+</div>
+<div class="card mb-4"><div class="card-body">
+    <form method="get" class="flex gap-4">
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher..." class="form-input" style="max-width:300px;">
+        <button type="submit" class="btn btn-secondary">Rechercher</button>
+    </form>
+</div></div>
+{% for message in app.flashes('success') %}<div class="alert alert-success mb-4">{{ message }}</div>{% endfor %}
+<div class="card"><table class="bo-table">
+    <thead><tr>
+        <th><a href="?q={{ q }}&sort=id&dir={{ sort == 'id' and dir == 'ASC' ? 'desc' : 'asc' }}">ID</a></th>
+        <th><a href="?q={{ q }}&sort=title&dir={{ sort == 'title' and dir == 'ASC' ? 'desc' : 'asc' }}">Titre</a></th>
+        <th>Groupe</th>
+        <th>Auteur</th>
+        <th><a href="?q={{ q }}&sort=postType&dir={{ sort == 'postType' and dir == 'ASC' ? 'desc' : 'asc' }}">Type</a></th>
+        <th><a href="?q={{ q }}&sort=createdAt&dir={{ sort == 'createdAt' and dir == 'ASC' ? 'desc' : 'asc' }}">Créé le</a></th>
+        <th>Actions</th>
+    </tr></thead>
+    <tbody>
+        {% for item in items %}<tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.title ?? '(sans titre)' }}</td>
+            <td>{{ item.group.name }}</td>
+            <td>{{ item.author.email }}</td>
+            <td><span class="badge badge-{{ item.postType == 'POST' ? 'primary' : 'secondary' }}">{{ item.postType }}</span></td>
+            <td>{{ item.createdAt|date('d/m/Y') }}</td>
+            <td>
+                <a href="{{ path('bo_posts_show', {id: item.id}) }}" class="btn btn-ghost btn-sm">Voir</a>
+                <a href="{{ path('bo_posts_edit', {id: item.id}) }}" class="btn btn-ghost btn-sm">Modifier</a>
+                <form method="post" action="{{ path('bo_posts_delete', {id: item.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
+                    <button type="submit" class="btn btn-ghost btn-sm text-error">Suppr.</button>
+                </form>
+            </td>
+        </tr>{% else %}<tr><td colspan="7" class="text-center text-muted">Aucune publication</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% include 'bo/_pagination.html.twig' with {page: page, totalPages: totalPages, total: total, q: q, sort: sort, dir: dir} %}
+</div>
+{% endblock %}

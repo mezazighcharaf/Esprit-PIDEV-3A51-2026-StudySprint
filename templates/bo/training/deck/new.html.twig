@@ -1,0 +1,28 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Nouveau Deck - Administration{% endblock %}
+{% block breadcrumb %}Training > Decks > Nouveau{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Creer un nouveau Deck</h1>
+    <p class="text-muted">Definissez le titre du deck de flashcards</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+            <div class="form-group">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('bo_decks_index') }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Creer le Deck</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

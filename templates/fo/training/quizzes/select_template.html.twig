@@ -1,0 +1,51 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Choisir un template - Quiz{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('fo_training_quizzes_manage_my_quizzes') }}" style="color: #6b7280; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 0.25rem;">
+        <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour à mes quiz
+    </a>
+</div>
+
+<div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 2rem; font-weight: 700; color: #1f2937; margin-bottom: 0.75rem;">Choisissez un template de quiz</h1>
+    <p style="color: #6b7280; font-size: 1.125rem;">Sélectionnez le format qui correspond le mieux à votre contenu</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto;">
+    {% for key, template in templates %}
+    <a href="{{ path('fo_training_quizzes_manage_create', {templateKey: key}) }}" class="card" style="text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.1)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">{{ template.icon }}</div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem;">{{ template.name }}</h3>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 1rem;">{{ template.description }}</p>
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #f3f4f6; border-radius: 0.5rem; font-size: 14px; color: #374151;">
+                <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <strong>{{ template.questionCount }}</strong> questions
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<div class="card" style="margin-top: 3rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div class="card-body" style="text-align: center;">
+        <svg style="width: 48px; height: 48px; margin: 0 auto 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Conseils pour créer un bon quiz</h3>
+        <p style="opacity: 0.9; font-size: 14px;">
+            • Questions claires et précises<br>
+            • Réponses non ambiguës<br>
+            • Difficulté progressive<br>
+            • Variez les types de questions
+        </p>
+    </div>
+</div>
+{% endblock %}

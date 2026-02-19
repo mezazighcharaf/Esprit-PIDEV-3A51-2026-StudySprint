@@ -1,0 +1,132 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Resultat - {{ attempt.quiz.title }}{% endblock %}
+{% block page_title %}Resultat du Quiz{% endblock %}
+
+{% block content %}
+<div class="result-container">
+    <div class="result-header card">
+        <div class="card-body text-center">
+            <h2>{{ attempt.quiz.title }}</h2>
+
+            <div class="score-display {% if breakdown.percentage >= 70 %}score-success{% elseif breakdown.percentage >= 50 %}score-warning{% else %}score-danger{% endif %}">
+                <span class="score-value">{{ breakdown.earned_points }}/{{ breakdown.total_points }}</span>
+                <span class="score-percentage">{{ breakdown.percentage }}%</span>
+            </div>
+
+            <div class="score-details">
+                <div class="detail-item">
+                    <span class="detail-label">Bonnes reponses</span>
+                    <span class="detail-value text-success">{{ breakdown.correct_answers }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Mauvaises reponses</span>
+                    <span class="detail-value text-danger">{{ breakdown.wrong_answers }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Sans reponse</span>
+                    <span class="detail-value text-muted">{{ breakdown.unanswered }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Duree</span>
+                    <span class="detail-value">{{ (attempt.duration / 60)|round }}min</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-breakdown">
+        <h3>Detail des reponses</h3>
+
+        {% for item in breakdown.by_question %}
+        <div class="answer-item card {% if item.is_correct %}correct{% elseif item.is_correct is null %}unanswered{% else %}wrong{% endif %}">
+            <div class="card-body">
+                <div class="answer-header">
+                    <span class="answer-status">
+                        {% if item.is_correct %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" class="text-success">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        {% elseif item.is_correct is null %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" class="text-muted">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" class="text-danger">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        {% endif %}
+                    </span>
+                    <span class="answer-points">{{ item.earned_points }}/{{ item.points }} pts</span>
+                </div>
+                <p class="answer-question">{{ item.question_text }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="result-actions">
+        <a href="{{ path('training_quiz_index') }}" class="btn btn-secondary">Retour aux quiz</a>
+        <a href="{{ path('training_quiz_history') }}" class="btn btn-primary">Mon historique</a>
+    </div>
+</div>
+
+<style>
+.result-container { max-width: 700px; margin: 0 auto; }
+.result-header { margin-bottom: 2rem; }
+
+.score-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+}
+.score-display.score-success { background: rgba(34, 197, 94, 0.1); }
+.score-display.score-warning { background: rgba(234, 179, 8, 0.1); }
+.score-display.score-danger { background: rgba(239, 68, 68, 0.1); }
+.score-value { font-size: 3rem; font-weight: 700; }
+.score-percentage { font-size: 1.5rem; color: var(--text-secondary); }
+
+.score-details {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.detail-item { text-align: center; }
+.detail-label { display: block; font-size: 0.875rem; color: var(--text-secondary); }
+.detail-value { font-size: 1.25rem; font-weight: 600; }
+
+.result-breakdown h3 { margin-bottom: 1rem; }
+.answer-item {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+.answer-item.correct { border-left: 3px solid var(--success); }
+.answer-item.wrong { border-left: 3px solid var(--danger); }
+.answer-item.unanswered { border-left: 3px solid var(--text-muted); }
+.answer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.answer-question { margin: 0; }
+
+.result-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-muted { color: var(--text-secondary); }
+</style>
+{% endblock %}

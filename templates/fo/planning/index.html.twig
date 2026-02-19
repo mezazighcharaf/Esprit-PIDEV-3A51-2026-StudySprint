@@ -1,0 +1,325 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Planning - StudySprint{% endblock %}
+
+{% block content %}
+{# Stats Cards Gradient #}
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+        </div>
+        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ sessionsCount }}</div>
+        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Sessions ce mois</div>
+    </div>
+    
+    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ (totalMinutes / 60)|number_format(1) }}h</div>
+        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Travail planifié</div>
+    </div>
+    
+    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ completionRate }}%</div>
+        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Taux complétion</div>
+    </div>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message }}
+    </div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message }}
+    </div>
+{% endfor %}
+
+{# FullCalendar Interactif #}
+<div class="card" style="border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Calendrier interactif</h2>
+    <div id="fullCalendar" style="min-height: 500px;"></div>
+</div>
+
+{# Layout 2 colonnes: Calendrier + Sidebar #}
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 1.5rem;">
+    
+    {# CALENDRIER #}
+    <div class="card" style="border-radius: 12px; overflow: hidden;">
+        {# Header calendrier moderne #}
+        <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-size: 20px; font-weight: 700; color: #111827; margin: 0 0 0.25rem 0;">
+                        {% set monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'] %}
+                        {{ monthNames[month - 1] }} {{ year }}
+                    </h2>
+                    <p style="font-size: 13px; color: #6b7280; margin: 0;">Gérez votre planning de révisions</p>
+                </div>
+                <div style="display: flex; gap: 0.625rem; align-items: center;">
+                    {% set prevMonth = month == 1 ? 12 : month - 1 %}
+                    {% set prevYear = month == 1 ? year - 1 : year %}
+                    {% set nextMonth = month == 12 ? 1 : month + 1 %}
+                    {% set nextYear = month == 12 ? year + 1 : year %}
+                    
+                    <a href="{{ path('fo_planning_index', {year: prevYear, month: prevMonth}) }}" class="btn btn-ghost btn-sm" style="width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </a>
+                    <a href="{{ path('fo_planning_index') }}" class="btn btn-ghost btn-sm">Aujourd'hui</a>
+                    <a href="{{ path('fo_planning_index', {year: nextYear, month: nextMonth}) }}" class="btn btn-ghost btn-sm" style="width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <a href="{{ path('fo_planning_session_new') }}" class="btn btn-primary btn-sm" style="margin-left: 0.5rem;">
+                        <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Ajouter
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Grille calendrier #}
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr);">
+            {# En-têtes jours #}
+            {% for day in ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+            <div style="padding: 0.75rem; text-align: center; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">
+                {{ day }}
+            </div>
+            {% endfor %}
+
+            {# Jours du mois #}
+            {% set startOfMonth = date(year ~ '-' ~ month ~ '-01') %}
+            {% set firstDayOfWeek = startOfMonth|date('N') %}
+            {% set daysInMonth = startOfMonth|date('t') %}
+            {% set today = 'now'|date('Y-m-d') %}
+            
+            {# Jours vides avant le début du mois #}
+            {% for i in 1..(firstDayOfWeek - 1) %}
+            <div style="aspect-ratio: 1; padding: 0.5rem; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; background: #f9fafb;"></div>
+            {% endfor %}
+
+            {# Jours du mois #}
+            {% for day in 1..daysInMonth %}
+                {% set currentDate = date(year ~ '-' ~ month ~ '-' ~ (day < 10 ? '0' ~ day : day)) %}
+                {% set dateStr = currentDate|date('Y-m-d') %}
+                {% set isToday = dateStr == today %}
+                {% set dayTasks = tasks|filter(t => t.startAt|date('Y-m-d') == dateStr) %}
+                
+                <div style="aspect-ratio: 1; padding: 0.5rem; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; position: relative; {% if isToday %}background: #eff6ff;{% endif %}">
+                    <div style="font-size: 14px; font-weight: {% if isToday %}600{% else %}400{% endif %}; color: {% if isToday %}#2563eb{% else %}#1f2937{% endif %}; margin-bottom: 0.25rem;">
+                        {{ day }}
+                    </div>
+                    {% if dayTasks|length > 0 %}
+                        {% for task in dayTasks|slice(0, 2) %}
+                            <a href="{{ path('fo_planning_show', {id: task.plan.id}) }}" style="display: block; font-size: 10px; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; background: {% if task.status == 'DONE' %}#d1fae5{% else %}#dbeafe{% endif %}; color: {% if task.status == 'DONE' %}#059669{% else %}#1e40af{% endif %}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; cursor: pointer; transition: opacity 0.15s;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+                                {{ task.startAt|date('H:i') }} {{ task.title|slice(0, 15) }}
+                            </a>
+                        {% endfor %}
+                        {% if dayTasks|length > 2 %}
+                            <div style="font-size: 10px; color: #6b7280;">+{{ dayTasks|length - 2 }}</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# SIDEBAR Sessions à venir #}
+    <div>
+        <div class="card" style="border-radius: 12px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
+                <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Sessions à venir</h3>
+            </div>
+            <div style="padding: 1rem;">
+                {% if upcomingTasks is empty %}
+                    <div style="text-align: center; padding: 2rem 1rem;">
+                        <svg style="width: 64px; height: 64px; color: #d1d5db; margin: 0 auto 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <p style="color: #6b7280; font-size: 14px; margin: 0;">Aucune session planifiée</p>
+                    </div>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+                        {% for task in upcomingTasks %}
+                        <a href="{{ path('fo_planning_show', {id: task.plan.id}) }}" style="display: block; padding: 1rem; border-radius: 10px; background: {{ task.status == 'DONE' ? '#f0fdf4' : '#f9fafb' }}; border-left: 4px solid {{ task.taskType == 'REVISION' ? '#667eea' : (task.taskType == 'QUIZ' ? '#f59e0b' : '#6b7280') }}; transition: all 0.2s; text-decoration: none; color: inherit;" onmouseover="this.style.background='{{ task.status == 'DONE' ? '#dcfce7' : '#f3f4f6' }}';" onmouseout="this.style.background='{{ task.status == 'DONE' ? '#f0fdf4' : '#f9fafb' }}';">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.625rem;">
+                                <strong style="font-size: 14px; color: #111827; flex: 1;">{{ task.title }}</strong>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.625rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 12px; color: #6b7280;">
+                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    {{ task.startAt|date('d/m/Y à H:i') }}
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 12px; color: #6b7280;">
+                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    {% set durationMin = ((task.endAt.timestamp - task.startAt.timestamp) / 60)|round %}
+                                    {% if durationMin >= 60 %}{{ (durationMin / 60)|round(0, 'floor') }}h{% if durationMin % 60 > 0 %}{{ '%02d'|format(durationMin % 60) }}{% endif %}{% else %}{{ durationMin }} min{% endif %}
+                                </div>
+                            </div>
+                            <span class="badge badge-{% if task.taskType == 'REVISION' %}primary{% elseif task.taskType == 'QUIZ' %}warning{% else %}secondary{% endif %}" style="font-size: 11px;">
+                                {{ task.taskType }}
+                            </span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# MES PLANS + IA #}
+        <div class="card" style="border-radius: 12px; overflow: hidden; margin-top: 1rem;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.625rem;">
+                    <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <h3 style="font-size: 16px; font-weight: 600; color: white; margin: 0;">Optimiser avec l'IA</h3>
+                </div>
+            </div>
+            <div style="padding: 1rem;">
+                {% if userPlans is empty %}
+                    <div style="text-align: center; padding: 1.5rem 1rem;">
+                        <p style="color: #6b7280; font-size: 13px; margin: 0 0 1rem 0;">Créez un plan de révision pour utiliser l'IA</p>
+                        <a href="{{ path('fo_planning_generate') }}" class="btn btn-primary btn-sm">Créer un plan</a>
+                    </div>
+                {% else %}
+                    <p style="font-size: 12px; color: #6b7280; margin: 0 0 0.75rem 0;">Cliquez sur le bouton éclair pour que l'IA optimise un plan :</p>
+                    <div id="aiPlansList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for plan in userPlans %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem;" id="plan-row-{{ plan.id }}">
+                            <a href="{{ path('fo_planning_show', {id: plan.id}) }}" style="flex: 1; padding: 0.75rem; border-radius: 8px; background: #f9fafb; border: 1px solid #e5e7eb; text-decoration: none; color: #111827; font-size: 13px; font-weight: 500; transition: all 0.15s;" onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
+                                {{ plan.title|slice(0, 30) }}
+                                <span style="display: block; font-size: 11px; color: #6b7280; font-weight: 400; margin-top: 2px;">
+                                    {{ plan.startDate|date('d/m') }} → {{ plan.endDate|date('d/m') }}
+                                </span>
+                            </a>
+                            <button type="button" class="btn btn-sm ai-suggest-btn" data-plan-id="{{ plan.id }}" data-token="{{ csrf_token('ai_suggest_' ~ plan.id) }}" style="flex-shrink: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Optimiser avec l'IA">
+                                <svg class="ai-icon" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <div class="ai-spinner" style="display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Loading banner -->
+                    <div id="aiLoadingBanner" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; text-align: center;">
+                        <p style="font-size: 12px; color: #1e40af; margin: 0; font-weight: 500;" id="aiLoadingText">Analyse IA en cours... 0s</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+document.querySelectorAll('.ai-suggest-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var planId = btn.dataset.planId;
+        var token = btn.dataset.token;
+        var icon = btn.querySelector('.ai-icon');
+        var spinner = btn.querySelector('.ai-spinner');
+        var banner = document.getElementById('aiLoadingBanner');
+        var bannerText = document.getElementById('aiLoadingText');
+
+        document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
+            b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'wait';
+        });
+        if (icon) icon.style.display = 'none';
+        if (spinner) spinner.style.display = 'block';
+        if (banner) banner.style.display = 'block';
+
+        var seconds = 0;
+        var tmr = setInterval(function() {
+            seconds++;
+            if (bannerText) bannerText.textContent = 'Analyse IA en cours... ' + seconds + 's — veuillez patienter';
+        }, 1000);
+
+        fetch('/fo/planning/' + planId + '/ai-suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ _token: token })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            clearInterval(tmr);
+            if (data.success && data.confirm_url) {
+                window.location.href = data.confirm_url;
+            } else {
+                if (banner) banner.style.display = 'none';
+                if (bannerText) bannerText.textContent = data.error || 'Erreur';
+                document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
+                    b.disabled = false; b.style.opacity = '1'; b.style.cursor = '';
+                });
+                if (icon) icon.style.display = ''; if (spinner) spinner.style.display = 'none';
+            }
+        })
+        .catch(function() {
+            clearInterval(tmr);
+            if (banner) { banner.style.display = 'block'; bannerText.textContent = 'Erreur réseau'; bannerText.style.color = '#991b1b'; }
+            document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
+                b.disabled = false; b.style.opacity = '1'; b.style.cursor = '';
+            });
+            if (icon) icon.style.display = ''; if (spinner) spinner.style.display = 'none';
+        });
+    });
+});
+</script>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calEl = document.getElementById('fullCalendar');
+    if (!calEl) return;
+    var calendar = new FullCalendar.Calendar(calEl, {
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        buttonText: { today: "Aujourd'hui", month: 'Mois', week: 'Semaine', list: 'Liste' },
+        events: '{{ path("fo_planning_events_json") }}',
+        editable: false,
+        eventDisplay: 'block',
+        height: 'auto',
+        eventClick: function(info) {
+            var props = info.event.extendedProps;
+            if (props.planId) {
+                window.location.href = '{{ path("fo_planning_index") }}/' + props.planId;
+            }
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

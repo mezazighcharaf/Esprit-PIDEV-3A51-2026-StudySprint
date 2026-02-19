@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(findstr:*)",
+      "Bash(php bin/console doctrine:database:create:*)",
+      "Bash(php bin/console:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(timeout 5 php:*)",
+      "Bash(composer require:*)",
+      "Bash(php bin/phpunit:*)",
+      "Bash(composer show:*)",
+      "Bash(vendor\\\\bin\\\\phpunit:*)",
+      "Bash(php vendor/bin/phpunit:*)",
+      "Bash(php:*)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\openssl.exe\" genrsa -out config/jwt/private.pem 2048)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\openssl.exe\" rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem)",
+      "Bash(copy:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(pip install:*)",
+      "Bash(python -c:*)",
+      "Bash(wc:*)"
+    ]
+  }
+}

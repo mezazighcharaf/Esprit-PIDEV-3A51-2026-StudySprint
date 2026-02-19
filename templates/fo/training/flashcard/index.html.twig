@@ -1,0 +1,82 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Flashcards{% endblock %}
+{% block page_title %}Decks de Flashcards{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Choisissez un deck</h2>
+    <p class="text-muted">Revisez vos connaissances avec les flashcards</p>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('warning') %}
+    <div class="alert alert-warning">{{ message }}</div>
+{% endfor %}
+
+{% if decks is empty %}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'cards',
+        title: 'Aucun deck disponible',
+        description: 'Les decks de flashcards seront bientot disponibles.'
+    }) }}
+{% else %}
+<div class="deck-grid">
+    {% for deck in decks %}
+    <div class="deck-card card">
+        <div class="card-body">
+            <h3 class="deck-title">{{ deck.title }}</h3>
+            <div class="deck-meta">
+                <span class="deck-count">{{ deck.flashcards|length }} cartes</span>
+            </div>
+            <div class="deck-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+                <span class="progress-text">A reviser</span>
+            </div>
+            <a href="{{ path('training_deck_review', {id: deck.id}) }}" class="btn btn-primary btn-block">Commencer la revision</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+.deck-card {
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.deck-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.deck-title { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.deck-meta {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+.deck-progress { margin-bottom: 1rem; }
+.progress-bar {
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+}
+.progress-text { font-size: 0.75rem; color: var(--text-secondary); }
+.btn-block { width: 100%; }
+</style>
+{% endblock %}

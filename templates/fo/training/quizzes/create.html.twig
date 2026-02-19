@@ -1,0 +1,152 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Créer un Quiz - {{ template.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('fo_training_quizzes_manage_new') }}" style="color: #6b7280; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 0.25rem;">
+        <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Changer de template
+    </a>
+</div>
+
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <div style="font-size: 3rem;">{{ template.icon }}</div>
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700; color: #1f2937;">{{ template.name }}</h1>
+        <p style="color: #6b7280;">{{ template.description }}</p>
+    </div>
+</div>
+
+<form method="post">
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+            <h2 style="font-size: 1.25rem; font-weight: 600;">Informations du Quiz</h2>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label class="form-label">Titre du quiz <span style="color: #ef4444;">*</span></label>
+                    <input type="text" name="title" class="form-input" required placeholder="Ex: Quiz Mathématiques - Chapitre 2">
+                </div>
+                
+                <div>
+                    <label class="form-label">Difficulté</label>
+                    <select name="difficulty" class="form-select">
+                        <option value="EASY">Facile</option>
+                        <option value="MEDIUM" selected>Moyen</option>
+                        <option value="HARD">Difficile</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label class="form-label">Matière <span style="color: #ef4444;">*</span></label>
+                    <select name="subject_id" class="form-select" required id="subject-select">
+                        <option value="">-- Choisir une matière --</option>
+                        {% for subject in subjects %}
+                            <option value="{{ subject.id }}" data-chapters="{{ subject.chapters|json_encode }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="form-label">Chapitre (optionnel)</label>
+                    <select name="chapter_id" class="form-select" id="chapter-select" disabled>
+                        <option value="">-- Choisir un chapitre --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+            <h2 style="font-size: 1.25rem; font-weight: 600;">Questions ({{ emptyQuestions|length }})</h2>
+        </div>
+        <div class="card-body" id="questions-container">
+            {% for question in emptyQuestions %}
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="card-body">
+                    <strong style="display: block; color: #374151; margin-bottom: 0.75rem;">Question {{ question.id }}</strong>
+                    
+                    <input type="hidden" name="questions[{{ loop.index0 }}][type]" value="{{ question.type }}">
+                    
+                    <div style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Question <span style="color: #ef4444;">*</span></label>
+                        <textarea name="questions[{{ loop.index0 }}][question]" class="form-textarea" rows="2" required placeholder="Entrez votre question..."></textarea>
+                    </div>
+                    
+                    {% if question.type == 'multiple_choice' %}
+                    <div style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Options de réponse</label>
+                        {% for i in 0..3 %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="radio" name="questions[{{ loop.parent.loop.index0 }}][correctIndex]" value="{{ i }}" {{ i == 0 ? 'checked' : '' }} style="flex-shrink: 0;">
+                            <input type="text" name="questions[{{ loop.parent.loop.index0 }}][options][]" class="form-input" placeholder="Option {{ i + 1 }}" required>
+                        </div>
+                        {% endfor %}
+                        <small style="color: #6b7280; font-size: 12px;">Cochez la bonne réponse</small>
+                    </div>
+                    
+                    {% elseif question.type == 'true_false' %}
+                    <div style="margin-bottom: 0.75rem;">
+                        <label class="form-label">Réponse correcte</label>
+                        <div style="display: flex; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="questions[{{ loop.index0 }}][correctIndex]" value="0" checked>
+                                <span>Vrai</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="radio" name="questions[{{ loop.index0 }}][correctIndex]" value="1">
+                                <span>Faux</span>
+                            </label>
+                        </div>
+                        <input type="hidden" name="questions[{{ loop.index0 }}][options][]" value="Vrai">
+                        <input type="hidden" name="questions[{{ loop.index0 }}][options][]" value="Faux">
+                    </div>
+                    
+                    {% elseif question.type in ['short_answer', 'fill_in_blank'] %}
+                    <div>
+                        <label class="form-label">Réponse correcte <span style="color: #ef4444;">*</span></label>
+                        <input type="text" name="questions[{{ loop.index0 }}][correctAnswer]" class="form-input" required placeholder="Réponse attendue">
+                        <small style="color: #6b7280; font-size: 12px;">La réponse sera comparée exactement (sensible à la casse)</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+        <button type="submit" class="btn btn-primary">
+            <svg style="width: 16px; height: 16px; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Créer le quiz
+        </button>
+        <a href="{{ path('fo_training_quizzes_manage_my_quizzes') }}" class="btn btn-ghost">Annuler</a>
+    </div>
+</form>
+
+<script>
+document.getElementById('subject-select').addEventListener('change', function() {
+    const chapterSelect = document.getElementById('chapter-select');
+    const selectedOption = this.options[this.selectedIndex];
+    const chapters = selectedOption.dataset.chapters ? JSON.parse(selectedOption.dataset.chapters) : [];
+    
+    chapterSelect.innerHTML = '<option value="">-- Choisir un chapitre --</option>';
+    chapters.forEach(chapter => {
+        const option = document.createElement('option');
+        option.value = chapter.id;
+        option.textContent = chapter.title;
+        chapterSelect.appendChild(option);
+    });
+    
+    chapterSelect.disabled = chapters.length === 0;
+});
+</script>
+{% endblock %}

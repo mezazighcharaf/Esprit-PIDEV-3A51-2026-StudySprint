@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - heading "StudySprint" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Connectez-vous pour continuer
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Email
+        - textbox "Email" [active] [ref=e9]:
+          - /placeholder: votre@email.com
+          - text: admin@studysprint.com
+      - generic [ref=e10]:
+        - generic [ref=e11]: Mot de passe
+        - textbox "Mot de passe" [ref=e12]:
+          - /placeholder: ••••••••
+      - button "Se connecter" [ref=e13] [cursor=pointer]
+    - paragraph [ref=e14]:
+      - text: Pas encore de compte ?
+      - link "S'inscrire" [ref=e15] [cursor=pointer]:
+        - /url: /register
+  - region "Symfony Web Debug Toolbar":
+    - generic [ref=e16]:
+      - link "200 Redirect @ app_login" [ref=e18] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=request
+        - generic [ref=e19]:
+          - generic [ref=e20]: "200"
+          - img "Redirect" [ref=e22]
+          - generic [ref=e25]: "@"
+          - generic [ref=e26]: app_login
+      - link "215 ms" [ref=e28] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=time
+        - generic [ref=e29]:
+          - generic [ref=e30]: "215"
+          - generic [ref=e31]: ms
+      - link "22.0 MiB" [ref=e33] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=time
+        - generic [ref=e34]:
+          - generic [ref=e35]: "22.0"
+          - generic [ref=e36]: MiB
+      - link "Logger 13" [ref=e38] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=logger
+        - generic [ref=e39]:
+          - img "Logger" [ref=e40]
+          - generic [ref=e44]: "13"
+      - link "Security n/a" [ref=e46] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=security
+        - generic [ref=e47]:
+          - img "Security" [ref=e48]
+          - generic [ref=e52]: n/a
+      - link "Twig 11 ms" [ref=e54] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=twig
+        - generic [ref=e55]:
+          - img "Twig" [ref=e56]
+          - generic [ref=e60]: "11"
+          - generic [ref=e61]: ms
+      - link "6.4.33" [ref=e63] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/6ea63f?panel=config
+        - generic [ref=e64]:
+          - img [ref=e66]
+          - generic [ref=e68]: 6.4.33
+      - generic [ref=e70]:
+        - img [ref=e72]
+        - generic [ref=e75]: Server
+      - button "Close Toolbar" [expanded] [ref=e76] [cursor=pointer]:
+        - img [ref=e77]
+```

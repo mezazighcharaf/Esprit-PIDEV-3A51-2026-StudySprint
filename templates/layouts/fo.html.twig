@@ -1,0 +1,150 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR FO ─── #}
+    <aside class="app-sidebar fo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('fo_subjects_index') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Navigation</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('fo_subjects_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_subjects_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                            <span>Matières</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_planning_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_planning_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Planning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_groups_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_groups_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Groupes</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Training</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('fo_training_quizzes_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_training_quizzes_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <span>Quiz</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_training_decks_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_training_decks_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                                <polyline points="17 2 12 7 7 2"/>
+                            </svg>
+                            <span>Flashcards</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_leaderboard') }}" class="sidebar-link {{ app.request.get('_route') == 'fo_leaderboard' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 15l-2 5 6-3H8l6 3-2-5z"/>
+                                <circle cx="12" cy="8" r="7"/>
+                            </svg>
+                            <span>Classement</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('fo_profile_show') }}" class="fo-user-card" style="text-decoration: none;">
+                <div class="fo-user-avatar" style="overflow: hidden; padding: 0;">
+                    {% if app.user and app.user.profile and app.user.profile.avatarUrl %}
+                        <img src="{{ app.user.profile.avatarUrl }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    {% else %}
+                        {{ app.user.fullName[:2]|upper|default('ET') }}
+                    {% endif %}
+                </div>
+                <div class="fo-user-info">
+                    <div class="fo-user-name">{{ app.user.fullName|default('Etudiant Test') }}</div>
+                    <div class="fo-user-role">{{ app.user.userType|default('Etudiant') }}</div>
+                </div>
+            </a>
+            <a href="{{ path('app_logout') }}" class="sidebar-link" style="margin-top: 1rem; font-size: 0.875rem; color: var(--color-gray-400);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Déconnexion</span>
+            </a>
+        </div>
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                {% block topbar_actions %}{% endblock %}
+                <a href="{{ path('fo_notifications_index') }}" style="position: relative; display: flex; align-items: center; padding: 0.5rem; color: #6b7280; text-decoration: none;" title="Notifications">
+                    <svg style="width: 22px; height: 22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    {% if unread_notifications_count > 0 %}
+                    <span style="position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: #ef4444; color: white; font-size: 11px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center;">{{ unread_notifications_count > 9 ? '9+' : unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                <div class="topbar-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="Rechercher...">
+                </div>
+            </div>
+        </header>
+
+        <div class="app-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{% block drawers %}{% endblock %}
+{% endblock %}

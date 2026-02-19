@@ -1,0 +1,55 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Notifications - StudySprint{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 0.5rem 0;">Notifications</h1>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">Vos notifications récentes</p>
+    </div>
+    {% if notifications|length > 0 %}
+    <form action="{{ path('fo_notifications_mark_all_read') }}" method="post">
+        <button type="submit" class="btn btn-ghost btn-sm">Tout marquer comme lu</button>
+    </form>
+    {% endif %}
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem;">
+        {{ message }}
+    </div>
+{% endfor %}
+
+{% if notifications is empty %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem; border-radius: 12px;">
+        <svg style="width: 64px; height: 64px; color: #d1d5db; margin: 0 auto 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">Aucune notification</h3>
+        <p style="color: #6b7280; margin: 0;">Vous n'avez pas encore de notifications</p>
+    </div>
+{% else %}
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for notif in notifications %}
+        <a href="{{ path('fo_notifications_read', {id: notif.id}) }}" style="text-decoration: none; color: inherit;">
+            <div class="card" style="padding: 1rem 1.25rem; border-radius: 10px; border-left: 4px solid {{ notif.type == 'success' ? '#10b981' : (notif.type == 'warning' ? '#f59e0b' : '#667eea') }}; background: {{ notif.read ? '#fff' : '#f0f4ff' }}; transition: transform 0.15s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform=''">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div style="font-size: 15px; font-weight: {{ notif.read ? '400' : '600' }}; color: #111827; margin-bottom: 0.25rem;">
+                            {{ notif.title }}
+                        </div>
+                        <div style="font-size: 13px; color: #6b7280;">{{ notif.message }}</div>
+                    </div>
+                    <div style="font-size: 12px; color: #9ca3af; white-space: nowrap; margin-left: 1rem;">
+                        {{ notif.createdAt|date('d/m/Y H:i') }}
+                    </div>
+                </div>
+                {% if not notif.read %}
+                <div style="width: 8px; height: 8px; background: #667eea; border-radius: 50%; position: absolute; top: 1rem; right: 1rem;"></div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

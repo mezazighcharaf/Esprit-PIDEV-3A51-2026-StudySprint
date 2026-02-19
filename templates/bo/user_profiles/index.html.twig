@@ -1,0 +1,52 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Profils Utilisateurs - BO{% endblock %}
+{% block breadcrumb %}Profils Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Profils Utilisateurs</h1>
+    <div class="bo-page-actions"><a href="{{ path('bo_user_profiles_new') }}" class="btn btn-primary">+ Nouveau</a></div>
+</div>
+<div class="card mb-4"><div class="card-body">
+    <form method="get" class="mb-4">
+        <div class="flex gap-4">
+            <input type="text" name="q" value="{{ q }}" placeholder="Rechercher..." class="form-input flex-1">
+            <button type="submit" class="btn btn-secondary">Rechercher</button>
+        </div>
+    </form>
+    {% if items is empty %}
+        <p class="text-muted">Aucun profil trouvé.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th><a href="?sort=id&dir={{ sort == 'id' and dir == 'asc' ? 'desc' : 'asc' }}&q={{ q }}">ID</a></th>
+                    <th>Utilisateur</th>
+                    <th><a href="?sort=level&dir={{ sort == 'level' and dir == 'asc' ? 'desc' : 'asc' }}&q={{ q }}">Niveau</a></th>
+                    <th><a href="?sort=specialty&dir={{ sort == 'specialty' and dir == 'asc' ? 'desc' : 'asc' }}&q={{ q }}">Spécialité</a></th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.user ? item.user.email : 'N/A' }}</td>
+                    <td>{{ item.level ?? 'N/A' }}</td>
+                    <td>{{ item.specialty ?? 'N/A' }}</td>
+                    <td>
+                        <a href="{{ path('bo_user_profiles_show', {id: item.id}) }}" class="btn btn-sm btn-secondary">Voir</a>
+                        <a href="{{ path('bo_user_profiles_edit', {id: item.id}) }}" class="btn btn-sm btn-secondary">Modifier</a>
+                        <form action="{{ path('bo_user_profiles_delete', {id: item.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('Supprimer ce profil ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% include 'bo/_pagination.html.twig' with {page: page, totalPages: totalPages, total: total, q: q, sort: sort, dir: dir} %}
+    {% endif %}
+</div></div>
+{% endblock %}

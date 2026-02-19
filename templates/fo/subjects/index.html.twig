@@ -1,0 +1,87 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Mes Matières - StudySprint{% endblock %}
+
+{% block content %}
+<div class="page-header mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Mes Matières</h1>
+            <p class="text-gray-600 mt-2">Explorez vos matières et chapitres</p>
+        </div>
+        <a href="{{ path('fo_subjects_new') }}" class="btn btn-primary">
+            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nouvelle matière
+        </a>
+    </div>
+</div>
+
+{# Flash messages #}
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success mb-6">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger mb-6">{{ message }}</div>
+{% endfor %}
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+    {% if subjects is empty %}
+        <div style="grid-column: 1 / -1;">
+            <div class="card" style="text-align: center; padding: 4rem 2rem; border-radius: 12px;">
+                <svg style="width: 80px; height: 80px; color: #d1d5db; margin: 0 auto 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <h3 style="font-size: 20px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">Aucune matière</h3>
+                <p style="color: #6b7280; margin: 0 0 1.5rem 0;">Commencez par créer votre première matière</p>
+                <a href="{{ path('fo_subjects_new') }}" class="btn btn-primary">
+                    <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Créer une matière
+                </a>
+            </div>
+        </div>
+    {% else %}
+        {% set bgColors = ['linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%)', 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)', 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)', 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'] %}
+        {% for subject in subjects %}
+        {% set bgColor = bgColors[loop.index0 % 6] %}
+        <div class="card" style="border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 28px rgba(0,0,0,0.12)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+            {# Illustration de fond #}
+            <div style="height: 120px; background: {{ bgColor }}; display: flex; align-items: center; justify-content: center; position: relative;">
+                <svg style="width: 70px; height: 70px; opacity: 0.35;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                {% if subject.code %}
+                <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.9); border-radius: 6px; padding: 0.25rem 0.625rem; font-size: 11px; font-weight: 600; color: #374151;">
+                    {{ subject.code }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="padding: 1.25rem;">
+                <h3 style="font-size: 17px; font-weight: 600; color: #111827; margin: 0 0 0.875rem 0; line-height: 1.4;">{{ subject.name }}</h3>
+                
+                {% if subject.description %}
+                    <p style="font-size: 13px; color: #6b7280; line-height: 1.5; margin: 0 0 1rem 0;">
+                        {{ subject.description|length > 90 ? subject.description|slice(0, 90) ~ '...' : subject.description }}
+                    </p>
+                {% else %}
+                    <p style="font-size: 13px; color: #9ca3af; font-style: italic; margin: 0 0 1rem 0;">Aucune description</p>
+                {% endif %}
+
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #f3f4f6;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg style="width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span style="font-size: 13px; color: #6b7280;">{{ subject.chapters|length }} chapitre{{ subject.chapters|length > 1 ? 's' : '' }}</span>
+                    </div>
+                    <a href="{{ path('fo_subjects_show', {id: subject.id}) }}" class="btn btn-primary btn-sm">Voir</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

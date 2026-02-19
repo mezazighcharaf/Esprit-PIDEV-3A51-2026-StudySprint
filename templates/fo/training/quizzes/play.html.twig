@@ -1,0 +1,90 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+
+{% block content %}
+{# Header avec gradient et progress #}
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; color: white;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <a href="{{ path('fo_training_quizzes_show', {id: quiz.id}) }}" class="btn btn-ghost btn-sm" style="background: rgba(255,255,255,0.2); color: white; border: none;" onmouseover="this.style.background='rgba(255,255,255,0.3)';" onmouseout="this.style.background='rgba(255,255,255,0.2)';">
+            <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Abandonner
+        </a>
+        <span class="badge badge-{{ quiz.difficulty == 'EASY' ? 'success' : (quiz.difficulty == 'MEDIUM' ? 'warning' : 'danger') }}" style="background: rgba(255,255,255,0.9);">
+            {{ quiz.difficulty == 'EASY' ? 'Facile' : (quiz.difficulty == 'MEDIUM' ? 'Moyen' : 'Difficile') }}
+        </span>
+    </div>
+    
+    <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 0.5rem 0;">{{ quiz.title }}</h1>
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 14px; opacity: 0.9;">
+        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ quiz.questions|length }} questions • Commencé le {{ attempt.startedAt|date('d/m à H:i') }}
+    </div>
+</div>
+
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem; border-radius: 8px;">{{ message }}</div>
+{% endfor %}
+
+<form action="{{ path('fo_training_quizzes_submit', {id: quiz.id}) }}" method="post">
+    <input type="hidden" name="_token" value="{{ csrf_token('submit_quiz_' ~ attempt.id) }}">
+    <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for index, question in quiz.questions %}
+        <div class="card" style="border-radius: 12px; border-left: 4px solid #667eea;">
+            <div style="background: #f9fafb; padding: 1rem 1.25rem; border-bottom: 1px solid #f3f4f6;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px;">
+                        {{ index + 1 }}
+                    </div>
+                    <strong style="font-size: 15px; color: #111827;">{{ question.text ?? 'Question ' ~ (index + 1) }}</strong>
+                </div>
+            </div>
+            <div style="padding: 1.25rem;">
+                {% if question.choices is defined %}
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        {% for choiceIndex, choice in question.choices %}
+                            {% set choiceKey = choice.key ?? choiceIndex %}
+                            <label style="display: flex; align-items: center; gap: 0.875rem; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f9fafb'; this.style.borderColor='#667eea';" onmouseout="this.style.background='white'; this.style.borderColor='#e5e7eb';">
+                                <input type="radio"
+                                       name="question_{{ index }}"
+                                       value="{{ choiceKey }}"
+                                       style="width: 20px; height: 20px; accent-color: #667eea; cursor: pointer;"
+                                       required>
+                                <span style="font-size: 14px; color: #374151;">{{ choice.text ?? 'Choix ' ~ (choiceIndex + 1) }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: #9ca3af; font-style: italic;">Aucune option disponible pour cette question.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size: 14px; font-weight: 600; color: #111827;">Prêt à soumettre ?</div>
+                <div style="font-size: 13px; color: #6b7280;">Vérifiez vos réponses avant de valider</div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="padding: 0.875rem 2rem;">
+            <svg style="width: 18px; height: 18px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Soumettre mes réponses
+        </button>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Training Dashboard{% endblock %}
+{% block page_title %}Training{% endblock %}
+
+{% block content %}
+{# Hero Training Gradient #}
+<div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem; color: white; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+    
+    <div style="position: relative; z-index: 1;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+            <div style="width: 64px; height: 64px; background: rgba(255,255,255,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                <svg style="width: 36px; height: 36px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+            </div>
+            <div>
+                <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 0.375rem 0;">Espace Training</h2>
+                <p style="font-size: 14px; opacity: 0.9; margin: 0;">Révisez et testez vos connaissances</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+            <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(10px);">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 0.375rem;">{{ stats.total_quizzes ?? 156 }}</div>
+                <div style="font-size: 13px; opacity: 0.9;">Quiz complétés</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(10px);">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 0.375rem;">{{ stats.avg_score ?? 87 }}%</div>
+                <div style="font-size: 13px; opacity: 0.9;">Taux réussite</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(10px);">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 0.375rem;">{{ stats.total_cards ?? '2.4K' }}</div>
+                <div style="font-size: 13px; opacity: 0.9;">Cartes révisées</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 1.25rem; backdrop-filter: blur(10px);">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: 0.375rem;">{{ stats.total_hours ?? 124 }}h</div>
+                <div style="font-size: 13px; opacity: 0.9;">Temps révision</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Grid Quiz et Decks Moderne #}
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    {% set bgColors = ['linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%)', 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)', 'linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%)', 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)'] %}
+    
+    {% for quiz in quizzes|default([{'id': 1, 'title': 'Quiz Algèbre', 'questions': ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10']}, {'id': 2, 'title': 'Quiz Physique', 'questions': ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11', 'q12', 'q13', 'q14', 'q15']}, {'id': 3, 'title': 'Quiz Chimie Organique', 'questions': ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']}])|slice(0, 6) %}
+    {% set bgColor = bgColors[loop.index0 % 6] %}
+    <div class="card" style="border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 28px rgba(0,0,0,0.12)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+        <div style="height: 120px; background: {{ bgColor }}; display: flex; align-items: center; justify-content: center; position: relative;">
+            <svg style="width: 70px; height: 70px; opacity: 0.35;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.9); border-radius: 6px; padding: 0.25rem 0.625rem; font-size: 11px; font-weight: 600; color: #374151;">
+                {{ quiz.questions|length }} Q
+            </div>
+        </div>
+        
+        <div style="padding: 1.25rem;">
+            <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 0.875rem 0; line-height: 1.4;">{{ quiz.title }}</h3>
+            
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 0.625rem 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;">
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 13px; color: #6b7280;">
+                    <svg style="width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    ~{{ (quiz.questions|length * 2)|round }}min
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 13px; color: #6b7280;">
+                    <svg style="width: 16px; height: 16px; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    Moyen
+                </div>
+            </div>
+            
+            <form action="{{ path('training_quiz_start', {id: quiz.id}) }}" method="post" style="width: 100%;">
+                <input type="hidden" name="_token" value="{{ csrf_token('start' ~ quiz.id) }}">
+                <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">Commencer</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{# Section Decks #}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 20px; font-weight: 600; color: #111827; margin: 0;">Decks de Flashcards</h2>
+        <a href="{{ path('training_deck_index') }}" class="btn btn-ghost btn-sm">Voir tous →</a>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        {% for deck in decks|default([{'id': 1, 'title': 'Vocabulaire Anglais', 'flashcards': range(1, 50)}, {'id': 2, 'title': 'Formules Maths', 'flashcards': range(1, 35)}, {'id': 3, 'title': 'Dates Histoire', 'flashcards': range(1, 28)}, {'id': 4, 'title': 'Tableau Périodique', 'flashcards': range(1, 42)}])|slice(0, 4) %}
+        <a href="{{ path('training_deck_review', {id: deck.id}) }}" class="card" style="padding: 1.25rem; border-radius: 10px; text-decoration: none; transition: all 0.2s; border-left: 4px solid #667eea;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+            <div style="font-size: 28px; margin-bottom: 0.625rem;">🃏</div>
+            <div style="font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 0.5rem;">{{ deck.title }}</div>
+            <div style="font-size: 13px; color: #6b7280;">{{ deck.flashcards|length }} cartes</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+{# Activité Récente Timeline #}
+<div class="card" style="border-radius: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Activité récente</h2>
+        <a href="{{ path('training_quiz_history') }}" class="btn btn-ghost btn-sm">Historique →</a>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for attempt in recent_attempts|default([{'quiz': {'title': 'Quiz Algèbre'}, 'score': 18, 'quiz': {'totalPoints': 20}, 'scorePercentage': 90, 'finishedAt': 'now'|date_modify('-2 hours')}, {'quiz': {'title': 'Quiz Physique'}, 'score': 14, 'quiz': {'totalPoints': 20}, 'scorePercentage': 70, 'finishedAt': 'now'|date_modify('-5 hours')}, {'quiz': {'title': 'Quiz Chimie'}, 'score': 16, 'quiz': {'totalPoints': 20}, 'scorePercentage': 80, 'finishedAt': 'now'|date_modify('-1 day')}])|slice(0, 5) %}
+            <div style="display: flex; align-items: start; gap: 1rem; padding: 1rem; background: #f9fafb; border-radius: 10px; border-left: 4px solid {{ attempt.scorePercentage >= 80 ? '#10b981' : (attempt.scorePercentage >= 60 ? '#f59e0b' : '#ef4444') }};">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: {{ attempt.scorePercentage >= 80 ? 'linear-gradient(135deg, #43e97b, #38f9d7)' : (attempt.scorePercentage >= 60 ? 'linear-gradient(135deg, #fa709a, #fee140)' : 'linear-gradient(135deg, #ff6b6b, #ee5a24)') }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 0.375rem;">{{ attempt.quiz.title }}</div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <div style="display: inline-block; padding: 0.25rem 0.75rem; background: {{ attempt.scorePercentage >= 80 ? '#d1fae5' : (attempt.scorePercentage >= 60 ? '#fef3c7' : '#fee2e2') }}; color: {{ attempt.scorePercentage >= 80 ? '#065f46' : (attempt.scorePercentage >= 60 ? '#92400e' : '#991b1b') }}; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                            {{ attempt.score }}/{{ attempt.quiz.totalPoints }} ({{ attempt.scorePercentage }}%)
+                        </div>
+                        <div style="font-size: 13px; color: #9ca3af;">{{ attempt.finishedAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+                    <div style="background: #e5e7eb; border-radius: 4px; height: 6px; overflow: hidden;">
+                        <div style="height: 100%; background: {{ attempt.scorePercentage >= 80 ? '#10b981' : (attempt.scorePercentage >= 60 ? '#f59e0b' : '#ef4444') }}; width: {{ attempt.scorePercentage }}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

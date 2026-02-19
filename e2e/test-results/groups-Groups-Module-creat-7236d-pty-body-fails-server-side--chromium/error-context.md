@@ -1,0 +1,147 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "StudySprint" [ref=e5] [cursor=pointer]:
+        - /url: /fo/subjects
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e9]: StudySprint
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Navigation
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - link "Matières" [ref=e15] [cursor=pointer]:
+                - /url: /fo/subjects
+                - img [ref=e16]
+                - generic [ref=e19]: Matières
+            - listitem [ref=e20]:
+              - link "Planning" [ref=e21] [cursor=pointer]:
+                - /url: /fo/planning
+                - img [ref=e22]
+                - generic [ref=e24]: Planning
+            - listitem [ref=e25]:
+              - link "Groupes" [ref=e26] [cursor=pointer]:
+                - /url: /fo/groups
+                - img [ref=e27]
+                - generic [ref=e32]: Groupes
+        - generic [ref=e33]:
+          - generic [ref=e34]: Training
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Quiz" [ref=e37] [cursor=pointer]:
+                - /url: /fo/training/quizzes
+                - img [ref=e38]
+                - generic [ref=e41]: Quiz
+            - listitem [ref=e42]:
+              - link "Flashcards" [ref=e43] [cursor=pointer]:
+                - /url: /fo/training/decks
+                - img [ref=e44]
+                - generic [ref=e47]: Flashcards
+      - generic [ref=e48]:
+        - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+          - /url: /fo/profile
+          - generic [ref=e50]: CH
+          - generic [ref=e51]:
+            - generic [ref=e52]: charaf mezazigh
+            - generic [ref=e53]: STUDENT
+        - link "Déconnexion" [ref=e54] [cursor=pointer]:
+          - /url: /logout
+          - img [ref=e55]
+          - generic [ref=e58]: Déconnexion
+    - main [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Dashboard" [level=1] [ref=e61]
+        - generic [ref=e63]:
+          - img
+          - textbox "Rechercher..." [ref=e64]
+      - generic [ref=e65]:
+        - link "Retour aux groupes" [ref=e67] [cursor=pointer]:
+          - /url: /fo/groups
+          - img [ref=e68]
+          - text: Retour aux groupes
+        - generic [ref=e71]:
+          - img [ref=e73]
+          - generic [ref=e75]:
+            - heading "Créer un groupe d'étude" [level=1] [ref=e76]
+            - paragraph [ref=e77]: Espace collaboratif pour travailler ensemble
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: Nom du groupe
+            - textbox "Nom du groupe" [ref=e84]:
+              - /placeholder: "Ex: Groupe Maths L3"
+          - generic [ref=e85]:
+            - generic [ref=e86]: Description
+            - textbox "Description" [ref=e87]:
+              - /placeholder: Décrivez l'objectif du groupe...
+          - generic [ref=e88]:
+            - generic [ref=e89]: Confidentialité
+            - combobox "Confidentialité" [ref=e90]:
+              - option "Public - Visible par tous" [selected]
+              - option "Privé - Sur invitation"
+            - paragraph [ref=e91]: "🔒 Publics: visibles par tous • Privés: sur invitation uniquement"
+          - generic [ref=e92]:
+            - link "Annuler" [ref=e93] [cursor=pointer]:
+              - /url: /fo/groups
+            - button "Créer le groupe" [ref=e94] [cursor=pointer]:
+              - img [ref=e95]
+              - text: Créer le groupe
+  - region "Symfony Web Debug Toolbar" [ref=e97]:
+    - generic [ref=e99]:
+      - link "200 @ fo_groups_new" [ref=e101] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=request
+        - generic [ref=e102]:
+          - generic [ref=e103]: "200"
+          - generic [ref=e104]: "@"
+          - generic [ref=e105]: fo_groups_new
+      - link "297 ms" [ref=e107] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=time
+        - generic [ref=e108]:
+          - generic [ref=e109]: "297"
+          - generic [ref=e110]: ms
+      - link "26.0 MiB" [ref=e112] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=time
+        - generic [ref=e113]:
+          - generic [ref=e114]: "26.0"
+          - generic [ref=e115]: MiB
+      - link "Cache 1" [ref=e117] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=form
+        - generic [ref=e118]:
+          - img "Cache" [ref=e119]
+          - generic [ref=e125]: "1"
+      - link "Logger 14" [ref=e127] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=logger
+        - generic [ref=e128]:
+          - img "Logger" [ref=e129]
+          - generic [ref=e133]: "14"
+      - link "Security alice.martin@studysprint.local" [ref=e135] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=security
+        - generic [ref=e136]:
+          - img "Security"
+          - generic [ref=e140]: alice.martin@studysprint.local
+      - link "Twig 14 ms" [ref=e142] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=twig
+        - generic [ref=e143]:
+          - img "Twig" [ref=e144]
+          - generic [ref=e148]: "14"
+          - generic [ref=e149]: ms
+      - link "1 in 0.50 ms" [ref=e151] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=db
+        - generic [ref=e152]:
+          - img [ref=e153]
+          - generic [ref=e158]: "1"
+          - generic [ref=e159]: in 0.50 ms
+      - link "6.4.33" [ref=e161] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/125912?panel=config
+        - generic [ref=e162]:
+          - img [ref=e164]
+          - generic [ref=e166]: 6.4.33
+      - generic [ref=e168]:
+        - img [ref=e170]
+        - generic [ref=e173]: Server
+      - button "Close Toolbar" [expanded] [ref=e174] [cursor=pointer]:
+        - img [ref=e175]
+```

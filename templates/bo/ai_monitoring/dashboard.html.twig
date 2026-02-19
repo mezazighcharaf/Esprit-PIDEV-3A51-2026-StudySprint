@@ -1,0 +1,207 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Monitoring IA - BO{% endblock %}
+{% block breadcrumb %}Monitoring IA{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Monitoring IA</h1>
+    <div class="bo-page-actions" style="display: flex; gap: 0.5rem;">
+        <a href="{{ path('bo_ai_monitoring_logs') }}" class="btn btn-secondary">Voir tous les logs</a>
+        <a href="{{ path('bo_ai_monitoring_logs', {status: 'failed'}) }}" class="btn" style="background: #ef4444; color: white; border-color: #ef4444;">Échecs uniquement</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #667eea; margin-bottom: 0.5rem;">{{ totalLogs }}</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Total requêtes</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">{{ successLogs }}</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Succès</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #ef4444; margin-bottom: 0.5rem;">{{ failedLogs }}</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Échecs</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem;">{{ failureRate }}%</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Taux d'échec</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #3b82f6; margin-bottom: 0.5rem;">{{ avgLatency }}ms</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Latence moyenne</div>
+        </div>
+    </div>
+
+    {% if avgFeedback %}
+    <div class="card">
+        <div class="card-body" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: 700; color: #8b5cf6; margin-bottom: 0.5rem;">{{ avgFeedback }}/5</div>
+            <div style="font-size: 13px; color: #6b7280; font-weight: 500;">Feedback moyen ({{ totalFeedback }})</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3>Statistiques par module</h3>
+        </div>
+        <div class="card-body">
+            {% if statsByFeature is empty %}
+                <p class="text-muted">Aucune donnée disponible</p>
+            {% else %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Module</th>
+                            <th>Requêtes</th>
+                            <th>Latence moy.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in statsByFeature %}
+                        <tr>
+                            <td><strong>{{ stat.feature }}</strong></td>
+                            <td>{{ stat.count }}</td>
+                            <td>{{ stat.avgLatency ? (stat.avgLatency|round(0)) ~ 'ms' : '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if topErrors is defined and topErrors|length > 0 %}
+    <div class="card" style="border-left: 4px solid #ef4444;">
+        <div class="card-header" style="background: #fef2f2;">
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0; color: #991b1b;">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+                Top 5 erreurs fréquentes
+            </h3>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Erreur</th>
+                        <th>Occurrences</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for err in topErrors %}
+                    <tr>
+                        <td style="max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #991b1b;" title="{{ err.errorMessage }}">{{ err.errorMessage }}</td>
+                        <td><span class="badge badge-danger">{{ err.cnt }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if apiStats %}
+    <div class="card" style="border-left: 4px solid #667eea;">
+        <div class="card-header" style="background: #f9fafb;">
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <svg style="width: 20px; height: 20px; color: #667eea;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Stats FastAPI Gateway
+            </h3>
+        </div>
+        <div class="card-body">
+            <dl style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 13px;">
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">Total</dt>
+                    <dd style="font-weight: 600; color: #111827; margin: 0;">{{ apiStats.total_requests }}</dd>
+                </div>
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">Succès</dt>
+                    <dd style="font-weight: 600; color: #10b981; margin: 0;">{{ apiStats.success_count }}</dd>
+                </div>
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">Échecs</dt>
+                    <dd style="font-weight: 600; color: #ef4444; margin: 0;">{{ apiStats.failed_count }}</dd>
+                </div>
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">Taux échec</dt>
+                    <dd style="font-weight: 600; color: #f59e0b; margin: 0;">{{ apiStats.failure_rate|round(1) }}%</dd>
+                </div>
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">7 derniers jours</dt>
+                    <dd style="font-weight: 600; color: #111827; margin: 0;">{{ apiStats.last_7_days_count }}</dd>
+                </div>
+                <div>
+                    <dt style="color: #6b7280; margin-bottom: 0.25rem;">Latence moy.</dt>
+                    <dd style="font-weight: 600; color: #3b82f6; margin: 0;">{{ apiStats.avg_latency_ms|round(0) }}ms</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Logs récents (20 derniers)</h3>
+    </div>
+    <div class="card-body">
+        {% if recentLogs is empty %}
+            <p class="text-muted">Aucun log disponible</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Module</th>
+                            <th>Utilisateur</th>
+                            <th>Status</th>
+                            <th>Latence</th>
+                            <th>Feedback</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recentLogs %}
+                        <tr>
+                            <td>#{{ log.id }}</td>
+                            <td><span class="badge badge-secondary">{{ log.feature }}</span></td>
+                            <td>{{ log.user ? log.user.fullName : '-' }}</td>
+                            <td>
+                                <span class="badge badge-{{ log.status == 'success' ? 'success' : (log.status == 'failed' ? 'danger' : 'warning') }}">
+                                    {{ log.status }}
+                                </span>
+                            </td>
+                            <td>{{ log.latencyMs ? log.latencyMs ~ 'ms' : '-' }}</td>
+                            <td>{{ log.userFeedback ? log.userFeedback ~ '/5' : '-' }}</td>
+                            <td style="font-size: 12px; color: #6b7280;">{{ log.createdAt|date('d/m/Y H:i') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

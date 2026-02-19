@@ -1,0 +1,116 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block page_title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (answered_ids|length / questions|length) * 100 }}%"></div>
+        </div>
+        <span class="progress-text">{{ answered_ids|length }}/{{ questions|length }} repondu{% if answered_ids|length > 1 %}s{% endif %}</span>
+    </div>
+
+    <div class="questions-list">
+        {% for question in questions %}
+        <div class="question-card card {% if question.id in answered_ids %}answered{% endif %}" id="question-{{ question.id }}">
+            <div class="card-header">
+                <span class="question-number">Question {{ loop.index }}</span>
+                <span class="question-points">{{ question.points }} pt{% if question.points > 1 %}s{% endif %}</span>
+            </div>
+            <div class="card-body">
+                <p class="question-text">{{ question.questionText }}</p>
+
+                <form method="post" action="{{ path('training_quiz_play', {id: attempt.id}) }}">
+                    <input type="hidden" name="question_id" value="{{ question.id }}">
+
+                    {% if question.questionType == 'mcq' or question.questionType == 'tf' %}
+                        <div class="choices-list">
+                            {% for choice in question.choices %}
+                            <label class="choice-option">
+                                <input type="radio" name="quiz_attempt_answer[choice]" value="{{ choice.id }}"
+                                    {% if forms[question.id].vars.data.choice and forms[question.id].vars.data.choice.id == choice.id %}checked{% endif %}>
+                                <span class="choice-label">{{ choice.label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    {% elseif question.questionType == 'short' %}
+                        <div class="form-group">
+                            <input type="text" name="quiz_attempt_answer[freeText]" class="form-control"
+                                placeholder="Votre reponse..."
+                                value="{{ forms[question.id].vars.data.freeText|default('') }}">
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-secondary btn-sm">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="quiz-actions">
+        <form method="post" action="{{ path('training_quiz_play', {id: attempt.id}) }}" onsubmit="return confirm('Terminer le quiz ? Vous ne pourrez plus modifier vos reponses.');">
+            <input type="hidden" name="finish" value="1">
+            <button type="submit" class="btn btn-primary btn-lg">Terminer le Quiz</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.quiz-container { max-width: 800px; margin: 0 auto; }
+.quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s;
+}
+.progress-text { font-size: 0.875rem; color: var(--text-secondary); }
+
+.question-card {
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+.question-card.answered {
+    border-left: 3px solid var(--success);
+}
+.question-number { font-weight: 600; }
+.question-points { color: var(--text-secondary); font-size: 0.875rem; }
+.question-text { font-size: 1.1rem; margin-bottom: 1rem; }
+
+.choices-list { margin-bottom: 1rem; }
+.choice-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.choice-option:hover { background: var(--bg-secondary); }
+.choice-option input:checked + .choice-label { font-weight: 600; }
+
+.quiz-actions {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+</style>
+{% endblock %}

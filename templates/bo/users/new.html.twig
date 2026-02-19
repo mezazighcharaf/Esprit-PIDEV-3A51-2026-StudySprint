@@ -1,0 +1,41 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Nouvel Utilisateur - BO{% endblock %}
+{% block breadcrumb %}Utilisateurs / Nouveau{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Nouvel Utilisateur</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.email) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.fullName) }}
+            {{ form_widget(form.fullName, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.fullName) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.userType) }}
+            {{ form_widget(form.userType, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.userType) }}
+        </div>
+        <div class="form-group">
+            {{ form_label(form.plainPassword) }}
+            {{ form_widget(form.plainPassword, {'attr': {'class': 'form-input'}}) }}
+            {{ form_errors(form.plainPassword) }}
+        </div>
+        <div class="flex gap-4 mt-6">
+            <button type="submit" class="btn btn-primary">Créer</button>
+            <a href="{{ path('bo_users_index') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

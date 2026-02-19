@@ -1,0 +1,15 @@
+{# Reusable BO pagination - expects: page, totalPages, route_name, route_params (optional) #}
+{% if totalPages is defined and totalPages > 1 %}
+<div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+    {% if page > 1 %}
+    <a href="?{{ {q: q|default(''), sort: sort|default('id'), dir: dir|default('desc'), page: page - 1}|url_encode }}" class="btn btn-secondary btn-sm">&larr; Précédent</a>
+    {% endif %}
+    <span style="font-size: 13px; color: #6b7280; padding: 0 0.75rem;">
+        Page {{ page }} / {{ totalPages }}
+        {% if total is defined %}<span style="margin-left: 0.5rem;">({{ total }} résultat{{ total > 1 ? 's' : '' }})</span>{% endif %}
+    </span>
+    {% if page < totalPages %}
+    <a href="?{{ {q: q|default(''), sort: sort|default('id'), dir: dir|default('desc'), page: page + 1}|url_encode }}" class="btn btn-secondary btn-sm">Suivant &rarr;</a>
+    {% endif %}
+</div>
+{% endif %}

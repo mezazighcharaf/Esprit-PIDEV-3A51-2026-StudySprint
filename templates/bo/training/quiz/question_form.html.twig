@@ -1,0 +1,48 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}{% if is_new %}Nouvelle Question{% else %}Modifier Question{% endif %} - Administration{% endblock %}
+{% block breadcrumb %}Training > Quiz > {{ quiz.title }} > {% if is_new %}Nouvelle Question{% else %}Modifier{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if is_new %}Ajouter une Question{% else %}Modifier la Question{% endif %}</h1>
+    <p class="text-muted">Quiz: {{ quiz.title }}</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+            <div class="form-group">
+                {{ form_label(form.questionText) }}
+                {{ form_widget(form.questionText, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.questionText) }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    {{ form_label(form.questionType) }}
+                    {{ form_widget(form.questionType, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.questionType) }}
+                </div>
+
+                <div class="form-group col-md-4">
+                    {{ form_label(form.points) }}
+                    {{ form_widget(form.points, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.points) }}
+                </div>
+
+                <div class="form-group col-md-4">
+                    {{ form_label(form.position) }}
+                    {{ form_widget(form.position, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(form.position) }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('admin_training_quiz_show', {id: quiz.id}) }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">{% if is_new %}Ajouter{% else %}Enregistrer{% endif %}</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Historique des Quiz{% endblock %}
+{% block page_title %}Mon historique{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ path('training_quiz_index') }}" class="btn btn-primary btn-sm">Nouveau Quiz</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Historique de mes quiz</h2>
+    <p class="text-muted">Consultez vos resultats passes</p>
+</div>
+
+{% if attempts is empty %}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'history',
+        title: 'Aucun historique',
+        description: 'Vous n\'avez pas encore complete de quiz.',
+        action_label: 'Commencer un quiz',
+        action_url: path('training_quiz_index')
+    }) }}
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Quiz</th>
+                    <th>Score</th>
+                    <th>Duree</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr>
+                    <td>
+                        <strong>{{ attempt.quiz.title }}</strong>
+                        <small class="text-muted d-block">{{ attempt.quiz.questions|length }} questions</small>
+                    </td>
+                    <td>
+                        <span class="badge {% if attempt.scorePercentage >= 70 %}badge-success{% elseif attempt.scorePercentage >= 50 %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ attempt.score }}/{{ attempt.quiz.totalPoints }}
+                        </span>
+                        <small class="text-muted">({{ attempt.scorePercentage }}%)</small>
+                    </td>
+                    <td>{{ (attempt.duration / 60)|round }} min</td>
+                    <td>{{ attempt.finishedAt|date('d/m/Y H:i') }}</td>
+                    <td>
+                        <a href="{{ path('training_quiz_result', {id: attempt.id}) }}" class="btn btn-sm btn-secondary">Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}{{ plan.title }} - StudySprint{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ path('fo_planning_index') }}" class="btn btn-ghost btn-sm">&larr; Retour aux plans</a>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message }}
+    </div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ message }}
+    </div>
+{% endfor %}
+
+<div class="page-header">
+    <div>
+        <h1>{{ plan.title }}</h1>
+        <span class="badge badge-{{ plan.status == 'ACTIVE' ? 'success' : (plan.status == 'DONE' ? 'secondary' : 'warning') }}">
+            {{ plan.status }}
+        </span>
+    </div>
+    <button type="button" class="btn" id="aiSuggestBtn" data-plan-id="{{ plan.id }}" data-token="{{ csrf_token('ai_suggest_' ~ plan.id) }}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; display: inline-flex; align-items: center; gap: 0.375rem;">
+        <svg id="aiSuggestIcon" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        <div id="aiSuggestSpinner" style="display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <span id="aiSuggestLabel">Suggérer ajustements (IA)</span>
+    </button>
+</div>
+
+<!-- Loading overlay for AI -->
+<div id="aiLoadingOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 16px; padding: 2.5rem; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px;">
+        <div style="width: 48px; height: 48px; border: 3px solid #e5e7eb; border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem;"></div>
+        <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">Analyse en cours...</h3>
+        <p style="font-size: 14px; color: #6b7280; margin: 0 0 0.5rem 0;">L'IA analyse votre plan de révision</p>
+        <p style="font-size: 13px; color: #9ca3af; margin: 0;" id="aiTimer">0s</p>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <strong>Période:</strong>
+                <p class="text-muted">{{ plan.startDate|date('d/m/Y') }} → {{ plan.endDate|date('d/m/Y') }}</p>
+            </div>
+            <div>
+                <strong>Matière:</strong>
+                <p class="text-muted">{{ plan.subject ? plan.subject.name : 'N/A' }}</p>
+            </div>
+            <div>
+                <strong>Tâches:</strong>
+                <p class="text-muted">{{ tasks|length }} tâche(s)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Tâches du plan</h2>
+    </div>
+    <div class="card-body">
+        {% if tasks is empty %}
+            <p class="text-muted">Aucune tâche dans ce plan.</p>
+        {% else %}
+            <div class="space-y-3">
+                {% for task in tasks %}
+                <div class="p-4 border rounded {% if task.status == 'DONE' %}bg-green-50{% endif %}">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-3">
+                            <form method="post" action="{{ path('fo_planning_task_toggle', {taskId: task.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_task_' ~ task.id) }}">
+                                <button type="submit" class="badge badge-{{ task.status == 'DONE' ? 'success' : (task.status == 'DOING' ? 'warning' : 'secondary') }}" style="cursor: pointer; border: none;" title="Cliquer pour changer le statut">
+                                    {{ task.status }}
+                                </button>
+                            </form>
+                            <strong>{{ task.title }}</strong>
+                            <span class="badge badge-{{ task.priority == 1 ? 'danger' : (task.priority == 2 ? 'warning' : 'secondary') }}">
+                                P{{ task.priority }}
+                            </span>
+                        </div>
+                        <span class="text-sm text-muted">{{ task.taskType }}</span>
+                    </div>
+                    <div class="text-sm text-muted">
+                        🕒 {{ task.startAt|date('d/m/Y H:i') }} → {{ task.endAt|date('d/m/Y H:i') }}
+                        {% set dMin = ((task.endAt.timestamp - task.startAt.timestamp) / 60)|round %}
+                        ({% if dMin >= 60 %}{{ (dMin / 60)|round(0, 'floor') }}h{% if dMin % 60 > 0 %}{{ '%02d'|format(dMin % 60) }}{% endif %}{% else %}{{ dMin }} min{% endif %})
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+document.getElementById('aiSuggestBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    var btn = this;
+    var planId = btn.dataset.planId;
+    var token = btn.dataset.token;
+    var icon = document.getElementById('aiSuggestIcon');
+    var spinner = document.getElementById('aiSuggestSpinner');
+    var label = document.getElementById('aiSuggestLabel');
+    var overlay = document.getElementById('aiLoadingOverlay');
+    var timerEl = document.getElementById('aiTimer');
+
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'wait';
+    icon.style.display = 'none';
+    spinner.style.display = 'block';
+    label.textContent = 'Analyse en cours...';
+    overlay.style.display = 'flex';
+
+    var seconds = 0;
+    var tmr = setInterval(function() {
+        seconds++;
+        timerEl.textContent = seconds + 's — veuillez patienter';
+    }, 1000);
+
+    fetch('/fo/planning/' + planId + '/ai-suggest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ _token: token })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        clearInterval(tmr);
+        overlay.style.display = 'none';
+        if (data.success && data.confirm_url) {
+            window.location.href = data.confirm_url;
+        } else {
+            label.textContent = data.error || 'Erreur';
+            btn.style.background = '#ef4444';
+            spinner.style.display = 'none';
+            icon.style.display = '';
+            setTimeout(function() {
+                btn.disabled = false; btn.style.opacity = '1'; btn.style.background = '';
+                label.textContent = 'Suggérer ajustements (IA)';
+            }, 3000);
+        }
+    })
+    .catch(function() {
+        clearInterval(tmr);
+        overlay.style.display = 'none';
+        label.textContent = 'Erreur réseau';
+        btn.style.background = '#ef4444';
+        spinner.style.display = 'none';
+        icon.style.display = '';
+        setTimeout(function() {
+            btn.disabled = false; btn.style.opacity = '1'; btn.style.background = '';
+            label.textContent = 'Suggérer ajustements (IA)';
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}

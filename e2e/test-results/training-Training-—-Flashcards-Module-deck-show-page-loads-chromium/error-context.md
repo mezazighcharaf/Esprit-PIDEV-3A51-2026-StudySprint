@@ -1,0 +1,167 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "StudySprint" [ref=e5] [cursor=pointer]:
+        - /url: /fo/subjects
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e9]: StudySprint
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Navigation
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - link "Matières" [ref=e15] [cursor=pointer]:
+                - /url: /fo/subjects
+                - img [ref=e16]
+                - generic [ref=e19]: Matières
+            - listitem [ref=e20]:
+              - link "Planning" [ref=e21] [cursor=pointer]:
+                - /url: /fo/planning
+                - img [ref=e22]
+                - generic [ref=e24]: Planning
+            - listitem [ref=e25]:
+              - link "Groupes" [ref=e26] [cursor=pointer]:
+                - /url: /fo/groups
+                - img [ref=e27]
+                - generic [ref=e32]: Groupes
+        - generic [ref=e33]:
+          - generic [ref=e34]: Training
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Quiz" [ref=e37] [cursor=pointer]:
+                - /url: /fo/training/quizzes
+                - img [ref=e38]
+                - generic [ref=e41]: Quiz
+            - listitem [ref=e42]:
+              - link "Flashcards" [ref=e43] [cursor=pointer]:
+                - /url: /fo/training/decks
+                - img [ref=e44]
+                - generic [ref=e47]: Flashcards
+      - generic [ref=e48]:
+        - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+          - /url: /fo/profile
+          - generic [ref=e50]: CH
+          - generic [ref=e51]:
+            - generic [ref=e52]: charaf mezazigh
+            - generic [ref=e53]: STUDENT
+        - link "Déconnexion" [ref=e54] [cursor=pointer]:
+          - /url: /logout
+          - img [ref=e55]
+          - generic [ref=e58]: Déconnexion
+    - main [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Dashboard" [level=1] [ref=e61]
+        - generic [ref=e63]:
+          - img
+          - textbox "Rechercher..." [ref=e64]
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - link "Retour aux decks" [ref=e68] [cursor=pointer]:
+            - /url: /fo/training/decks
+            - img [ref=e69]
+            - text: Retour aux decks
+          - generic [ref=e72]:
+            - img [ref=e73]
+            - generic [ref=e75]:
+              - heading "Générer un Deck avec l'IA" [level=1] [ref=e76]
+              - paragraph [ref=e77]: L'IA créera des flashcards optimisées pour la mémorisation
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: Matière *
+            - combobox [ref=e81]:
+              - option "Sélectionnez une matière" [selected]
+              - option "Mathématiques Avancées"
+              - option "Physique Quantique"
+              - option "Chimie Organique"
+              - option "E2E Matière 1770331155823"
+          - generic [ref=e82]:
+            - generic [ref=e83]: Chapitre (optionnel)
+            - combobox [ref=e84]:
+              - option "Tous les chapitres" [selected]
+              - option "Suites et séries (Mathématiques Avancées)"
+              - option "Intégrales (Mathématiques Avancées)"
+              - option "Équations différentielles (Mathématiques Avancées)"
+              - option "Postulats de la MQ (Physique Quantique)"
+              - option "Opérateurs et observables (Physique Quantique)"
+              - option "Atome d'hydrogène (Physique Quantique)"
+              - option "Alcènes et alcynes (Chimie Organique)"
+              - option "Mécanismes réactionnels (Chimie Organique)"
+          - generic [ref=e85]:
+            - generic [ref=e86]: Nombre de cartes *
+            - spinbutton [ref=e87]: "10"
+            - paragraph [ref=e88]: Entre 1 et 50 cartes
+          - generic [ref=e89]:
+            - generic [ref=e90]: Sujet spécifique (optionnel)
+            - 'textbox "Ex: Les dérivées, La photosynthèse..." [ref=e91]'
+            - paragraph [ref=e92]: Précisez un thème pour des cartes plus ciblées
+          - generic [ref=e93]:
+            - generic [ref=e94] [cursor=pointer]:
+              - checkbox "Inclure des indices (recommandé)" [checked] [ref=e95]
+              - generic [ref=e96]: Inclure des indices (recommandé)
+            - paragraph [ref=e97]: Les indices facilitent la mémorisation
+          - generic [ref=e99]:
+            - img [ref=e100]
+            - generic [ref=e102]:
+              - strong [ref=e103]: "Algorithme SM-2 :"
+              - text: Vos flashcards seront automatiquement programmées pour révision selon l'algorithme de répétition espacée SuperMemo 2. La génération peut prendre 30 à 90 secondes.
+          - generic [ref=e104]:
+            - button "Générer le deck" [ref=e105] [cursor=pointer]:
+              - img [ref=e106]
+              - generic [ref=e108]: Générer le deck
+            - link "Annuler" [ref=e109] [cursor=pointer]:
+              - /url: /fo/training/decks
+  - region "Symfony Web Debug Toolbar" [ref=e110]:
+    - generic [ref=e112]:
+      - link "200 @ fo_training_decks_ai_generate_form" [ref=e114] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=request
+        - generic [ref=e115]:
+          - generic [ref=e116]: "200"
+          - generic [ref=e117]: "@"
+          - generic [ref=e118]: fo_training_decks_ai_generate_form
+      - link "260 ms" [ref=e120] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=time
+        - generic [ref=e121]:
+          - generic [ref=e122]: "260"
+          - generic [ref=e123]: ms
+      - link "24.0 MiB" [ref=e125] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=time
+        - generic [ref=e126]:
+          - generic [ref=e127]: "24.0"
+          - generic [ref=e128]: MiB
+      - link "Logger 14" [ref=e130] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=logger
+        - generic [ref=e131]:
+          - img "Logger" [ref=e132]
+          - generic [ref=e136]: "14"
+      - link "Security alice.martin@studysprint.local" [ref=e138] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=security
+        - generic [ref=e139]:
+          - img "Security"
+          - generic [ref=e143]: alice.martin@studysprint.local
+      - link "Twig 14 ms" [ref=e145] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=twig
+        - generic [ref=e146]:
+          - img "Twig" [ref=e147]
+          - generic [ref=e151]: "14"
+          - generic [ref=e152]: ms
+      - link "3 in 1.11 ms" [ref=e154] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=db
+        - generic [ref=e155]:
+          - img [ref=e156]
+          - generic [ref=e161]: "3"
+          - generic [ref=e162]: in 1.11 ms
+      - link "6.4.33" [ref=e164] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/17e561?panel=config
+        - generic [ref=e165]:
+          - img [ref=e167]
+          - generic [ref=e169]: 6.4.33
+      - generic [ref=e171]:
+        - img [ref=e173]
+        - generic [ref=e176]: Server
+      - button "Close Toolbar" [expanded] [ref=e177] [cursor=pointer]:
+        - img [ref=e178]
+```

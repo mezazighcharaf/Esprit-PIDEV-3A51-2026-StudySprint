@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}StudySprint - Plateforme d'apprentissage{% endblock %}
+
+{% block stylesheets %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        color: white;
+    }
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .hero p {
+        font-size: 1.25rem;
+        max-width: 600px;
+        margin-bottom: 2.5rem;
+        opacity: 0.9;
+    }
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .btn {
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-white {
+        background: white;
+        color: #667eea;
+    }
+    .btn-white:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.3);
+    }
+    .btn-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+    .btn-outline:hover {
+        background: white;
+        color: #667eea;
+    }
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 4rem;
+        max-width: 1000px;
+    }
+    .feature {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+    }
+    .feature h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    .feature p {
+        font-size: 0.95rem;
+        opacity: 0.85;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="hero">
+    <h1>StudySprint</h1>
+    <p>La plateforme d'apprentissage intelligente qui vous aide a reviser efficacement avec des quiz, des flashcards et des plans de revision personnalises.</p>
+
+    <div class="cta-buttons">
+        <a href="{{ path('app_register') }}" class="btn btn-white">Commencer gratuitement</a>
+        <a href="{{ path('app_login') }}" class="btn btn-outline">Se connecter</a>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <h3>Quiz Interactifs</h3>
+            <p>Testez vos connaissances avec des quiz personnalises et suivez votre progression.</p>
+        </div>
+        <div class="feature">
+            <h3>Flashcards SM-2</h3>
+            <p>Memorisez efficacement grace a l'algorithme de repetition espacee SuperMemo 2.</p>
+        </div>
+        <div class="feature">
+            <h3>Plans de Revision</h3>
+            <p>Generez automatiquement des plans de revision adaptes a vos objectifs.</p>
+        </div>
+        <div class="feature">
+            <h3>Groupes d'Etude</h3>
+            <p>Collaborez avec d'autres etudiants et partagez vos connaissances.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

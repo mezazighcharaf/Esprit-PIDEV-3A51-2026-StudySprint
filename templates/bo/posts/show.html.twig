@@ -1,0 +1,24 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Publication #{{ item.id }} - BO{% endblock %}
+{% block breadcrumb %}Publications / Détail{% endblock %}
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">{{ item.title ?? 'Publication #' ~ item.id }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_posts_edit', {id: item.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_posts_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+<div class="card"><div class="card-body">
+    <dl class="grid grid-2 gap-4">
+        <div><dt class="text-muted">ID</dt><dd>{{ item.id }}</dd></div>
+        <div><dt class="text-muted">Type</dt><dd><span class="badge badge-{{ item.postType == 'POST' ? 'primary' : 'secondary' }}">{{ item.postType }}</span></dd></div>
+        <div><dt class="text-muted">Groupe</dt><dd>{{ item.studyGroup.name }}</dd></div>
+        <div><dt class="text-muted">Auteur</dt><dd>{{ item.author.email }}</dd></div>
+        <div><dt class="text-muted">Titre</dt><dd>{{ item.title ?? '-' }}</dd></div>
+        <div><dt class="text-muted">Pièce jointe</dt><dd>{{ item.attachmentUrl ?? '-' }}</dd></div>
+        <div class="col-span-2"><dt class="text-muted">Contenu</dt><dd>{{ item.body }}</dd></div>
+        <div><dt class="text-muted">Créé le</dt><dd>{{ item.createdAt|date('d/m/Y H:i') }}</dd></div>
+    </dl>
+</div></div>
+{% endblock %}

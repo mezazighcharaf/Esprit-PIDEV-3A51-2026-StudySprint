@@ -1,0 +1,102 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}{{ deck.title }} - StudySprint{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_training_decks_index') }}" class="btn btn-ghost btn-sm">
+        <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour aux decks
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; color: white;">
+    <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div style="flex: 1;">
+            <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 0.75rem 0;">{{ deck.title }}</h1>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 14px; opacity: 0.9;">
+                <span>📚 {{ deck.subject ? deck.subject.name : 'N/A' }}</span>
+                {% if deck.chapter %}
+                <span>📖 {{ deck.chapter.title }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <a href="{{ path('fo_training_decks_review', {id: deck.id}) }}" class="btn btn-primary btn-lg" style="background: rgba(255,255,255,0.2); color: white; border: none; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)';" onmouseout="this.style.background='rgba(255,255,255,0.2)';">
+            <svg style="width: 20px; height: 20px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {% if dueCount > 0 %}
+                Réviser ({{ dueCount }})
+            {% else %}
+                Commencer
+            {% endif %}
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">
+            {{ deck.cards|length + deck.flashcards|length }}
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">Total cartes</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: {{ dueCount > 0 ? '#f59e0b' : '#10b981' }}; margin-bottom: 0.5rem;">
+            {{ dueCount }}
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">À réviser</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: #667eea; margin-bottom: 0.5rem;">
+            {{ ((deck.cards|length + deck.flashcards|length - dueCount) / (deck.cards|length + deck.flashcards|length) * 100)|number_format(0) }}%
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">Maîtrisées</div>
+    </div>
+</div>
+
+<div class="card" style="border-radius: 12px;">
+    <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Aperçu des cartes</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        {% set allCards = deck.flashcards|length > 0 ? deck.flashcards : deck.cards %}
+        {% if allCards is empty %}
+            <div style="text-align: center; padding: 2rem;">
+                <svg style="width: 64px; height: 64px; color: #d1d5db; margin: 0 auto 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <p style="color: #6b7280; margin: 0;">Aucune carte dans ce deck</p>
+            </div>
+        {% else %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for card in allCards|slice(0, 10) %}
+                <div style="border: 2px solid #e5e7eb; border-radius: 10px; overflow: hidden; transition: all 0.2s;" onmouseover="this.style.borderColor='#667eea'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.15)';" onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='';">
+                    <div style="background: #f9fafb; padding: 0.75rem 1rem; border-bottom: 2px solid #e5e7eb;">
+                        <span style="padding: 0.25rem 0.75rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">Carte #{{ loop.index }}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+                        <div style="padding: 1.25rem; border-right: 2px solid #e5e7eb;">
+                            <div style="font-size: 13px; font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">Recto</div>
+                            <p style="color: #111827; margin: 0; font-size: 14px;">{{ card.front ?? card.question ?? 'Question ' ~ loop.index }}</p>
+                        </div>
+                        <div style="padding: 1.25rem; background: #fafafa;">
+                            <div style="font-size: 13px; font-weight: 600; color: #10b981; margin-bottom: 0.5rem;">Verso</div>
+                            <p style="color: #6b7280; margin: 0; font-size: 14px;">{{ card.back ?? card.answer ?? 'Réponse ' ~ loop.index }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if allCards|length > 10 %}
+                <div style="text-align: center; padding: 1rem; background: #f9fafb; border-radius: 8px;">
+                    <p style="color: #6b7280; margin: 0; font-size: 14px;">... et {{ allCards|length - 10 }} autre(s) carte(s)</p>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

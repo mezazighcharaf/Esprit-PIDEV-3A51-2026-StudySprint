@@ -1,0 +1,187 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Dashboard - StudySprint BO{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Dashboard</h1>
+    </div>
+    <div class="bo-kpi-row">
+        {% for i in 1..5 %}
+        <div class="bo-kpi-card">
+            <div class="skeleton" style="height: 14px; width: 80px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="height: 28px; width: 60px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="height: 12px; width: 100px;"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="grid grid-2 gap-6 mt-6">
+        {{ include('components/_skeleton.html.twig', { type: 'table', count: 1 }) }}
+        {{ include('components/_skeleton.html.twig', { type: 'card', count: 1 }) }}
+    </div>
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Dashboard</h1>
+        <div class="bo-page-actions">
+            <a href="{{ path('admin_analytics') }}" class="btn btn-secondary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                Voir Analytics
+            </a>
+        </div>
+    </div>
+
+    {# KPIs Row #}
+    <div class="bo-kpi-row">
+        {% for kpi in data.kpis %}
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">{{ kpi.label }}</span>
+                {% if kpi.trend %}
+                <span class="bo-kpi-trend {{ kpi.trend_direction }}">
+                    {% if kpi.trend_direction == 'up' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    </svg>
+                    {% elseif kpi.trend_direction == 'down' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                    </svg>
+                    {% endif %}
+                    {{ kpi.trend }}
+                </span>
+                {% endif %}
+            </div>
+            <div class="bo-kpi-value">{{ kpi.value }}</div>
+            <div class="bo-kpi-subtitle">{{ kpi.subtitle }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# Alerts #}
+    {% if data.alerts|length > 0 %}
+    <div class="mb-6">
+        {% for alert in data.alerts %}
+        <div class="card mb-2" style="border-left: 3px solid var(--color-{{ alert.type }});">
+            <div class="card-body py-3">
+                <div class="flex items-center gap-3">
+                    {% if alert.type == 'warning' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" stroke-width="2" width="18" height="18">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-info)" stroke-width="2" width="18" height="18">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    {% endif %}
+                    <span class="text-sm">{{ alert.message }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Content Grid #}
+    <div class="grid grid-2 gap-6">
+        {# Recent Users #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Utilisateurs recents</h3>
+                <a href="{{ path('admin_users') }}" class="btn btn-ghost btn-sm">Voir tous</a>
+            </div>
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Role</th>
+                        <th>Statut</th>
+                        <th>Activite</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in data.recent_users %}
+                    <tr>
+                        <td>
+                            <div class="cell-user">
+                                <div class="cell-user-avatar">{{ user.initials }}</div>
+                                <div class="cell-user-info">
+                                    <div class="cell-user-name">{{ user.name }}</div>
+                                    <div class="cell-user-email">{{ user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <span class="bo-status {{ user.status|lower == 'actif' ? 'active' : 'inactive' }}">
+                                <span class="bo-status-dot"></span>
+                                {{ user.status }}
+                            </span>
+                        </td>
+                        <td class="text-muted">{{ user.last_activity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Quick Actions #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="flex flex-col gap-3">
+                    <a href="{{ path('admin_users') }}" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="8.5" cy="7" r="4"/>
+                            <line x1="20" y1="8" x2="20" y2="14"/>
+                            <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                        Ajouter un utilisateur
+                    </a>
+                    <a href="{{ path('admin_content') }}" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="15" y2="15"/>
+                        </svg>
+                        Creer une matiere
+                    </a>
+                    <a href="{{ path('admin_mentoring') }}" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Gerer les groupes
+                    </a>
+                    <a href="{{ path('admin_analytics') }}" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        Consulter les analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

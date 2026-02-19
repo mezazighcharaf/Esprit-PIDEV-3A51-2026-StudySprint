@@ -1,0 +1,26 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Plan #{{ item.id }} - BO{% endblock %}
+{% block breadcrumb %}Plans / {{ item.title }}{% endblock %}
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">{{ item.title }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_plans_edit', {id: item.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_plans_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+<div class="card"><div class="card-body">
+    <dl class="grid grid-2 gap-4">
+        <div><dt class="text-muted">ID</dt><dd>{{ item.id }}</dd></div>
+        <div><dt class="text-muted">Titre</dt><dd>{{ item.title }}</dd></div>
+        <div><dt class="text-muted">Utilisateur</dt><dd>{{ item.user.email }}</dd></div>
+        <div><dt class="text-muted">Matière</dt><dd>{{ item.subject ? item.subject.name : '-' }}</dd></div>
+        <div><dt class="text-muted">Chapitre</dt><dd>{{ item.chapter ? item.chapter.title : '-' }}</dd></div>
+        <div><dt class="text-muted">Statut</dt><dd><span class="badge badge-{{ item.status == 'ACTIVE' ? 'success' : (item.status == 'DONE' ? 'info' : 'secondary') }}">{{ item.status }}</span></dd></div>
+        <div><dt class="text-muted">Date début</dt><dd>{{ item.startDate ? item.startDate|date('d/m/Y') : '-' }}</dd></div>
+        <div><dt class="text-muted">Date fin</dt><dd>{{ item.endDate ? item.endDate|date('d/m/Y') : '-' }}</dd></div>
+        <div><dt class="text-muted">Généré par IA</dt><dd>{{ item.generatedByAi ? 'Oui' : 'Non' }}</dd></div>
+        <div><dt class="text-muted">Créé le</dt><dd>{{ item.createdAt|date('d/m/Y H:i') }}</dd></div>
+    </dl>
+</div></div>
+{% endblock %}

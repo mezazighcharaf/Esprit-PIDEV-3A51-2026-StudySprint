@@ -1,0 +1,178 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Résultats - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_training_quizzes_index') }}" class="btn btn-ghost btn-sm">
+        <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour aux quiz
+    </a>
+</div>
+
+{# Hero gradient selon résultat #}
+<div style="background: linear-gradient(135deg, {{ results.passed ? '#43e97b 0%, #38f9d7 100%' : '#f093fb 0%, #f5576c 100%' }}); border-radius: 12px; padding: 2.5rem; margin-bottom: 2rem; color: white; text-align: center;">
+    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; backdrop-filter: blur(10px);">
+        <svg style="width: 44px; height: 44px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {% if results.passed %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            {% else %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            {% endif %}
+        </svg>
+    </div>
+    <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 0.5rem 0;">{{ results.passed ? 'Félicitations !' : 'Continuez à réviser' }}</h1>
+    <p style="font-size: 16px; opacity: 0.9; margin: 0 0 1.5rem 0;">{{ quiz.title }}</p>
+    <div style="font-size: 64px; font-weight: 700; margin-bottom: 0.5rem;">{{ results.percentage|number_format(1) }}%</div>
+    <div style="font-size: 18px; opacity: 0.9;">{{ results.passed ? '✓ Quiz réussi' : '✗ Score insuffisant (seuil 50%)' }}</div>
+</div>
+
+{# Stats cards #}
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">
+            {{ results.correctCount }}/{{ results.totalQuestions }}
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">Réponses correctes</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">
+            {% if results.duration %}
+                {{ (results.duration / 60)|number_format(0) }}:{{ '%02d'|format(results.duration % 60) }}
+            {% else %}
+                -
+            {% endif %}
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">Durée (min:sec)</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem; border-radius: 12px;">
+        <div style="font-size: 36px; font-weight: 700; color: {{ results.passed ? '#10b981' : '#ef4444' }}; margin-bottom: 0.5rem;">
+            {{ results.passed ? '✓' : '✗' }}
+        </div>
+        <div style="font-size: 14px; color: #6b7280;">{{ results.passed ? 'Réussi' : 'Échoué' }}</div>
+    </div>
+</div>
+
+<div class="card" style="border-radius: 12px; margin-bottom: 2rem;">
+    <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Détail des réponses</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for detail in results.details %}
+            <div style="padding: 1.25rem; border-radius: 10px; background: {{ detail.isCorrect ? '#f0fdf4' : '#fef2f2' }}; border-left: 4px solid {{ detail.isCorrect ? '#10b981' : '#ef4444' }};">
+                <div style="display: flex; align-items: start; gap: 0.875rem; margin-bottom: 1rem;">
+                    <div style="width: 32px; height: 32px; background: {{ detail.isCorrect ? '#10b981' : '#ef4444' }}; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; flex-shrink: 0;">
+                        {{ detail.questionIndex + 1 }}
+                    </div>
+                    <strong style="flex: 1; color: #111827; font-size: 15px;">{{ detail.questionText }}</strong>
+                    <span style="padding: 0.25rem 0.75rem; background: {{ detail.isCorrect ? '#d1fae5' : '#fee2e2' }}; color: {{ detail.isCorrect ? '#065f46' : '#991b1b' }}; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        {{ detail.isCorrect ? '✓ Correct' : '✗ Incorrect' }}
+                    </span>
+                </div>
+
+                {% if detail.choices is not empty %}
+                <div style="display: flex; flex-direction: column; gap: 0.625rem; margin-left: 48px;">
+                    {% for choiceIndex, choice in detail.choices %}
+                        {% set choiceKey = choice.key ?? choiceIndex %}
+                        {% set isSelected = detail.selectedChoice == choiceKey %}
+                        {% set isCorrectChoice = choice.isCorrect ?? false %}
+                        <div style="padding: 0.75rem 1rem; border-radius: 8px; background: {{ isCorrectChoice ? '#d1fae5' : (isSelected and not isCorrectChoice ? '#fee2e2' : 'white') }}; border: 2px solid {{ isCorrectChoice ? '#10b981' : (isSelected and not isCorrectChoice ? '#ef4444' : '#e5e7eb') }}; display: flex; align-items: center; gap: 0.625rem;">
+                            {% if isSelected %}
+                                <span style="font-weight: 700; color: {{ isCorrectChoice ? '#10b981' : '#ef4444' }};">➤</span>
+                            {% endif %}
+                            <span style="flex: 1; font-size: 14px; color: #374151;">{{ choice.text ?? 'Choix ' ~ (choiceIndex + 1) }}</span>
+                            {% if isCorrectChoice %}
+                                <span style="color: #10b981; font-weight: 600; font-size: 13px;">✓ Bonne réponse</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Star Rating #}
+<div class="card" style="border-radius: 12px; margin-bottom: 2rem; text-align: center; padding: 2rem;">
+    <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Notez ce quiz</h3>
+    <form action="{{ path('fo_training_quizzes_rate', {id: quiz.id}) }}" method="post" id="ratingForm">
+        <input type="hidden" name="_token" value="{{ csrf_token('rate_quiz_' ~ quiz.id) }}">
+        <input type="hidden" name="score" id="ratingScore" value="{{ userRating ? userRating.score : 0 }}">
+        <div id="starRating" style="display: inline-flex; gap: 0.5rem; cursor: pointer; margin-bottom: 1rem;">
+            {% for i in 1..5 %}
+            <svg data-score="{{ i }}" style="width: 36px; height: 36px; transition: transform 0.15s, color 0.15s;" fill="{{ userRating and userRating.score >= i ? '#f59e0b' : '#d1d5db' }}" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            {% endfor %}
+        </div>
+        <div id="ratingLabel" style="font-size: 14px; color: #6b7280; margin-bottom: 1rem;">
+            {{ userRating ? 'Votre note : ' ~ userRating.score ~ '/5' : 'Cliquez sur une étoile' }}
+        </div>
+        <button type="submit" id="ratingSubmit" class="btn btn-primary btn-sm" style="display: {{ userRating ? 'inline-flex' : 'none' }};">
+            {{ userRating ? 'Modifier ma note' : 'Envoyer ma note' }}
+        </button>
+    </form>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+    <a href="{{ path('fo_training_quizzes_show', {id: quiz.id}) }}" class="btn btn-primary" style="flex: 1; justify-content: center;">
+        <svg style="width: 18px; height: 18px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refaire ce quiz
+    </a>
+    <a href="{{ path('fo_training_quizzes_recap_pdf', {id: quiz.id, attempt: attempt.id}) }}" class="btn btn-ghost" target="_blank">
+        <svg style="width: 18px; height: 18px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Recap PDF
+    </a>
+    {% if results.passed %}
+    <a href="{{ path('fo_training_quizzes_certificate_pdf', {id: quiz.id, attempt: attempt.id}) }}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;" target="_blank">
+        <svg style="width: 18px; height: 18px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+        </svg>
+        Certificat PDF
+    </a>
+    {% endif %}
+    <a href="{{ path('fo_training_quizzes_history') }}" class="btn btn-ghost">Voir mon historique</a>
+</div>
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function() {
+    const stars = document.querySelectorAll('#starRating svg');
+    const scoreInput = document.getElementById('ratingScore');
+    const label = document.getElementById('ratingLabel');
+    const submitBtn = document.getElementById('ratingSubmit');
+    const labels = ['', 'Mauvais', 'Moyen', 'Bien', 'Très bien', 'Excellent'];
+
+    function updateStars(score) {
+        stars.forEach(s => {
+            const val = parseInt(s.dataset.score);
+            s.setAttribute('fill', val <= score ? '#f59e0b' : '#d1d5db');
+            s.style.transform = val <= score ? 'scale(1.15)' : 'scale(1)';
+        });
+    }
+
+    stars.forEach(star => {
+        star.addEventListener('mouseenter', () => updateStars(parseInt(star.dataset.score)));
+        star.addEventListener('mouseleave', () => updateStars(parseInt(scoreInput.value) || 0));
+        star.addEventListener('click', () => {
+            const score = parseInt(star.dataset.score);
+            scoreInput.value = score;
+            updateStars(score);
+            label.textContent = labels[score] + ' (' + score + '/5)';
+            submitBtn.style.display = 'inline-flex';
+            submitBtn.textContent = 'Envoyer ma note';
+        });
+    });
+})();
+</script>
+{% endblock %}
+{% endblock %}

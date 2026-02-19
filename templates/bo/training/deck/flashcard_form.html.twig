@@ -1,0 +1,40 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}{% if is_new %}Nouvelle Flashcard{% else %}Modifier Flashcard{% endif %} - Administration{% endblock %}
+{% block breadcrumb %}Training > Decks > {{ deck.title }} > {% if is_new %}Nouvelle{% else %}Modifier{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if is_new %}Ajouter une Flashcard{% else %}Modifier la Flashcard{% endif %}</h1>
+    <p class="text-muted">Deck: {{ deck.title }}</p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+            <div class="form-group">
+                {{ form_label(form.front) }}
+                {{ form_widget(form.front, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.front) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.back) }}
+                {{ form_widget(form.back, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.back) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.position) }}
+                {{ form_widget(form.position, {'attr': {'class': 'form-control', 'style': 'max-width: 100px;'}}) }}
+                {{ form_errors(form.position) }}
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('bo_decks_show', {id: deck.id}) }}" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">{% if is_new %}Ajouter{% else %}Enregistrer{% endif %}</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

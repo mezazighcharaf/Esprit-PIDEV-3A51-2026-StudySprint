@@ -1,0 +1,23 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Matière #{{ item.id }} - BO{% endblock %}
+{% block breadcrumb %}Matières / {{ item.name }}{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">{{ item.name }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_subjects_edit', {id: item.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_subjects_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+<div class="card"><div class="card-body">
+    <dl class="grid grid-2 gap-4">
+        <div><dt class="text-muted">ID</dt><dd>{{ item.id }}</dd></div>
+        <div><dt class="text-muted">Nom</dt><dd>{{ item.name }}</dd></div>
+        <div><dt class="text-muted">Code</dt><dd>{{ item.code ?? '-' }}</dd></div>
+        <div><dt class="text-muted">Créé par</dt><dd>{{ item.createdBy.fullName }}</dd></div>
+        <div><dt class="text-muted">Description</dt><dd>{{ item.description ?? '-' }}</dd></div>
+        <div><dt class="text-muted">Créé le</dt><dd>{{ item.createdAt|date('d/m/Y H:i') }}</dd></div>
+    </dl>
+</div></div>
+{% endblock %}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 13px; color: #374151; padding: 30px; }
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #667eea; padding-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: 700; color: #667eea; }
+        .title { font-size: 20px; font-weight: 700; color: #1f2937; margin-top: 10px; }
+        .meta { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .meta-item { font-size: 12px; color: #6b7280; }
+        .meta-value { font-weight: 600; color: #1f2937; }
+        .score-box { text-align: center; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        .score-box.pass { background: #f0fdf4; border: 2px solid #10b981; }
+        .score-box.fail { background: #fef2f2; border: 2px solid #ef4444; }
+        .score-number { font-size: 36px; font-weight: 700; }
+        .score-number.pass { color: #10b981; }
+        .score-number.fail { color: #ef4444; }
+        .question { margin-bottom: 15px; padding: 10px; border-left: 3px solid #d1d5db; }
+        .question.correct { border-left-color: #10b981; background: #f0fdf4; }
+        .question.wrong { border-left-color: #ef4444; background: #fef2f2; }
+        .q-header { font-weight: 600; margin-bottom: 6px; font-size: 13px; }
+        .q-num { display: inline-block; width: 22px; height: 22px; border-radius: 4px; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: 700; margin-right: 6px; }
+        .q-num.correct { background: #10b981; }
+        .q-num.wrong { background: #ef4444; }
+        .choice { padding: 4px 8px; margin: 3px 0 3px 28px; font-size: 12px; border-radius: 4px; }
+        .choice.selected { font-weight: 600; }
+        .choice.correct-choice { background: #d1fae5; }
+        .choice.wrong-choice { background: #fee2e2; }
+        .footer { margin-top: 20px; text-align: center; font-size: 10px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .stats { display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 20px; font-weight: 700; color: #1f2937; }
+        .stat-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">StudySprint</div>
+        <div class="title">{{ quiz.title }}</div>
+    </div>
+
+    <table style="width: 100%; margin-bottom: 15px; font-size: 12px;">
+        <tr>
+            <td><span style="color: #6b7280;">Utilisateur:</span> <strong>{{ user.fullName ?? user.email }}</strong></td>
+            <td style="text-align: right;"><span style="color: #6b7280;">Date:</span> <strong>{{ attempt.startedAt|date('d/m/Y H:i') }}</strong></td>
+        </tr>
+        <tr>
+            <td><span style="color: #6b7280;">Matiere:</span> <strong>{{ quiz.subject ? quiz.subject.name : 'N/A' }}</strong></td>
+            <td style="text-align: right;"><span style="color: #6b7280;">Difficulte:</span> <strong>{{ quiz.difficulty }}</strong></td>
+        </tr>
+    </table>
+
+    <div class="score-box {{ results.passed ? 'pass' : 'fail' }}">
+        <div class="score-number {{ results.passed ? 'pass' : 'fail' }}">{{ results.percentage|number_format(1) }}%</div>
+        <div>{{ results.correctCount }}/{{ results.totalQuestions }} reponses correctes - {{ results.passed ? 'REUSSI' : 'ECHOUE' }}</div>
+    </div>
+
+    <h3 style="font-size: 15px; margin-bottom: 12px; color: #1f2937;">Detail des reponses</h3>
+
+    {% for detail in results.details %}
+    <div class="question {{ detail.isCorrect ? 'correct' : 'wrong' }}">
+        <div class="q-header">
+            <span class="q-num {{ detail.isCorrect ? 'correct' : 'wrong' }}">{{ detail.questionIndex + 1 }}</span>
+            {{ detail.questionText }}
+        </div>
+        {% if detail.choices is not empty %}
+            {% for choiceIndex, choice in detail.choices %}
+                {% set choiceKey = choice.key ?? choiceIndex %}
+                {% set isSelected = detail.selectedChoice == choiceKey %}
+                {% set isCorrectChoice = choice.isCorrect ?? false %}
+                <div class="choice {{ isSelected ? 'selected' }} {{ isCorrectChoice ? 'correct-choice' : (isSelected ? 'wrong-choice' : '') }}">
+                    {{ isSelected ? '>' : ' ' }} {{ choice.text ?? 'Choix ' ~ (choiceIndex + 1) }}
+                    {% if isCorrectChoice %} (Bonne reponse){% endif %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="footer">
+        Fiche recapitulative generee par StudySprint le {{ "now"|date('d/m/Y a H:i') }}
+    </div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - link "StudySprint" [ref=e5] [cursor=pointer]:
+        - /url: /fo/subjects
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e9]: StudySprint
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Navigation
+          - list [ref=e13]:
+            - listitem [ref=e14]:
+              - link "Matières" [ref=e15] [cursor=pointer]:
+                - /url: /fo/subjects
+                - img [ref=e16]
+                - generic [ref=e19]: Matières
+            - listitem [ref=e20]:
+              - link "Planning" [ref=e21] [cursor=pointer]:
+                - /url: /fo/planning
+                - img [ref=e22]
+                - generic [ref=e24]: Planning
+            - listitem [ref=e25]:
+              - link "Groupes" [ref=e26] [cursor=pointer]:
+                - /url: /fo/groups
+                - img [ref=e27]
+                - generic [ref=e32]: Groupes
+        - generic [ref=e33]:
+          - generic [ref=e34]: Training
+          - list [ref=e35]:
+            - listitem [ref=e36]:
+              - link "Quiz" [ref=e37] [cursor=pointer]:
+                - /url: /fo/training/quizzes
+                - img [ref=e38]
+                - generic [ref=e41]: Quiz
+            - listitem [ref=e42]:
+              - link "Flashcards" [ref=e43] [cursor=pointer]:
+                - /url: /fo/training/decks
+                - img [ref=e44]
+                - generic [ref=e47]: Flashcards
+      - generic [ref=e48]:
+        - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+          - /url: /fo/profile
+          - generic [ref=e50]: CH
+          - generic [ref=e51]:
+            - generic [ref=e52]: charaf mezazigh
+            - generic [ref=e53]: STUDENT
+        - link "Déconnexion" [ref=e54] [cursor=pointer]:
+          - /url: /logout
+          - img [ref=e55]
+          - generic [ref=e58]: Déconnexion
+    - main [ref=e59]:
+      - generic [ref=e60]:
+        - heading "Dashboard" [level=1] [ref=e61]
+        - generic [ref=e63]:
+          - img
+          - textbox "Rechercher..." [ref=e64]
+      - generic [ref=e65]:
+        - link "Retour au planning" [ref=e67] [cursor=pointer]:
+          - /url: /fo/planning
+          - img [ref=e68]
+          - text: Retour au planning
+        - generic [ref=e71]:
+          - img [ref=e73]
+          - generic [ref=e75]:
+            - heading "Nouvelle Session" [level=1] [ref=e76]
+            - paragraph [ref=e77]: Planifiez une session de révision, quiz ou flashcards
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: Titre de la session
+            - textbox "Titre de la session" [ref=e84]:
+              - /placeholder: "Ex: Révision Algèbre"
+          - generic [ref=e85]:
+            - generic [ref=e86]: Type de session
+            - combobox "Type de session" [ref=e87]:
+              - option "Révision" [selected]
+              - option "Quiz"
+              - option "Flashcards"
+              - option "Personnalisé"
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - generic [ref=e90]: Date et heure de début
+              - textbox "Date et heure de début" [ref=e91]
+            - generic [ref=e92]:
+              - generic [ref=e93]: Date et heure de fin
+              - textbox "Date et heure de fin" [ref=e94]
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]: Priorité
+              - combobox "Priorité" [ref=e98]:
+                - option "Basse" [selected]
+                - option "Moyenne"
+                - option "Haute"
+            - generic [ref=e99]:
+              - generic [ref=e100]: Statut
+              - combobox "Statut" [ref=e101]:
+                - option "À faire" [selected]
+                - option "En cours"
+                - option "Terminé"
+          - generic [ref=e102]:
+            - generic [ref=e103]: Notes
+            - textbox "Notes" [ref=e104]:
+              - /placeholder: Notes additionnelles...
+          - generic [ref=e105]:
+            - link "Annuler" [ref=e106] [cursor=pointer]:
+              - /url: /fo/planning
+            - button "Créer la session" [ref=e107] [cursor=pointer]
+  - region "Symfony Web Debug Toolbar" [ref=e108]:
+    - generic [ref=e110]:
+      - link "200 @ fo_planning_session_new" [ref=e112] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=request
+        - generic [ref=e113]:
+          - generic [ref=e114]: "200"
+          - generic [ref=e115]: "@"
+          - generic [ref=e116]: fo_planning_session_new
+      - link "292 ms" [ref=e118] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=time
+        - generic [ref=e119]:
+          - generic [ref=e120]: "292"
+          - generic [ref=e121]: ms
+      - link "26.0 MiB" [ref=e123] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=time
+        - generic [ref=e124]:
+          - generic [ref=e125]: "26.0"
+          - generic [ref=e126]: MiB
+      - link "Cache 1" [ref=e128] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=form
+        - generic [ref=e129]:
+          - img "Cache" [ref=e130]
+          - generic [ref=e136]: "1"
+      - link "Logger 14" [ref=e138] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=logger
+        - generic [ref=e139]:
+          - img "Logger" [ref=e140]
+          - generic [ref=e144]: "14"
+      - link "Security alice.martin@studysprint.local" [ref=e146] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=security
+        - generic [ref=e147]:
+          - img "Security"
+          - generic [ref=e151]: alice.martin@studysprint.local
+      - link "Twig 18 ms" [ref=e153] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=twig
+        - generic [ref=e154]:
+          - img "Twig" [ref=e155]
+          - generic [ref=e159]: "18"
+          - generic [ref=e160]: ms
+      - link "2 in 0.73 ms" [ref=e162] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=db
+        - generic [ref=e163]:
+          - img [ref=e164]
+          - generic [ref=e169]: "2"
+          - generic [ref=e170]: in 0.73 ms
+      - link "6.4.33" [ref=e172] [cursor=pointer]:
+        - /url: http://127.0.0.1:8000/_profiler/407d2c?panel=config
+        - generic [ref=e173]:
+          - img [ref=e175]
+          - generic [ref=e177]: 6.4.33
+      - generic [ref=e179]:
+        - img [ref=e181]
+        - generic [ref=e184]: Server
+      - button "Close Toolbar" [expanded] [ref=e185] [cursor=pointer]:
+        - img [ref=e186]
+```

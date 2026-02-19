@@ -1,0 +1,113 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - link "StudySprint" [ref=e5] [cursor=pointer]:
+      - /url: /fo/subjects
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - generic [ref=e9]: StudySprint
+    - navigation [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Navigation
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - link "Matières" [ref=e15] [cursor=pointer]:
+              - /url: /fo/subjects
+              - img [ref=e16]
+              - generic [ref=e19]: Matières
+          - listitem [ref=e20]:
+            - link "Planning" [ref=e21] [cursor=pointer]:
+              - /url: /fo/planning
+              - img [ref=e22]
+              - generic [ref=e24]: Planning
+          - listitem [ref=e25]:
+            - link "Groupes" [ref=e26] [cursor=pointer]:
+              - /url: /fo/groups
+              - img [ref=e27]
+              - generic [ref=e32]: Groupes
+      - generic [ref=e33]:
+        - generic [ref=e34]: Training
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "Quiz" [ref=e37] [cursor=pointer]:
+              - /url: /fo/training/quizzes
+              - img [ref=e38]
+              - generic [ref=e41]: Quiz
+          - listitem [ref=e42]:
+            - link "Flashcards" [ref=e43] [cursor=pointer]:
+              - /url: /fo/training/decks
+              - img [ref=e44]
+              - generic [ref=e47]: Flashcards
+    - generic [ref=e48]:
+      - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+        - /url: /fo/profile
+        - generic [ref=e50]: CH
+        - generic [ref=e51]:
+          - generic [ref=e52]: charaf mezazigh
+          - generic [ref=e53]: STUDENT
+      - link "Déconnexion" [ref=e54] [cursor=pointer]:
+        - /url: /logout
+        - img [ref=e55]
+        - generic [ref=e58]: Déconnexion
+  - main [ref=e59]:
+    - generic [ref=e60]:
+      - heading "Dashboard" [level=1] [ref=e61]
+      - generic [ref=e63]:
+        - img
+        - textbox "Rechercher..." [ref=e64]
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - link "Retour aux decks" [ref=e68] [cursor=pointer]:
+          - /url: /fo/training/decks
+          - img [ref=e69]
+          - text: Retour aux decks
+        - generic [ref=e72]:
+          - img [ref=e73]
+          - generic [ref=e75]:
+            - heading "Générer un Deck avec l'IA" [level=1] [ref=e76]
+            - paragraph [ref=e77]: L'IA créera des flashcards optimisées pour la mémorisation
+      - generic [ref=e78]:
+        - generic [ref=e81]:
+          - paragraph [ref=e82]: Génération en cours...
+          - paragraph [ref=e83]: "Temps écoulé : 7s — veuillez patienter..."
+        - generic [ref=e84]:
+          - generic [ref=e85]: Matière *
+          - combobox [ref=e86]:
+            - option "Sélectionnez une matière"
+            - option "Mathématiques Avancées" [selected]
+            - option "Physique Quantique"
+            - option "Chimie Organique"
+        - generic [ref=e87]:
+          - generic [ref=e88]: Chapitre (optionnel)
+          - combobox [ref=e89]:
+            - option "Tous les chapitres" [selected]
+            - option "Suites et séries (Mathématiques Avancées)"
+            - option "Intégrales (Mathématiques Avancées)"
+            - option "Équations différentielles (Mathématiques Avancées)"
+        - generic [ref=e90]:
+          - generic [ref=e91]: Nombre de cartes *
+          - spinbutton [ref=e92]: "10"
+          - paragraph [ref=e93]: Entre 1 et 50 cartes
+        - generic [ref=e94]:
+          - generic [ref=e95]: Sujet spécifique (optionnel)
+          - 'textbox "Ex: Les dérivées, La photosynthèse..." [ref=e96]'
+          - paragraph [ref=e97]: Précisez un thème pour des cartes plus ciblées
+        - generic [ref=e98]:
+          - generic [ref=e99] [cursor=pointer]:
+            - checkbox "Inclure des indices (recommandé)" [checked] [ref=e100]
+            - generic [ref=e101]: Inclure des indices (recommandé)
+          - paragraph [ref=e102]: Les indices facilitent la mémorisation
+        - generic [ref=e104]:
+          - img [ref=e105]
+          - generic [ref=e107]:
+            - strong [ref=e108]: "Algorithme SM-2 :"
+            - text: Vos flashcards seront automatiquement programmées pour révision selon l'algorithme de répétition espacée SuperMemo 2. La génération peut prendre 30 à 90 secondes.
+        - generic [ref=e109]:
+          - button "Générer le deck" [disabled] [ref=e110]:
+            - img [ref=e111]
+            - generic [ref=e113]: Générer le deck
+          - link "Annuler" [ref=e114] [cursor=pointer]:
+            - /url: /fo/training/decks
+```

@@ -1,0 +1,159 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Modifier {{ deck.title }} - Flashcards{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('fo_training_decks_manage_my_decks') }}" style="color: #6b7280; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 0.25rem;">
+        <svg style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour à mes decks
+    </a>
+</div>
+
+<h1 style="font-size: 1.875rem; font-weight: 700; color: #1f2937; margin-bottom: 2rem;">Modifier le Deck</h1>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div>
+        <form method="post">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h2 style="font-size: 1.25rem; font-weight: 600;">Informations du Deck</h2>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">Titre du deck</label>
+                        <input type="text" name="title" class="form-input" required value="{{ deck.title }}">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">Matière</label>
+                        <select name="subject_id" class="form-select" required id="subject-select">
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" data-chapters="{{ subject.chapters|json_encode }}" {{ deck.subject.id == subject.id ? 'selected' : '' }}>{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">Chapitre</label>
+                        <select name="chapter_id" class="form-select" id="chapter-select">
+                            <option value="">-- Aucun chapitre --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;">Flashcards</h2>
+                        <p style="font-size: 13px; color: #6b7280; font-weight: normal; margin: 0;">Modifiez, ajoutez ou supprimez des cartes (minimum 1 carte)</p>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addCard()">
+                        <svg style="width: 14px; height: 14px; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        + Ajouter une autre carte
+                    </button>
+                </div>
+                <div class="card-body" id="cards-container"></div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                <a href="{{ path('fo_training_decks_manage_my_decks') }}" class="btn btn-ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <div class="card" style="position: sticky; top: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-body">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span id="tip-icon">💡</span>
+                    <span id="tip-title">Astuce</span>
+                </h3>
+                <p id="tip-content" style="opacity: 0.95; font-size: 14px;"></p>
+                <button type="button" onclick="rotateTip()" class="btn" style="margin-top: 1rem; background: rgba(255,255,255,0.2); color: white; border: none; width: 100%;">
+                    Autre astuce
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const tips = {{ tips|json_encode|raw }};
+const existingCards = {{ deck.flashcards|map(card => {front: card.front, back: card.back, hint: card.hint})|json_encode|raw }};
+let currentTipIndex = 0;
+let cardCount = 0;
+
+function rotateTip() {
+    currentTipIndex = (currentTipIndex + 1) % tips.length;
+    const tip = tips[currentTipIndex];
+    document.getElementById('tip-icon').textContent = tip.icon;
+    document.getElementById('tip-title').textContent = tip.title;
+    document.getElementById('tip-content').textContent = tip.content;
+}
+
+function addCard(front = '', back = '', hint = '') {
+    const container = document.getElementById('cards-container');
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.style.marginBottom = '1rem';
+    cardDiv.innerHTML = `
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <strong style="color: #374151;">Carte ${cardCount + 1}</strong>
+                <button type="button" class="btn btn-ghost btn-sm" style="color: #ef4444;" onclick="this.closest('.card').remove()">
+                    <svg style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label class="form-label">Recto</label>
+                <textarea name="cards[${cardCount}][front]" class="form-textarea" rows="2" required>${front}</textarea>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label class="form-label">Verso</label>
+                <textarea name="cards[${cardCount}][back]" class="form-textarea" rows="3" required>${back}</textarea>
+            </div>
+            <div>
+                <label class="form-label">Indice</label>
+                <input type="text" name="cards[${cardCount}][hint]" class="form-input" value="${hint || ''}">
+            </div>
+        </div>
+    `;
+    container.appendChild(cardDiv);
+    cardCount++;
+}
+
+// Subject/Chapter
+const initialChapterId = {{ deck.chapter ? deck.chapter.id : 'null' }};
+document.getElementById('subject-select').addEventListener('change', function() {
+    const chapterSelect = document.getElementById('chapter-select');
+    const selectedOption = this.options[this.selectedIndex];
+    const chapters = selectedOption.dataset.chapters ? JSON.parse(selectedOption.dataset.chapters) : [];
+    
+    chapterSelect.innerHTML = '<option value="">-- Aucun chapitre --</option>';
+    chapters.forEach(chapter => {
+        const option = document.createElement('option');
+        option.value = chapter.id;
+        option.textContent = chapter.title;
+        if (initialChapterId && chapter.id === initialChapterId) {
+            option.selected = true;
+        }
+        chapterSelect.appendChild(option);
+    });
+});
+
+// Trigger initial chapter load
+document.getElementById('subject-select').dispatchEvent(new Event('change'));
+
+// Initialize
+rotateTip();
+existingCards.forEach(card => addCard(card.front, card.back, card.hint));
+</script>
+{% endblock %}

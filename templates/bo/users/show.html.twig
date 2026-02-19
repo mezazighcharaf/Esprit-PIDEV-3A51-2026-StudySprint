@@ -1,0 +1,27 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Utilisateur #{{ user.id }} - BO{% endblock %}
+{% block breadcrumb %}Utilisateurs / {{ user.fullName }}{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">{{ user.fullName }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_users_edit', {id: user.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_users_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="grid grid-2 gap-4">
+            <div><dt class="text-muted">ID</dt><dd>{{ user.id }}</dd></div>
+            <div><dt class="text-muted">Email</dt><dd>{{ user.email }}</dd></div>
+            <div><dt class="text-muted">Nom complet</dt><dd>{{ user.fullName }}</dd></div>
+            <div><dt class="text-muted">Type</dt><dd><span class="badge">{{ user.userType }}</span></dd></div>
+            <div><dt class="text-muted">Créé le</dt><dd>{{ user.createdAt|date('d/m/Y H:i') }}</dd></div>
+            <div><dt class="text-muted">Modifié le</dt><dd>{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i') : '-' }}</dd></div>
+        </dl>
+    </div>
+</div>
+{% endblock %}

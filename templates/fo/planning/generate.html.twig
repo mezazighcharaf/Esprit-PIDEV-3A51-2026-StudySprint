@@ -1,0 +1,110 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Générer un Plan - StudySprint{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ path('fo_planning_index') }}" class="btn btn-ghost btn-sm">&larr; Retour aux plans</a>
+</div>
+
+<div class="page-header">
+    <h1>Générer un Plan de Révision</h1>
+    <p class="text-muted">Créez automatiquement un plan de révision basé sur vos critères</p>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success mb-4">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger mb-4">{{ message }}</div>
+{% endfor %}
+
+{% if overlappingPlan %}
+<div class="card mb-6 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h3>Plan existant détecté</h3>
+    </div>
+    <div class="card-body">
+        <p>Un plan existe déjà pour cette matière dans la période sélectionnée :</p>
+        <ul class="mb-4">
+            <li><strong>{{ overlappingPlan.title }}</strong></li>
+            <li>Du {{ overlappingPlan.startDate|date('d/m/Y') }} au {{ overlappingPlan.endDate|date('d/m/Y') }}</li>
+            <li>{{ overlappingPlan.tasks|length }} tâche(s)</li>
+        </ul>
+        <form method="post">
+            <input type="hidden" name="_token" value="{{ csrf_token('replace_plan') }}">
+            <input type="hidden" name="replace" value="1">
+            {% for child in form %}
+                <input type="hidden" name="{{ child.vars.full_name }}" value="{{ child.vars.data is same as(true) ? '1' : (child.vars.data is same as(false) ? '' : child.vars.data) }}">
+            {% endfor %}
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-warning">Remplacer le plan existant</button>
+                <a href="{{ path('fo_planning_show', {id: overlappingPlan.id}) }}" class="btn btn-secondary">Voir le plan existant</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Paramètres du plan</h2>
+    </div>
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form'}}) }}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+                {{ form_label(form.subject) }}
+                {{ form_widget(form.subject, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.subject) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.sessionsPerDay) }}
+                {{ form_widget(form.sessionsPerDay, {'attr': {'class': 'form-input', 'min': 1, 'max': 4}}) }}
+                {{ form_errors(form.sessionsPerDay) }}
+                <small class="text-muted">Entre 1 et 4 sessions par jour</small>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.startDate) }}
+                {{ form_widget(form.startDate, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.startDate) }}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.endDate) }}
+                {{ form_widget(form.endDate, {'attr': {'class': 'form-input'}}) }}
+                {{ form_errors(form.endDate) }}
+            </div>
+
+            <div class="form-group col-span-full">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    {{ form_widget(form.skipWeekends, {'attr': {'class': 'form-checkbox'}}) }}
+                    <span>Exclure les week-ends</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="btn btn-primary">Générer le plan</button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<div class="card mt-6">
+    <div class="card-header">
+        <h3>Comment fonctionne la génération ?</h3>
+    </div>
+    <div class="card-body text-muted">
+        <ul class="list-disc pl-5 space-y-2">
+            <li>Les tâches sont réparties sur les jours disponibles selon le nombre de sessions par jour</li>
+            <li>Pour chaque chapitre de la matière, des tâches de révision, quiz et flashcards sont créées</li>
+            <li>Les horaires suggérés sont : 9h, 14h, 17h et 19h selon le nombre de sessions</li>
+            <li>Si vous excluez les week-ends, samedi et dimanche seront ignorés</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

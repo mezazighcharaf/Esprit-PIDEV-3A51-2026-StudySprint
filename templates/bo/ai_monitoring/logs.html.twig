@@ -1,0 +1,186 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Logs IA - BO{% endblock %}
+{% block breadcrumb %}<a href="{{ path('bo_ai_monitoring_dashboard') }}">Monitoring IA</a> / Logs{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Logs des requêtes IA</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_ai_monitoring_dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body">
+        <form method="get" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 14px;">Module</label>
+                <select name="feature" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="">Tous les modules</option>
+                    <option value="quiz" {{ feature == 'quiz' ? 'selected' : '' }}>Quiz</option>
+                    <option value="flashcard" {{ feature == 'flashcard' ? 'selected' : '' }}>Flashcard</option>
+                    <option value="profile" {{ feature == 'profile' ? 'selected' : '' }}>Profil</option>
+                    <option value="summary" {{ feature == 'summary' ? 'selected' : '' }}>Résumé (Chapitre)</option>
+                    <option value="planning_suggest" {{ feature == 'planning_suggest' ? 'selected' : '' }}>Planning</option>
+                    <option value="post_summary" {{ feature == 'post_summary' ? 'selected' : '' }}>Post</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 14px;">Status</label>
+                <select name="status" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="">Tous les statuts</option>
+                    <option value="success" {{ status == 'success' ? 'selected' : '' }}>Succès</option>
+                    <option value="failed" {{ status == 'failed' ? 'selected' : '' }}>Échec</option>
+                    <option value="pending" {{ status == 'pending' ? 'selected' : '' }}>En attente</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>{{ totalLogs }} log(s) trouvé(s)</h3>
+    </div>
+    <div class="card-body">
+        {% if logs is empty %}
+            <p class="text-muted">Aucun log trouvé avec ces filtres.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Module</th>
+                            <th>Utilisateur</th>
+                            <th>Status</th>
+                            <th>Latence</th>
+                            <th>Erreur</th>
+                            <th>Feedback</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td><strong>#{{ log.id }}</strong></td>
+                            <td><span class="badge badge-secondary">{{ log.feature }}</span></td>
+                            <td style="font-size: 13px;">{{ log.user ? log.user.fullName : '-' }}</td>
+                            <td>
+                                <span class="badge badge-{{ log.status == 'success' ? 'success' : (log.status == 'failed' ? 'danger' : 'warning') }}">
+                                    {{ log.status }}
+                                </span>
+                            </td>
+                            <td>{{ log.latencyMs ? log.latencyMs ~ 'ms' : '-' }}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #ef4444;">
+                                {{ log.errorMessage ? log.errorMessage : '-' }}
+                            </td>
+                            <td>
+                                {% if log.userFeedback %}
+                                <span style="color: #f59e0b;">
+                                    {% for i in 1..5 %}
+                                        {{ i <= log.userFeedback ? '★' : '☆' }}
+                                    {% endfor %}
+                                </span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 12px; color: #6b7280;">{{ log.createdAt|date('d/m/Y H:i:s') }}</td>
+                            <td>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-sm btn-ghost log-detail-btn"
+                                    data-id="{{ log.id }}"
+                                    data-input="{{ log.inputJson|json_encode|e('html_attr') }}"
+                                    data-output="{{ log.outputJson|json_encode|e('html_attr') }}"
+                                    data-prompt="{{ log.prompt|default('')|e('html_attr') }}"
+                                    title="Voir détails">
+                                    👁️
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if totalPages > 1 %}
+            <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+                {% if page > 1 %}
+                <a href="{{ path('bo_ai_monitoring_logs', {page: page - 1, feature: feature, status: status}) }}" class="btn btn-secondary btn-sm">← Précédent</a>
+                {% endif %}
+                <span class="btn btn-ghost btn-sm">Page {{ page }} / {{ totalPages }}</span>
+                {% if page < totalPages %}
+                <a href="{{ path('bo_ai_monitoring_logs', {page: page + 1, feature: feature, status: status}) }}" class="btn btn-secondary btn-sm">Suivant →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div id="logDetailsModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; max-width: 800px; max-height: 80vh; overflow-y: auto; padding: 2rem; position: relative;">
+        <button onclick="closeLogDetails()" style="position: absolute; top: 1rem; right: 1rem; background: #f3f4f6; border: none; border-radius: 6px; padding: 0.5rem; cursor: pointer;">✕</button>
+        <h3 style="margin: 0 0 1.5rem 0;">Détails du log #<span id="logId"></span></h3>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Prompt <span style="font-size:11px;color:#9ca3af;font-weight:400;">(tronqué pour sécurité)</span></h4>
+            <pre id="logPrompt" style="background: #f9fafb; padding: 1rem; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"></pre>
+            <button type="button" id="togglePromptBtn" onclick="toggleFullPrompt()" style="margin-top:0.5rem;font-size:12px;color:#667eea;background:none;border:none;cursor:pointer;text-decoration:underline;">Afficher le prompt complet</button>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Input</h4>
+            <pre id="logInput" style="background: #f9fafb; padding: 1rem; border-radius: 6px; font-size: 12px; overflow-x: auto;"></pre>
+        </div>
+
+        <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">Output</h4>
+            <pre id="logOutput" style="background: #f9fafb; padding: 1rem; border-radius: 6px; font-size: 12px; overflow-x: auto;"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+var _fullPrompt = '';
+var _promptRevealed = false;
+
+function maskPrompt(text) {
+    if (!text || text.length <= 300) return text || 'N/A';
+    return text.substring(0, 150) + '\n\n[... ' + (text.length - 300) + ' caractères masqués ...]\n\n' + text.substring(text.length - 150);
+}
+
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.log-detail-btn');
+    if (!btn) return;
+    var id = btn.dataset.id;
+    var input = btn.dataset.input ? JSON.parse(btn.dataset.input) : null;
+    var output = btn.dataset.output ? JSON.parse(btn.dataset.output) : null;
+    var prompt = btn.dataset.prompt || '';
+    _fullPrompt = prompt;
+    _promptRevealed = false;
+    document.getElementById('logId').textContent = id;
+    document.getElementById('logPrompt').textContent = maskPrompt(_fullPrompt);
+    document.getElementById('togglePromptBtn').textContent = 'Afficher le prompt complet';
+    document.getElementById('logInput').textContent = input ? JSON.stringify(input, null, 2) : 'N/A';
+    document.getElementById('logOutput').textContent = output ? JSON.stringify(output, null, 2) : 'N/A';
+    document.getElementById('logDetailsModal').style.display = 'flex';
+});
+
+function toggleFullPrompt() {
+    _promptRevealed = !_promptRevealed;
+    document.getElementById('logPrompt').textContent = _promptRevealed ? (_fullPrompt || 'N/A') : maskPrompt(_fullPrompt);
+    document.getElementById('togglePromptBtn').textContent = _promptRevealed ? 'Masquer le prompt' : 'Afficher le prompt complet';
+}
+
+function closeLogDetails() {
+    document.getElementById('logDetailsModal').style.display = 'none';
+}
+</script>
+{% endblock %}

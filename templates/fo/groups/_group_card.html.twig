@@ -1,0 +1,40 @@
+{# Composant: Card Groupe (utilisé dans index) #}
+{# Props attendues: group #}
+<div class="card hover:shadow-lg transition-shadow duration-200">
+    <div class="card-body">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <h3 class="text-xl font-semibold text-gray-900 flex-1">{{ group.name }}</h3>
+            <span class="badge badge-{{ group.privacy == 'PUBLIC' ? 'success' : 'warning' }} flex-shrink-0">
+                {{ group.privacy }}
+            </span>
+        </div>
+        
+        {% if group.description %}
+            <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                {{ group.description|length > 120 ? group.description|slice(0, 120) ~ '...' : group.description }}
+            </p>
+        {% else %}
+            <p class="text-gray-400 mb-4 text-sm italic">Aucune description</p>
+        {% endif %}
+
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div class="flex items-center gap-4 text-sm text-gray-500">
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    {{ group.members|length }} membre{{ group.members|length > 1 ? 's' : '' }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    {{ group.posts|length }} post{{ group.posts|length > 1 ? 's' : '' }}
+                </span>
+            </div>
+            <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-primary btn-sm">
+                Voir le groupe
+            </a>
+        </div>
+    </div>
+</div>

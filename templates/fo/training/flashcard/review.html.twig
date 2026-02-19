@@ -1,0 +1,181 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Revision - {{ deck.title }}{% endblock %}
+{% block page_title %}{{ deck.title }}{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <div class="review-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress.percentage }}%"></div>
+        </div>
+        <span class="progress-text">{{ progress.current }}/{{ progress.total }}</span>
+    </div>
+
+    <div class="flashcard-wrapper">
+        <div class="flashcard {% if show_back %}flipped{% endif %}">
+            <div class="flashcard-front">
+                <div class="flashcard-content">
+                    <p>{{ card.front }}</p>
+                </div>
+                <form method="post" class="flashcard-action">
+                    <input type="hidden" name="action" value="flip">
+                    <button type="submit" class="btn btn-primary btn-lg">Voir la reponse</button>
+                </form>
+            </div>
+
+            <div class="flashcard-back">
+                <div class="flashcard-content">
+                    <p class="flashcard-question">{{ card.front }}</p>
+                    <hr>
+                    <p class="flashcard-answer">{{ card.back }}</p>
+                </div>
+                <div class="flashcard-actions">
+                    <form method="post" class="rating-form">
+                        <input type="hidden" name="action" value="again">
+                        <button type="submit" class="btn btn-rating btn-again">
+                            <span class="rating-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                </svg>
+                            </span>
+                            <span class="rating-label">A revoir</span>
+                        </button>
+                    </form>
+                    <form method="post" class="rating-form">
+                        <input type="hidden" name="action" value="good">
+                        <button type="submit" class="btn btn-rating btn-good">
+                            <span class="rating-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </span>
+                            <span class="rating-label">Bien</span>
+                        </button>
+                    </form>
+                    <form method="post" class="rating-form">
+                        <input type="hidden" name="action" value="easy">
+                        <button type="submit" class="btn btn-rating btn-easy">
+                            <span class="rating-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                </svg>
+                            </span>
+                            <span class="rating-label">Facile</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="review-nav">
+        <a href="{{ path('training_deck_index') }}" class="btn btn-secondary">Quitter</a>
+    </div>
+</div>
+
+<style>
+.review-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.review-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s;
+}
+.progress-text { font-size: 0.875rem; color: var(--text-secondary); }
+
+.flashcard-wrapper {
+    perspective: 1000px;
+    margin-bottom: 2rem;
+}
+
+.flashcard {
+    position: relative;
+    min-height: 350px;
+}
+
+.flashcard-front,
+.flashcard-back {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.flashcard-front {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 350px;
+}
+
+.flashcard-back {
+    display: none;
+}
+
+.flashcard.flipped .flashcard-front { display: none; }
+.flashcard.flipped .flashcard-back { display: block; }
+
+.flashcard-content {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.flashcard-content p { font-size: 1.25rem; margin: 0; }
+.flashcard-question { color: var(--text-secondary); font-size: 1rem !important; }
+.flashcard-answer { font-weight: 600; }
+
+.flashcard-action { margin-top: auto; }
+
+.flashcard-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.rating-form { flex: 1; }
+
+.btn-rating {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-rating:hover { transform: translateY(-2px); }
+
+.btn-again:hover { border-color: var(--danger); color: var(--danger); }
+.btn-good:hover { border-color: var(--primary); color: var(--primary); }
+.btn-easy:hover { border-color: var(--success); color: var(--success); }
+
+.rating-icon { margin-bottom: 0.5rem; }
+.rating-label { font-size: 0.875rem; }
+
+.review-nav { text-align: center; }
+</style>
+{% endblock %}

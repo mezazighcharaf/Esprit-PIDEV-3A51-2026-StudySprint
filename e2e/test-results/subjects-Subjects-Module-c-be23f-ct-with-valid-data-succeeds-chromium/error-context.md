@@ -1,0 +1,90 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - link "StudySprint" [ref=e5] [cursor=pointer]:
+      - /url: /fo/subjects
+      - generic [ref=e6]:
+        - img [ref=e7]
+        - generic [ref=e9]: StudySprint
+    - navigation [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Navigation
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - link "Matières" [ref=e15] [cursor=pointer]:
+              - /url: /fo/subjects
+              - img [ref=e16]
+              - generic [ref=e19]: Matières
+          - listitem [ref=e20]:
+            - link "Planning" [ref=e21] [cursor=pointer]:
+              - /url: /fo/planning
+              - img [ref=e22]
+              - generic [ref=e24]: Planning
+          - listitem [ref=e25]:
+            - link "Groupes" [ref=e26] [cursor=pointer]:
+              - /url: /fo/groups
+              - img [ref=e27]
+              - generic [ref=e32]: Groupes
+      - generic [ref=e33]:
+        - generic [ref=e34]: Training
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "Quiz" [ref=e37] [cursor=pointer]:
+              - /url: /fo/training/quizzes
+              - img [ref=e38]
+              - generic [ref=e41]: Quiz
+          - listitem [ref=e42]:
+            - link "Flashcards" [ref=e43] [cursor=pointer]:
+              - /url: /fo/training/decks
+              - img [ref=e44]
+              - generic [ref=e47]: Flashcards
+    - generic [ref=e48]:
+      - link "CH charaf mezazigh STUDENT" [ref=e49] [cursor=pointer]:
+        - /url: /fo/profile
+        - generic [ref=e50]: CH
+        - generic [ref=e51]:
+          - generic [ref=e52]: charaf mezazigh
+          - generic [ref=e53]: STUDENT
+      - link "Déconnexion" [ref=e54] [cursor=pointer]:
+        - /url: /logout
+        - img [ref=e55]
+        - generic [ref=e58]: Déconnexion
+  - main [ref=e59]:
+    - generic [ref=e60]:
+      - heading "Dashboard" [level=1] [ref=e61]
+      - generic [ref=e63]:
+        - img
+        - textbox "Rechercher..." [ref=e64]
+    - generic [ref=e65]:
+      - link "Retour aux matières" [ref=e67] [cursor=pointer]:
+        - /url: /fo/subjects
+        - img [ref=e68]
+        - text: Retour aux matières
+      - generic [ref=e70]: Matière créée avec succès !
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e77]: par charaf mezazigh
+          - heading "E2E Matière 1770331155823" [level=1] [ref=e78]
+        - generic [ref=e79]:
+          - link "Modifier" [ref=e80] [cursor=pointer]:
+            - /url: /fo/subjects/38/edit
+            - img [ref=e81]
+            - text: Modifier
+          - button "Supprimer" [ref=e84] [cursor=pointer]:
+            - img [ref=e85]
+            - text: Supprimer
+      - generic [ref=e87]:
+        - generic [ref=e89]:
+          - heading "Chapitres (0)" [level=2] [ref=e90]
+          - link "Ajouter un chapitre" [ref=e91] [cursor=pointer]:
+            - /url: /fo/subjects/38/chapters/new
+            - img [ref=e92]
+            - text: Ajouter un chapitre
+        - generic [ref=e95]:
+          - img [ref=e96]
+          - paragraph [ref=e98]: Aucun chapitre pour cette matière
+          - link "Créer le premier chapitre" [ref=e99] [cursor=pointer]:
+            - /url: /fo/subjects/38/chapters/new
+```

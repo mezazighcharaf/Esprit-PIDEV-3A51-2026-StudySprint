@@ -1,0 +1,129 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Revision terminee - {{ deck.title }}{% endblock %}
+{% block page_title %}Revision terminee{% endblock %}
+
+{% block content %}
+<div class="complete-container">
+    <div class="complete-card card">
+        <div class="card-body text-center">
+            <div class="complete-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="64" height="64">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+
+            <h2>Felicitations !</h2>
+            <p class="text-muted">Vous avez termine la revision du deck "{{ deck.title }}"</p>
+
+            <div class="complete-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_cards }}</span>
+                    <span class="stat-label">cartes revisees</span>
+                </div>
+            </div>
+
+            {% if reviews is not empty %}
+            <div class="review-summary">
+                <h4>Resume des reponses</h4>
+                <div class="summary-bars">
+                    {% set again_count = reviews|filter(r => r.result == 'again')|length %}
+                    {% set good_count = reviews|filter(r => r.result == 'good')|length %}
+                    {% set easy_count = reviews|filter(r => r.result == 'easy')|length %}
+
+                    <div class="summary-item">
+                        <span class="summary-label">A revoir</span>
+                        <div class="summary-bar">
+                            <div class="summary-fill again" style="width: {{ (again_count / total_cards) * 100 }}%"></div>
+                        </div>
+                        <span class="summary-count">{{ again_count }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Bien</span>
+                        <div class="summary-bar">
+                            <div class="summary-fill good" style="width: {{ (good_count / total_cards) * 100 }}%"></div>
+                        </div>
+                        <span class="summary-count">{{ good_count }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Facile</span>
+                        <div class="summary-bar">
+                            <div class="summary-fill easy" style="width: {{ (easy_count / total_cards) * 100 }}%"></div>
+                        </div>
+                        <span class="summary-count">{{ easy_count }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="complete-actions">
+                <a href="{{ path('training_deck_review', {id: deck.id, restart: 1}) }}" class="btn btn-secondary">Recommencer</a>
+                <a href="{{ path('training_deck_index') }}" class="btn btn-primary">Retour aux decks</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.complete-container {
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.complete-card {
+    border: 1px solid var(--border-color);
+}
+
+.complete-icon {
+    color: var(--success);
+    margin-bottom: 1rem;
+}
+
+.complete-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.stat-item { text-align: center; }
+.stat-value { display: block; font-size: 2.5rem; font-weight: 700; color: var(--primary); }
+.stat-label { font-size: 0.875rem; color: var(--text-secondary); }
+
+.review-summary {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+.review-summary h4 { margin-bottom: 1rem; font-size: 1rem; }
+
+.summary-bars { display: flex; flex-direction: column; gap: 0.5rem; }
+.summary-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 40px;
+    align-items: center;
+    gap: 0.5rem;
+}
+.summary-label { font-size: 0.875rem; text-align: left; }
+.summary-bar {
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.summary-fill { height: 100%; }
+.summary-fill.again { background: var(--danger); }
+.summary-fill.good { background: var(--primary); }
+.summary-fill.easy { background: var(--success); }
+.summary-count { font-size: 0.875rem; font-weight: 600; }
+
+.complete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+</style>
+{% endblock %}

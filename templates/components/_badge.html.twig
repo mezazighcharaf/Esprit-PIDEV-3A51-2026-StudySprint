@@ -1,0 +1,15 @@
+{#
+  Badge Component
+  Usage:
+  {{ include('components/_badge.html.twig', {
+      text: 'Actif',
+      variant: 'success', // neutral | primary | success | warning | error | info
+      dot: false // show dot instead of filled background
+  }) }}
+#}
+
+{% if dot|default(false) %}
+<span class="badge-dot {{ variant|default('neutral') }}"></span>
+{% else %}
+<span class="badge badge-{{ variant|default('neutral') }}">{{ text }}</span>
+{% endif %}

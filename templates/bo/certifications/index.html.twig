@@ -1,0 +1,82 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Certifications Prof - BO{% endblock %}
+{% block breadcrumb %}Certifications Prof{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Demandes de certification professeur</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher (email, nom)..." class="form-input" style="max-width:250px;">
+            </div>
+            <div>
+                <select name="status" class="form-input" style="min-width: 160px;">
+                    <option value="">Tous les statuts</option>
+                    <option value="PENDING" {{ statusFilter == 'PENDING' ? 'selected' : '' }}>En attente</option>
+                    <option value="APPROVED" {{ statusFilter == 'APPROVED' ? 'selected' : '' }}>Approuvée</option>
+                    <option value="REJECTED" {{ statusFilter == 'REJECTED' ? 'selected' : '' }}>Refusée</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-secondary">Filtrer</button>
+        </form>
+    </div>
+</div>
+
+{% for message in app.flashes('success') %}
+<div class="alert alert-success mb-4">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+<div class="alert alert-danger mb-4">{{ message }}</div>
+{% endfor %}
+
+<div class="card">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb;">
+        <h3 style="margin: 0; font-size: 14px; color: #6b7280;">{{ total }} demande{{ total > 1 ? 's' : '' }} trouvée{{ total > 1 ? 's' : '' }}</h3>
+    </div>
+    <table class="bo-table">
+        <thead>
+            <tr>
+                <th><a href="?q={{ q }}&status={{ statusFilter }}&sort=id&dir={{ sort == 'id' and dir == 'ASC' ? 'desc' : 'asc' }}">ID</a></th>
+                <th>Utilisateur</th>
+                <th><a href="?q={{ q }}&status={{ statusFilter }}&sort=status&dir={{ sort == 'status' and dir == 'ASC' ? 'desc' : 'asc' }}">Statut</a></th>
+                <th><a href="?q={{ q }}&status={{ statusFilter }}&sort=requestedAt&dir={{ sort == 'requestedAt' and dir == 'ASC' ? 'desc' : 'asc' }}">Demandé le</a></th>
+                <th><a href="?q={{ q }}&status={{ statusFilter }}&sort=reviewedAt&dir={{ sort == 'reviewedAt' and dir == 'ASC' ? 'desc' : 'asc' }}">Traité le</a></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.id }}</td>
+                <td>
+                    <div style="font-weight: 600;">{{ req.user.fullName }}</div>
+                    <div style="font-size: 12px; color: #6b7280;">{{ req.user.email }}</div>
+                </td>
+                <td>
+                    {% if req.status == 'PENDING' %}
+                        <span class="badge badge-warning">En attente</span>
+                    {% elseif req.status == 'APPROVED' %}
+                        <span class="badge badge-success">Approuvée</span>
+                    {% elseif req.status == 'REJECTED' %}
+                        <span class="badge badge-error">Refusée</span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 12px; color: #6b7280;">{{ req.requestedAt|date('d/m/Y H:i') }}</td>
+                <td style="font-size: 12px; color: #6b7280;">{{ req.reviewedAt ? req.reviewedAt|date('d/m/Y H:i') : '-' }}</td>
+                <td>
+                    <a href="{{ path('bo_certifications_show', {id: req.id}) }}" class="btn btn-ghost btn-sm">Voir</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted">Aucune demande de certification</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% include 'bo/_pagination.html.twig' with {page: page, totalPages: totalPages, total: total, q: q, sort: sort, dir: dir} %}
+</div>
+{% endblock %}

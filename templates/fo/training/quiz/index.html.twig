@@ -1,0 +1,84 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Quiz{% endblock %}
+{% block page_title %}Quiz disponibles{% endblock %}
+
+{% block topbar_actions %}
+<a href="{{ path('training_quiz_history') }}" class="btn btn-secondary btn-sm">Mon historique</a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Choisissez un quiz</h2>
+    <p class="text-muted">Testez vos connaissances avec nos quiz</p>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger">{{ message }}</div>
+{% endfor %}
+
+{% if quizzes is empty %}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'quiz',
+        title: 'Aucun quiz disponible',
+        description: 'Les quiz seront bientot disponibles.'
+    }) }}
+{% else %}
+<div class="quiz-grid">
+    {% for quiz in quizzes %}
+    <div class="quiz-card card">
+        <div class="card-body">
+            <div class="quiz-difficulty">
+                {% if quiz.difficulty == 'easy' %}
+                    <span class="badge badge-success">Facile</span>
+                {% elseif quiz.difficulty == 'med' %}
+                    <span class="badge badge-warning">Moyen</span>
+                {% else %}
+                    <span class="badge badge-danger">Difficile</span>
+                {% endif %}
+            </div>
+            <h3 class="quiz-title">{{ quiz.title }}</h3>
+            <div class="quiz-meta">
+                <span>{{ quiz.questions|length }} questions</span>
+                <span>{{ quiz.totalPoints }} points</span>
+            </div>
+            <form action="{{ path('training_quiz_start', {id: quiz.id}) }}" method="post" class="quiz-action">
+                <input type="hidden" name="_token" value="{{ csrf_token('start' ~ quiz.id) }}">
+                <button type="submit" class="btn btn-primary btn-block">Commencer</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+.quiz-card {
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.quiz-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.quiz-difficulty { margin-bottom: 0.5rem; }
+.quiz-title { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.quiz-meta {
+    display: flex;
+    gap: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+.quiz-action { margin-top: auto; }
+.btn-block { width: 100%; }
+</style>
+{% endblock %}

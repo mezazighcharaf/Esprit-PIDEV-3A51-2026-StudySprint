@@ -1,0 +1,350 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Mon Profil - StudySprint{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 1.875rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem;">Mon profil</h1>
+        <p style="color: #6b7280;">Consultez et modifiez vos informations</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <button type="button" id="aiEnhanceBtn" data-token="{{ csrf_token('ai_enhance_profile') }}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <svg id="aiEnhanceIcon" style="width: 16px; height: 16px; margin-right: 0.375rem; display: inline-block; vertical-align: middle;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span id="aiEnhanceSpinner" style="display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.375rem; vertical-align: middle;"></span>
+            <span id="aiEnhanceLabel">Améliorer mon profil (IA)</span>
+        </button>
+        <a href="{{ path('fo_profile_edit') }}" class="btn btn-primary">
+            <svg style="width: 16px; height: 16px; margin-right: 0.25rem; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Modifier
+        </a>
+    </div>
+</div>
+
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success" style="margin-bottom: 1.5rem;">{{ message }}</div>
+{% endfor %}
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem;">{{ message }}</div>
+{% endfor %}
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body" style="display: flex; gap: 1.5rem; align-items: center;">
+        <div style="width: 96px; height: 96px; border-radius: 999px; overflow: hidden; background: #111827; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            {% set avatar = user.profile ? user.profile.avatarUrl : null %}
+            {% if avatar %}
+                <img src="{{ avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <span style="color: white; font-size: 28px; font-weight: 700;">{{ user.fullName[:2]|upper }}</span>
+            {% endif %}
+        </div>
+
+        <div style="flex: 1; min-width: 0;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem 0;">{{ user.fullName }}</h2>
+            <div style="color: #6b7280; font-size: 14px;">{{ user.email }}</div>
+            <div style="margin-top: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span style="padding: 0.25rem 0.5rem; background: #f3f4f6; border-radius: 999px; font-size: 12px; color: #374151;">
+                    <strong>{{ user.userType }}</strong>
+                </span>
+                {{ include('components/_teacher_badge.html.twig', {user: user}) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ─── Badges ─── #}
+{% if userBadges is defined and userBadges|length > 0 %}
+<div class="card" style="margin-bottom: 1.5rem; border-radius: 12px; padding: 1.5rem;">
+    <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Mes Badges ({{ userBadges|length }})</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        {% for ub in userBadges %}
+        <div style="text-align: center; padding: 1rem; border-radius: 10px; background: {{ ub.badge.color }}10; border: 2px solid {{ ub.badge.color }}30; min-width: 100px;" title="{{ ub.badge.description }}">
+            <div style="font-size: 32px; margin-bottom: 0.5rem;">{{ ub.badge.icon }}</div>
+            <div style="font-size: 13px; font-weight: 600; color: {{ ub.badge.color }};">{{ ub.badge.name }}</div>
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 0.25rem;">{{ ub.earnedAt|date('d/m/Y') }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ─── Certification Prof ─── #}
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-header" style="display: flex; align-items: center; gap: 0.5rem;">
+        <svg style="width: 20px; height: 20px; color: #667eea;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <h3 style="margin: 0;">Certification Professeur</h3>
+    </div>
+    <div class="card-body">
+        {% if user.certifiedTeacher %}
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 8px; border: 1px solid #a7f3d0;">
+                <div style="width: 40px; height: 40px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 22px; height: 22px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: #065f46; font-size: 15px;">Prof certifié ✓</div>
+                    <div style="font-size: 13px; color: #047857;">Vous êtes un professeur certifié sur StudySprint.</div>
+                </div>
+            </div>
+
+        {% elseif certRequest and certRequest.pending %}
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #fffbeb; border-radius: 8px; border: 1px solid #fde68a;">
+                <div style="width: 40px; height: 40px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 22px; height: 22px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: #92400e; font-size: 15px;">Demande en cours de traitement</div>
+                    <div style="font-size: 13px; color: #a16207;">Soumise le {{ certRequest.requestedAt|date('d/m/Y à H:i') }}. Un administrateur examinera votre demande prochainement.</div>
+                </div>
+            </div>
+
+        {% elseif certRequest and certRequest.rejected %}
+            <div style="padding: 1rem; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <svg style="width: 18px; height: 18px; color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <div style="font-weight: 700; color: #991b1b; font-size: 15px;">Demande précédente refusée</div>
+                </div>
+                {% if certRequest.reason %}
+                <div style="font-size: 13px; color: #b91c1c; margin-bottom: 0.5rem;">
+                    <strong>Motif :</strong> {{ certRequest.reason }}
+                </div>
+                {% endif %}
+                <div style="font-size: 12px; color: #9ca3af;">Le {{ certRequest.reviewedAt ? certRequest.reviewedAt|date('d/m/Y à H:i') : certRequest.requestedAt|date('d/m/Y') }}</div>
+            </div>
+            <form method="post" action="{{ path('fo_profile_certification_request') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('certification_request') }}">
+                <div style="margin-bottom: 0.75rem;">
+                    <label for="motivation" style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 0.25rem;">Motivation (optionnel)</label>
+                    <textarea id="motivation" name="motivation" rows="3" class="form-input" style="width: 100%; resize: vertical;" placeholder="Expliquez pourquoi vous souhaitez être certifié professeur..." maxlength="2000"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Redemander la certification</button>
+            </form>
+
+        {% else %}
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 1rem;">
+                Obtenez le badge « Prof certifié » pour valoriser vos contenus sur la plateforme. Un administrateur examinera votre demande.
+            </p>
+            <form method="post" action="{{ path('fo_profile_certification_request') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('certification_request') }}">
+                <div style="margin-bottom: 0.75rem;">
+                    <label for="motivation" style="font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 0.25rem;">Motivation (optionnel)</label>
+                    <textarea id="motivation" name="motivation" rows="3" class="form-input" style="width: 100%; resize: vertical;" placeholder="Expliquez pourquoi vous souhaitez être certifié professeur..." maxlength="2000"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <svg style="width: 16px; height: 16px; margin-right: 0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    Demander la certification
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+    <div class="card">
+        <div class="card-header">
+            <h3>Informations</h3>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Niveau</div>
+                    <div style="color: #111827;">{{ user.profile and user.profile.level ? user.profile.level : '-' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Spécialité</div>
+                    <div style="color: #111827;">{{ user.profile and user.profile.specialty ? user.profile.specialty : '-' }}</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Bio</div>
+                <div style="color: #111827; white-space: pre-wrap;">{{ user.profile and user.profile.bio ? user.profile.bio : '-' }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.profile and (user.profile.aiSuggestedBio or user.profile.aiSuggestedGoals or user.profile.aiSuggestedRoutine) %}
+    <div class="card" style="border-left: 4px solid #667eea;">
+        <div class="card-header" style="background: #f9fafb;">
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <svg style="width: 20px; height: 20px; color: #667eea;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                Suggestions IA
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if user.profile.aiSuggestedBio %}
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-size: 12px; font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">Bio suggérée</div>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; line-height: 1.6; color: #374151;">{{ user.profile.aiSuggestedBio }}</div>
+            </div>
+            {% endif %}
+
+            {% if user.profile.aiSuggestedGoals %}
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-size: 12px; font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">Objectifs suggérés</div>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; line-height: 1.6; color: #374151; white-space: pre-wrap;">{{ user.profile.aiSuggestedGoals }}</div>
+            </div>
+            {% endif %}
+
+            {% if user.profile.aiSuggestedRoutine %}
+            <div>
+                <div style="font-size: 12px; font-weight: 600; color: #667eea; margin-bottom: 0.5rem;">Routine d'étude suggérée</div>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; line-height: 1.6; color: #374151; white-space: pre-wrap;">{{ user.profile.aiSuggestedRoutine }}</div>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 1rem; padding: 0.75rem; background: #fef3c7; border-radius: 6px; font-size: 13px; color: #92400e;">
+                <strong>💡 Astuce :</strong> Ces suggestions sont personnalisées pour vous. Utilisez-les pour enrichir votre profil en cliquant sur "Modifier".
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div id="aiProfileResult"></div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+document.getElementById('aiEnhanceBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    var btn = this;
+    var token = btn.dataset.token;
+    var icon = document.getElementById('aiEnhanceIcon');
+    var spinner = document.getElementById('aiEnhanceSpinner');
+    var label = document.getElementById('aiEnhanceLabel');
+    var resultZone = document.getElementById('aiProfileResult');
+
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'wait';
+    if (icon) icon.style.display = 'none';
+    if (spinner) spinner.style.display = 'inline-block';
+
+    var seconds = 0;
+    var tmr = setInterval(function() {
+        seconds++;
+        label.textContent = 'Génération... ' + seconds + 's';
+    }, 1000);
+
+    fetch('{{ path("fo_profile_ai_enhance") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ _token: token })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        clearInterval(tmr);
+        if (data.success) {
+            label.textContent = 'Suggestions générées !';
+            btn.style.opacity = '1';
+            btn.style.background = '#10b981';
+            if (spinner) spinner.style.display = 'none';
+            if (icon) icon.style.display = 'inline-block';
+
+            var html = '<div class="card" style="border-left:4px solid #667eea;margin-top:1.5rem;">'
+                + '<div class="card-header" style="background:#f9fafb;"><h3 style="display:flex;align-items:center;gap:0.5rem;margin:0;">'
+                + '<svg style="width:20px;height:20px;color:#667eea;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>'
+                + 'Suggestions IA</h3></div><div class="card-body">';
+
+            if (data.suggested_bio) {
+                html += '<div style="margin-bottom:1.5rem;"><div style="font-size:12px;font-weight:600;color:#667eea;margin-bottom:0.5rem;">Bio suggérée</div>'
+                    + '<div style="background:#f9fafb;padding:1rem;border-radius:8px;line-height:1.6;color:#374151;">' + data.suggested_bio + '</div></div>';
+            }
+            if (data.suggested_goals) {
+                html += '<div style="margin-bottom:1.5rem;"><div style="font-size:12px;font-weight:600;color:#667eea;margin-bottom:0.5rem;">Objectifs suggérés</div>'
+                    + '<div style="background:#f9fafb;padding:1rem;border-radius:8px;line-height:1.6;color:#374151;white-space:pre-wrap;">' + data.suggested_goals + '</div></div>';
+            }
+            if (data.suggested_routine) {
+                html += '<div><div style="font-size:12px;font-weight:600;color:#667eea;margin-bottom:0.5rem;">Routine d\'étude suggérée</div>'
+                    + '<div style="background:#f9fafb;padding:1rem;border-radius:8px;line-height:1.6;color:#374151;white-space:pre-wrap;">' + data.suggested_routine + '</div></div>';
+            }
+
+            html += '<div style="margin-top:1rem;padding:0.75rem;background:#fef3c7;border-radius:6px;font-size:13px;color:#92400e;">'
+                + '<strong>Astuce :</strong> Utilisez ces suggestions pour enrichir votre profil en cliquant sur "Modifier".</div>';
+
+            // Feedback widget
+            if (data.ai_log_id) {
+                html += buildFeedbackWidget(data.ai_log_id);
+            }
+
+            html += '</div></div>';
+            resultZone.innerHTML = html;
+        } else {
+            label.textContent = data.error || 'Erreur';
+            btn.style.background = '#ef4444';
+            if (spinner) spinner.style.display = 'none';
+            if (icon) icon.style.display = 'inline-block';
+            setTimeout(function() {
+                btn.disabled = false; btn.style.opacity = '1'; btn.style.background = '';
+                label.textContent = 'Améliorer mon profil (IA)';
+            }, 3000);
+        }
+    })
+    .catch(function() {
+        clearInterval(tmr);
+        label.textContent = 'Erreur réseau';
+        btn.style.background = '#ef4444';
+        if (spinner) spinner.style.display = 'none';
+        if (icon) icon.style.display = 'inline-block';
+        setTimeout(function() {
+            btn.disabled = false; btn.style.opacity = '1'; btn.style.background = '';
+            label.textContent = 'Améliorer mon profil (IA)';
+        }, 3000);
+    });
+});
+
+function buildFeedbackWidget(logId) {
+    if (!logId) return '';
+    var stars = '';
+    for (var i = 1; i <= 5; i++) {
+        stars += '<button type="button" class="ai-fb-star" data-rating="' + i + '" style="background:none;border:none;cursor:pointer;padding:2px;" title="' + i + '/5">'
+            + '<svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>';
+    }
+    return '<div class="ai-feedback-widget" data-log-id="' + logId + '" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.75rem;padding:0.5rem 0.75rem;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">'
+        + '<span style="font-size:12px;color:#6b7280;">Utile ?</span><div style="display:flex;gap:2px;">' + stars + '</div>'
+        + '<span class="ai-fb-msg" style="font-size:11px;color:#10b981;display:none;">Merci !</span></div>';
+}
+
+document.addEventListener('click', function(e) {
+    var star = e.target.closest('.ai-fb-star');
+    if (!star) return;
+    var widget = star.closest('.ai-feedback-widget');
+    if (!widget || widget.dataset.sent) return;
+    var logId = widget.dataset.logId;
+    var rating = parseInt(star.dataset.rating);
+    widget.querySelectorAll('.ai-fb-star svg').forEach(function(s, idx) {
+        s.setAttribute('fill', idx < rating ? '#f59e0b' : 'none');
+        s.setAttribute('stroke', idx < rating ? '#f59e0b' : '#d1d5db');
+    });
+    widget.dataset.sent = '1';
+    widget.querySelectorAll('.ai-fb-star').forEach(function(b) { b.style.pointerEvents = 'none'; });
+    var msg = widget.querySelector('.ai-fb-msg');
+    fetch('{{ path("fo_ai_feedback") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ log_id: logId, rating: rating })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() { if (msg) { msg.style.display = 'inline'; msg.textContent = 'Merci !'; } })
+    .catch(function() { if (msg) { msg.style.display = 'inline'; msg.textContent = 'Erreur'; msg.style.color = '#ef4444'; } });
+});
+</script>
+{% endblock %}

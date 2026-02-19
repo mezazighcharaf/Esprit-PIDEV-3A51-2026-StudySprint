@@ -1,0 +1,22 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Profil #{{ item.id }} - BO{% endblock %}
+{% block breadcrumb %}Profils / Détail{% endblock %}
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Profil #{{ item.id }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_user_profiles_edit', {id: item.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_user_profiles_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+<div class="card"><div class="card-body">
+    <dl class="row">
+        <dt class="col-3">ID:</dt><dd class="col-9">{{ item.id }}</dd>
+        <dt class="col-3">Utilisateur:</dt><dd class="col-9">{{ item.user ? item.user.email : 'N/A' }}</dd>
+        <dt class="col-3">Niveau:</dt><dd class="col-9">{{ item.level ?? 'N/A' }}</dd>
+        <dt class="col-3">Spécialité:</dt><dd class="col-9">{{ item.specialty ?? 'N/A' }}</dd>
+        <dt class="col-3">Bio:</dt><dd class="col-9">{{ item.bio ?? 'N/A' }}</dd>
+        <dt class="col-3">Avatar URL:</dt><dd class="col-9">{{ item.avatarUrl ?? 'N/A' }}</dd>
+    </dl>
+</div></div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Modifier Groupe - StudySprint{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_groups_show', {id: group.id}) }}" style="color: #6366f1; text-decoration: none; font-size: 14px;">
+        ← Retour au groupe
+    </a>
+</div>
+
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 28px; font-weight: 700; color: #1f2937; margin: 0 0 0.5rem 0;">Modifier le groupe</h1>
+    <p style="color: #6b7280;">{{ group.name }}</p>
+</div>
+
+<div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; max-width: 600px;">
+    {{ form_start(form) }}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                {{ form_label(form.name, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.name, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            <div>
+                {{ form_label(form.description, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.description, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div>
+                {{ form_label(form.privacy, null, {'label_attr': {'style': 'display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151;'}}) }}
+                {{ form_widget(form.privacy, {'attr': {'style': 'width: 100%;'}}) }}
+                {{ form_errors(form.privacy) }}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-ghost">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </div>
+    {{ form_end(form) }}
+</div>
+
+<div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1.5rem; max-width: 600px; margin-top: 2rem;">
+    <h3 style="font-size: 16px; font-weight: 600; color: #991b1b; margin: 0 0 1rem 0;">Zone dangereuse</h3>
+    <p style="font-size: 14px; color: #7f1d1d; margin-bottom: 1rem;">La suppression du groupe est irréversible. Tous les posts et membres seront supprimés.</p>
+    <form method="post" action="{{ path('fo_groups_delete', {id: group.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible.');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete_group_' ~ group.id) }}">
+        <button type="submit" class="btn btn-error">Supprimer le groupe</button>
+    </form>
+</div>
+{% endblock %}

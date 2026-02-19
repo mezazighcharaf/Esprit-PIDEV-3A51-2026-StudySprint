@@ -1,0 +1,261 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/bo.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR BO ─── #}
+    <aside class="app-sidebar bo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('admin_dashboard') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Gestion</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('admin_dashboard') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9"/>
+                                <rect x="14" y="3" width="7" height="5"/>
+                                <rect x="14" y="12" width="7" height="9"/>
+                                <rect x="3" y="16" width="7" height="5"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('admin_analytics') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_analytics' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Utilisateurs</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_users_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_users_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('bo_user_profiles_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_user_profiles_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Profils</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Certification</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_certifications_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_certifications_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <span>Certifications Prof</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Contenu Pédagogique</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_subjects_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_subjects_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                            <span>Matières</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('bo_chapters_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_chapters_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            <span>Chapitres</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Planning</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_plans_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_plans_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Plans de révision</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('bo_tasks_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_tasks_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 11 12 14 22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            <span>Tâches</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Communauté</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_groups_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_groups_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Groupes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('bo_posts_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_posts_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Publications</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence Artificielle</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_ai_monitoring_dashboard') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_ai_monitoring_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <span>Monitoring IA</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Training</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('bo_quizzes_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_quizzes_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            <span>Quiz</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('bo_decks_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'bo_decks_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                                <polyline points="17 2 12 7 7 2"/>
+                            </svg>
+                            <span>Flashcard Decks</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('admin_components') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_components' ? 'active' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="9" y1="21" x2="9" y2="9"/>
+                </svg>
+                <span>BO Components</span>
+            </a>
+            <a href="{{ path('app_logout') }}" class="sidebar-link" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-gray-400);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Déconnexion</span>
+            </a>
+        </div>
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <nav class="topbar-breadcrumb">
+                <a href="{{ path('admin_dashboard') }}">Back-Office</a>
+                <span>/</span>
+                <span>{% block breadcrumb %}Dashboard{% endblock %}</span>
+            </nav>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                <div class="topbar-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" placeholder="Rechercher un utilisateur, une matiere...">
+                </div>
+                {% block topbar_actions %}
+                <button class="btn btn-secondary btn-sm">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Exporter
+                </button>
+                {% endblock %}
+                <div class="topbar-avatar" title="Admin">AD</div>
+            </div>
+        </header>
+
+        <div class="app-content bo-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{% block drawers %}{% endblock %}
+{% endblock %}

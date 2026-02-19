@@ -1,0 +1,180 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Historique Quiz - StudySprint{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('fo_training_quizzes_index') }}" class="btn btn-ghost btn-sm">
+        <svg style="width: 16px; height: 16px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Retour aux quiz
+    </a>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; color: white;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.25); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+            <svg style="width: 28px; height: 28px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 style="font-size: 24px; font-weight: 700; margin: 0;">Mon Historique</h1>
+            <p style="font-size: 14px; opacity: 0.9; margin: 0;">Consultez vos {{ attempts|length }} tentative{{ attempts|length > 1 ? 's' : '' }}</p>
+        </div>
+    </div>
+</div>
+
+{# Score Progression Chart #}
+{% if attempts|length > 1 %}
+<div class="card" style="border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+    <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Progression des scores</h3>
+    <div style="position: relative; height: 200px;">
+        <canvas id="scoreProgressionChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
+{% if attempts is empty %}
+    <div class="card" style="text-align: center; padding: 4rem 2rem; border-radius: 12px;">
+        <svg style="width: 80px; height: 80px; color: #d1d5db; margin: 0 auto 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">Aucune tentative</h3>
+        <p style="color: #6b7280; margin: 0 0 1.5rem 0;">Vous n'avez pas encore passé de quiz</p>
+        <a href="{{ path('fo_training_quizzes_index') }}" class="btn btn-primary">Découvrir les quiz</a>
+    </div>
+{% else %}
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for attempt in attempts %}
+        <div class="card" style="border-radius: 12px; border-left: 4px solid {{ attempt.isCompleted ? (attempt.score >= 50 ? '#10b981' : '#ef4444') : '#f59e0b' }}; transition: all 0.2s;" onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
+            <div style="padding: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 0.5rem 0;">{{ attempt.quiz.title }}</h3>
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <span style="font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 0.375rem;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                                {{ attempt.quiz.subject.name }}
+                            </span>
+                            <span style="font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 0.375rem;">
+                                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                {{ attempt.startedAt|date('d/m/Y à H:i') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.625rem; align-items: center;">
+                        {% if attempt.isCompleted %}
+                            <span class="badge badge-{{ attempt.score >= 50 ? 'success' : 'error' }}" style="font-size: 11px;">
+                                {{ attempt.score >= 50 ? '✓ Réussi' : '✗ Échoué' }}
+                            </span>
+                        {% else %}
+                            <span class="badge badge-warning" style="font-size: 11px;">⏱️ En cours</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: {{ attempt.isCompleted ? (attempt.score >= 50 ? '#10b981' : '#ef4444') : '#6b7280' }};">
+                            {% if attempt.isCompleted %}{{ attempt.score|number_format(1) }}%{% else %}-{% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">Score</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #111827;">
+                            {% if attempt.isCompleted %}{{ attempt.correctCount }}/{{ attempt.totalQuestions }}{% else %}-{% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">Réponses</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #111827;">
+                            {% if attempt.durationSeconds %}{{ (attempt.durationSeconds / 60)|number_format(0) }}'{% else %}-{% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">Durée</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: right;">
+                    {% if attempt.isCompleted %}
+                        <a href="{{ path('fo_training_quizzes_result', {id: attempt.quiz.id, attempt: attempt.id}) }}" class="btn btn-ghost btn-sm">
+                            Voir le détail
+                        </a>
+                    {% else %}
+                        <a href="{{ path('fo_training_quizzes_play', {id: attempt.quiz.id, attempt: attempt.id}) }}" class="btn btn-primary btn-sm">
+                            Continuer
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+{% if attempts|length > 1 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('scoreProgressionChart');
+    if (!ctx) return;
+
+    const completedAttempts = [
+        {% for attempt in attempts|reverse %}
+        {% if attempt.isCompleted %}
+        { label: '{{ attempt.quiz.title|e('js') }}', score: {{ attempt.score|number_format(1) }}, date: '{{ attempt.startedAt|date('d/m') }}' },
+        {% endif %}
+        {% endfor %}
+    ];
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: completedAttempts.map(a => a.date),
+            datasets: [{
+                label: 'Score (%)',
+                data: completedAttempts.map(a => a.score),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: completedAttempts.map(a => a.score >= 50 ? '#10b981' : '#ef4444'),
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(items) { return completedAttempts[items[0].dataIndex].label; },
+                        label: function(item) { return 'Score: ' + item.raw + '%'; }
+                    },
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

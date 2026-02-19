@@ -1,0 +1,117 @@
+{% extends 'layouts/bo.html.twig' %}
+{% block title %}Quiz #{{ item.id }} - BO{% endblock %}
+{% block breadcrumb %}Quiz / {{ item.title }}{% endblock %}
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">{{ item.title }}</h1>
+    <div class="bo-page-actions">
+        <a href="{{ path('bo_quizzes_edit', {id: item.id}) }}" class="btn btn-secondary">Modifier</a>
+        <a href="{{ path('bo_quizzes_index') }}" class="btn btn-ghost">Retour</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">{{ item.questions|length }}</div>
+            <div class="text-muted">Questions</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">{{ completedCount }}</div>
+            <div class="text-muted">Tentatives</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold">{{ avgScore ? avgScore|number_format(1) ~ '%' : '-' }}</div>
+            <div class="text-muted">Score moyen</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body text-center">
+            <div class="text-2xl font-bold {{ passRate >= 50 ? 'text-success' : 'text-warning' }}">{{ passRate|number_format(0) }}%</div>
+            <div class="text-muted">Taux de réussite</div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-6"><div class="card-body">
+    <dl class="grid grid-2 gap-4">
+        <div><dt class="text-muted">ID</dt><dd>{{ item.id }}</dd></div>
+        <div><dt class="text-muted">Titre</dt><dd>{{ item.title }}</dd></div>
+        <div><dt class="text-muted">Propriétaire</dt><dd>{{ item.owner.email }}</dd></div>
+        <div><dt class="text-muted">Matière</dt><dd>{{ item.subject ? item.subject.name : '-' }}</dd></div>
+        <div><dt class="text-muted">Chapitre</dt><dd>{{ item.chapter ? item.chapter.title : '-' }}</dd></div>
+        <div><dt class="text-muted">Difficulté</dt><dd><span class="badge badge-{{ item.difficulty == 'EASY' ? 'success' : (item.difficulty == 'HARD' ? 'error' : 'warning') }}">{{ item.difficulty }}</span></dd></div>
+        <div><dt class="text-muted">Publié</dt><dd>{{ item.isPublished ? 'Oui' : 'Non' }}</dd></div>
+        <div><dt class="text-muted">Généré par IA</dt><dd>{{ item.generatedByAi ? 'Oui' : 'Non' }}</dd></div>
+        <div><dt class="text-muted">Créé le</dt><dd>{{ item.createdAt|date('d/m/Y H:i') }}</dd></div>
+    </dl>
+</div></div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Tentatives ({{ attempts|length }})</h2>
+    </div>
+    <div class="card-body">
+        {% if attempts is empty %}
+            <p class="text-muted text-center py-4">Aucune tentative pour ce quiz.</p>
+        {% else %}
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Date</th>
+                        <th>Score</th>
+                        <th>Réponses</th>
+                        <th>Durée</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr>
+                        <td>{{ attempt.user.email }}</td>
+                        <td>{{ attempt.startedAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            {% if attempt.isCompleted %}
+                                <span class="font-bold {{ attempt.score >= 50 ? 'text-success' : 'text-error' }}">
+                                    {{ attempt.score|number_format(1) }}%
+                                </span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.isCompleted %}
+                                {{ attempt.correctCount }}/{{ attempt.totalQuestions }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.durationSeconds %}
+                                {{ (attempt.durationSeconds / 60)|number_format(0) }}min {{ attempt.durationSeconds % 60 }}s
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attempt.isCompleted %}
+                                <span class="badge {{ attempt.score >= 50 ? 'badge-success' : 'badge-error' }}">
+                                    {{ attempt.score >= 50 ? 'Réussi' : 'Échoué' }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-warning">En cours</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
