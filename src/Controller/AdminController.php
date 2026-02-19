@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Service\BoDataProvider;
-use App\Service\BoMockDataProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\CsvExportService;
@@ -15,7 +15,6 @@ class AdminController extends AbstractController
 {
     public function __construct(
         private readonly BoDataProvider $dataProvider,
-        private readonly BoMockDataProvider $mockProvider
     ) {}
 
     #[Route('', name: 'dashboard', methods: ['GET'])]
@@ -37,39 +36,41 @@ class AdminController extends AbstractController
     }
 
     #[Route('/users', name: 'users', methods: ['GET'])]
-    public function users(): Response
+    public function users(Request $request): Response
     {
-        return $this->render('bo/users.html.twig', [
-            'state' => 'default',
-            'data' => $this->mockProvider->getUsersOverview(),
-        ]);
+        $data = $this->dataProvider->getUsersOverviewReal(
+            page:    max(1, $request->query->getInt('page', 1)),
+            perPage: 20,
+            q:       $request->query->get('q', ''),
+            sort:    $request->query->get('sort', 'id'),
+            dir:     $request->query->get('dir', 'DESC'),
+        );
+        $state = empty($data['users']) ? 'empty' : 'default';
+        return $this->render('bo/users.html.twig', ['state' => $state, 'data' => $data]);
     }
 
     #[Route('/content', name: 'content', methods: ['GET'])]
     public function content(): Response
     {
-        return $this->render('bo/content.html.twig', [
-            'state' => 'default',
-            'data' => $this->mockProvider->getContentOverview(),
-        ]);
+        $data = $this->dataProvider->getContentOverviewReal();
+        $state = empty($data['subjects']) ? 'empty' : 'default';
+        return $this->render('bo/content.html.twig', ['state' => $state, 'data' => $data]);
     }
 
     #[Route('/mentoring', name: 'mentoring', methods: ['GET'])]
     public function mentoring(): Response
     {
-        return $this->render('bo/mentoring.html.twig', [
-            'state' => 'default',
-            'data' => $this->mockProvider->getMentoringData(),
-        ]);
+        $data = $this->dataProvider->getMentoringOverviewReal();
+        $state = empty($data['groups']) ? 'empty' : 'default';
+        return $this->render('bo/mentoring.html.twig', ['state' => $state, 'data' => $data]);
     }
 
     #[Route('/training', name: 'training', methods: ['GET'])]
     public function training(): Response
     {
-        return $this->render('bo/training.html.twig', [
-            'state' => 'default',
-            'data' => $this->mockProvider->getTrainingOverview(),
-        ]);
+        $data = $this->dataProvider->getTrainingOverviewReal();
+        $state = empty($data['recent_attempts']) ? 'empty' : 'default';
+        return $this->render('bo/training.html.twig', ['state' => $state, 'data' => $data]);
     }
 
     #[Route('/analytics/export', name: 'analytics_export', methods: ['GET'])]
@@ -83,7 +84,7 @@ class AdminController extends AbstractController
             $a->getQuiz()?->getTitle() ?? '-',
             $a->getScore(),
             $a->getStartedAt()?->format('d/m/Y H:i'),
-            $a->getFinishedAt()?->format('d/m/Y H:i') ?? 'En cours',
+            $a->getCompletedAt()?->format('d/m/Y H:i') ?? 'En cours',
         ], $attempts);
 
         return $csv->export(

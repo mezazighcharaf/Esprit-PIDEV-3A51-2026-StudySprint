@@ -9,6 +9,7 @@ use App\Form\Fo\ChapterType;
 use App\Repository\SubjectRepository;
 use App\Repository\ChapterRepository;
 use App\Repository\UserRepository;
+use App\Service\WikipediaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,7 @@ class SubjectsController extends AbstractController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(SubjectRepository $repository): Response
     {
-        $subjects = $repository->findAll();
+        $subjects = $repository->findAllWithChapters();
 
         return $this->render('fo/subjects/index.html.twig', [
             'subjects' => $subjects,
@@ -56,19 +57,22 @@ class SubjectsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(int $id, SubjectRepository $subjectRepo, ChapterRepository $chapterRepo): Response
+    public function show(int $id, SubjectRepository $subjectRepo, ChapterRepository $chapterRepo, WikipediaService $wikipedia): Response
     {
         $subject = $subjectRepo->find($id);
-        
+
         if (!$subject) {
             throw $this->createNotFoundException('Matière introuvable');
         }
 
         $chapters = $chapterRepo->findBy(['subject' => $subject], ['orderNo' => 'ASC']);
 
+        $wikipediaSummary = $wikipedia->getSummary($subject->getName());
+
         return $this->render('fo/subjects/show.html.twig', [
-            'subject' => $subject,
-            'chapters' => $chapters,
+            'subject'          => $subject,
+            'chapters'         => $chapters,
+            'wikipediaSummary' => $wikipediaSummary,
         ]);
     }
 

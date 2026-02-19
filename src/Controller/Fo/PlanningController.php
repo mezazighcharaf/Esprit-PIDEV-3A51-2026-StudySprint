@@ -80,17 +80,28 @@ class PlanningController extends AbstractController
             ->getQuery()
             ->getResult();
         
-        // Calculate stats for this month
-        $allTasksThisMonth = $tasks;
-        $completedCount = count(array_filter($allTasksThisMonth, fn($t) => $t->getStatus() === PlanTask::STATUS_DONE));
-        $totalMinutes = array_reduce($allTasksThisMonth, function($sum, $task) {
-            $diff = $task->getEndAt()->getTimestamp() - $task->getStartAt()->getTimestamp();
-            return $sum + ($diff / 60);
-        }, 0);
-        
-        $completionRate = count($allTasksThisMonth) > 0 
-            ? round(($completedCount / count($allTasksThisMonth)) * 100) 
-            : 0;
+        // Calculate stats for this month via SQL aggregation (avoid PHP loops)
+        $statsRow = $taskRepo->createQueryBuilder('t')
+            ->select(
+                'COUNT(t.id) as totalCount',
+                'SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) as completedCount',
+                'SUM(TIMESTAMPDIFF(MINUTE, t.startAt, t.endAt)) as totalMinutes'
+            )
+            ->join('t.plan', 'p')
+            ->where('p.user = :user')
+            ->andWhere('t.startAt >= :start')
+            ->andWhere('t.startAt <= :end')
+            ->setParameter('user', $currentUser)
+            ->setParameter('start', $startOfMonth)
+            ->setParameter('end', $endOfMonth)
+            ->setParameter('done', PlanTask::STATUS_DONE)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $sessionsCount = (int) ($statsRow['totalCount'] ?? 0);
+        $completedCount = (int) ($statsRow['completedCount'] ?? 0);
+        $totalMinutes = (float) ($statsRow['totalMinutes'] ?? 0);
+        $completionRate = $sessionsCount > 0 ? round(($completedCount / $sessionsCount) * 100) : 0;
 
         // Get user's plans for AI suggest buttons
         $userPlans = $planRepo->findBy(
@@ -103,7 +114,7 @@ class PlanningController extends AbstractController
             'upcomingTasks' => $upcomingTasks,
             'year' => $year,
             'month' => $month,
-            'sessionsCount' => count($allTasksThisMonth),
+            'sessionsCount' => $sessionsCount,
             'totalMinutes' => $totalMinutes,
             'completionRate' => $completionRate,
             'userPlans' => $userPlans,

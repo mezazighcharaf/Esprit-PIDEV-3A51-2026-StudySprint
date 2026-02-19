@@ -1,87 +1,95 @@
 {% extends 'layouts/bo.html.twig' %}
 
-{% block title %}Training (M5) - StudySprint BO{% endblock %}
-{% block breadcrumb %}Training (M5){% endblock %}
-
-{% block topbar_actions %}
-<button class="btn btn-primary btn-sm" data-drawer-open="add-template-drawer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Nouveau template
-</button>
-{% endblock %}
+{% block title %}Training - StudySprint BO{% endblock %}
+{% block breadcrumb %}Training{% endblock %}
 
 {% block content %}
-<div class="bo-page-header">
-    <h1 class="bo-page-title">Training (M5)</h1>
-</div>
+{% if state == 'empty' %}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Training</h1>
+    </div>
+    {{ include('components/_empty_state.html.twig', {
+        title: 'Aucune donnee de training',
+        description: 'Les donnees seront disponibles une fois que des etudiants auront commence des quiz.',
+        variant: 'bo'
+    }) }}
+{% else %}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Training</h1>
+    </div>
 
-{# Section Leader #}
-<div class="bo-section-leader">
-    <div class="bo-section-leader-title">Detail groupe</div>
-    <div class="bo-section-leader-value">Gestion des templates de quiz, resultats et logs IA du module Training.</div>
-    <a href="#" class="bo-section-leader-link">Voir la documentation</a>
-</div>
+    {# KPI Stats #}
+    <div class="bo-stats-row">
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.total_attempts }}</span>
+            <span class="bo-stat-label">Tentatives totales</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-primary);">{{ data.stats.month_attempts }}</span>
+            <span class="bo-stat-label">Ce mois</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.avg_score }}%</span>
+            <span class="bo-stat-label">Score moyen</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-success);">{{ data.stats.pass_rate }}%</span>
+            <span class="bo-stat-label">Taux de reussite</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.reviews_week }}</span>
+            <span class="bo-stat-label">Revisions flashcards (semaine)</span>
+        </div>
+    </div>
 
-{# Tabs #}
-{{ include('components/_tabs.html.twig', {
-    id: 'training-tabs',
-    tabs: data.tabs,
-    variant: 'bo'
-}) }}
+    {# Tabs #}
+    <div style="border-bottom: 1px solid var(--color-gray-200); margin-bottom: 1.25rem;">
+        <nav class="flex gap-4">
+            <button class="bo-tab active" data-tab="top_quizzes">Top Quiz</button>
+            <button class="bo-tab" data-tab="recent_attempts">Tentatives recentes</button>
+        </nav>
+    </div>
 
-<div data-tab-content="training-tabs">
-    {# Tab: Templates #}
-    <div data-tab-panel="templates" class="tab-content active">
+    {# Tab: Top Quizzes #}
+    <div class="tab-panel" id="tab-top_quizzes">
         <div class="table-container">
             <table class="bo-table">
                 <thead>
                     <tr>
-                        <th>Nom</th>
-                        <th>Matiere</th>
-                        <th>Questions</th>
-                        <th>Utilisations</th>
-                        <th>Creation</th>
-                        <th></th>
+                        <th>#</th>
+                        <th>Quiz</th>
+                        <th>Difficulte</th>
+                        <th>Tentatives</th>
+                        <th>Score moyen</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for template in data.templates %}
+                    {% for quiz in data.top_quizzes %}
                     <tr>
-                        <td class="font-medium">{{ template.name }}</td>
-                        <td>{{ template.subject }}</td>
-                        <td>{{ template.questions }}</td>
-                        <td>{{ template.uses }}</td>
-                        <td class="text-muted">{{ template.created }}</td>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td class="font-medium">{{ quiz.title }}</td>
                         <td>
-                            <div class="dropdown">
-                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="1"/>
-                                        <circle cx="12" cy="5" r="1"/>
-                                        <circle cx="12" cy="19" r="1"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <button class="dropdown-item">Previsualiser</button>
-                                    <button class="dropdown-item">Modifier</button>
-                                    <button class="dropdown-item">Dupliquer</button>
-                                    <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item danger">Supprimer</button>
-                                </div>
-                            </div>
+                            <span class="badge badge-{{ quiz.difficulty == 'EASY' ? 'success' : (quiz.difficulty == 'HARD' ? 'error' : 'warning') }}">
+                                {{ quiz.difficulty|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ quiz.attempts }}</td>
+                        <td>
+                            <span style="color: {{ quiz.avg_score >= 70 ? 'var(--color-success)' : (quiz.avg_score >= 50 ? 'var(--color-warning)' : 'var(--color-error)') }}; font-weight: 600;">
+                                {{ quiz.avg_score }}%
+                            </span>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-muted" style="padding: 2rem;">Aucun quiz complete</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    {# Tab: Results #}
-    <div data-tab-panel="results" class="tab-content">
+    {# Tab: Recent Attempts #}
+    <div class="tab-panel" id="tab-recent_attempts" style="display: none;">
         <div class="table-container">
             <table class="bo-table">
                 <thead>
@@ -89,125 +97,52 @@
                         <th>Utilisateur</th>
                         <th>Quiz</th>
                         <th>Score</th>
-                        <th>Date</th>
+                        <th>Resultat</th>
                         <th>Duree</th>
-                        <th></th>
+                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for result in data.results %}
+                    {% for attempt in data.recent_attempts %}
                     <tr>
-                        <td class="font-medium">{{ result.user }}</td>
-                        <td>{{ result.quiz }}</td>
+                        <td class="font-medium">{{ attempt.user }}</td>
+                        <td>{{ attempt.quiz }}</td>
+                        <td>{{ attempt.score }}%</td>
                         <td>
-                            {% set score_parts = result.score|split('/') %}
-                            {% set score_pct = (score_parts[0]|number_format / score_parts[1]|number_format) * 100 %}
-                            <span class="badge badge-{{ score_pct >= 80 ? 'success' : (score_pct >= 50 ? 'warning' : 'error') }}">
-                                {{ result.score }}
-                            </span>
+                            {% if attempt.passed %}
+                                <span class="badge badge-success">Reussi</span>
+                            {% else %}
+                                <span class="badge badge-error">Echoue</span>
+                            {% endif %}
                         </td>
-                        <td class="text-muted">{{ result.date }}</td>
-                        <td class="text-muted">{{ result.duration }}</td>
-                        <td>
-                            <button class="btn btn-ghost btn-sm">Voir detail</button>
-                        </td>
+                        <td class="text-muted">{{ attempt.duration }}</td>
+                        <td class="text-muted">{{ attempt.date }}</td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted" style="padding: 2rem;">Aucune tentative</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
-    {# Tab: Logs IA #}
-    <div data-tab-panel="logs" class="tab-content">
-        <div class="card">
-            <div class="card-body" style="padding: 0;">
-                {% for log in data.logs %}
-                <div class="bo-log-item">
-                    <div class="bo-log-icon {{ log.status }}">
-                        {% if log.status == 'success' %}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        {% else %}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="15" y1="9" x2="9" y2="15"/>
-                            <line x1="9" y1="9" x2="15" y2="15"/>
-                        </svg>
-                        {% endif %}
-                    </div>
-                    <div class="bo-log-content">
-                        <div class="bo-log-text">
-                            <strong>{{ log.user }}</strong> - {{ log.action }}
-                            {% if log.subject != '-' %}
-                            <span class="badge badge-neutral" style="margin-left: 4px;">{{ log.subject }}</span>
-                            {% endif %}
-                        </div>
-                        <div class="bo-log-time">{{ log.date }}</div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
+{% endif %}
 {% endblock %}
 
-{% block drawers %}
-{# Drawer: Add Template #}
-<div class="drawer" id="add-template-drawer">
-    <div class="drawer-header">
-        <h2 class="drawer-title">Nouveau template de quiz</h2>
-        <button class="drawer-close" data-drawer-close aria-label="Fermer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-        </button>
-    </div>
-    <div class="drawer-body">
-        <div class="form-group">
-            <label class="form-label required">Nom du template</label>
-            <input type="text" class="form-input" placeholder="Ex: Quiz Integrales Niveau 2">
-        </div>
-        <div class="form-group">
-            <label class="form-label required">Matiere</label>
-            <select class="form-select">
-                <option value="">Selectionner</option>
-                <option value="math">Mathematiques</option>
-                <option value="physics">Physique</option>
-                <option value="chemistry">Chimie</option>
-                <option value="english">Anglais</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Chapitre</label>
-            <select class="form-select">
-                <option value="">Tous les chapitres</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label required">Nombre de questions</label>
-            <input type="number" class="form-input" value="20" min="5" max="100">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Duree limite (minutes)</label>
-            <input type="number" class="form-input" placeholder="Sans limite" min="5" max="180">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Difficulte</label>
-            <select class="form-select">
-                <option value="easy">Facile</option>
-                <option value="medium" selected>Intermediaire</option>
-                <option value="hard">Difficile</option>
-                <option value="mixed">Mixte</option>
-            </select>
-        </div>
-    </div>
-    <div class="drawer-footer">
-        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
-        <button class="btn btn-primary">Creer le template</button>
-    </div>
-</div>
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.bo-tab');
+    const panels = document.querySelectorAll('.tab-panel');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', function () {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.style.display = 'none');
+            this.classList.add('active');
+            const panel = document.getElementById('tab-' + this.dataset.tab);
+            if (panel) panel.style.display = '';
+        });
+    });
+});
+</script>
 {% endblock %}

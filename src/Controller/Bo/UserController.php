@@ -59,7 +59,7 @@ class UserController extends AbstractController
             $u->getEmail(),
             $u->getUserType(),
             implode(', ', $u->getRoles()),
-            $u->isActive() ? 'Oui' : 'Non',
+            in_array('ROLE_ADMIN', $u->getRoles()) ? 'Admin' : ucfirst(strtolower($u->getUserType())),
             $u->getCreatedAt()?->format('d/m/Y H:i'),
         ], $users);
 

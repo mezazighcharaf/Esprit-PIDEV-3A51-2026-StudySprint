@@ -15,4 +15,19 @@ class SubjectRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Subject::class);
     }
+
+    /**
+     * Fetch all subjects with chapters eager-loaded to avoid N+1.
+     * @return Subject[]
+     */
+    public function findAllWithChapters(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.chapters', 'c')
+            ->addSelect('c')
+            ->orderBy('s.name', 'ASC')
+            ->addOrderBy('c.orderNo', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

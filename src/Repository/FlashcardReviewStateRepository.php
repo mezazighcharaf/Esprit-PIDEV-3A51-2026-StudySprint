@@ -59,15 +59,20 @@ class FlashcardReviewStateRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get flashcards from deck that user hasn't reviewed yet
+     * Get flashcards from deck that user hasn't reviewed yet.
+     * Filters by deck in the sub-query to avoid loading IDs from all decks.
      * @return Flashcard[]
      */
     public function findNewCardsForUserAndDeck(User $user, FlashcardDeck $deck, int $limit = 20): array
     {
+        // Only fetch already-reviewed IDs for THIS deck, not all decks
         $existingFlashcardIds = $this->createQueryBuilder('rs')
             ->select('IDENTITY(rs.flashcard)')
+            ->join('rs.flashcard', 'rf')
             ->andWhere('rs.user = :user')
+            ->andWhere('rf.deck = :deck')
             ->setParameter('user', $user)
+            ->setParameter('deck', $deck)
             ->getQuery()
             ->getSingleColumnResult();
 

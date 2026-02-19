@@ -27,9 +27,27 @@
 
             <div class="form-group">
                 {{ form_label(form.avatarFile) }}
-                {{ form_widget(form.avatarFile) }}
+                {# Preview zone #}
+                <div id="avatar-preview-wrap" style="margin-bottom: 0.75rem; display: {% if app.user.profile and app.user.profile.avatarUrl %}flex{% else %}none{% endif %}; align-items: center; gap: 1rem;">
+                    <img id="avatar-preview" src="{{ app.user.profile and app.user.profile.avatarUrl ? app.user.profile.avatarUrl : '' }}" alt="Aperçu"
+                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.3);">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 600; color: #374151;">Aperçu</div>
+                        <button type="button" id="avatar-remove-preview" style="font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 0; margin-top: 2px;">Supprimer</button>
+                    </div>
+                </div>
+                {{ form_widget(form.avatarFile, {'attr': {'id': 'avatar-input', 'accept': 'image/jpeg,image/png,image/webp', 'style': 'display:none'}}) }}
+                {# Custom file button #}
+                <label for="avatar-input" id="avatar-label" style="display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 2px dashed #d1d5db; border-radius: 8px; color: #6b7280; font-size: 13px; transition: border-color 0.2s, color 0.2s; background: #f9fafb;"
+                       onmouseover="this.style.borderColor='#667eea';this.style.color='#667eea';"
+                       onmouseout="this.style.borderColor='#d1d5db';this.style.color='#6b7280';">
+                    <svg style="width: 18px; height: 18px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span id="avatar-label-text">Choisir une image</span>
+                </label>
                 {{ form_errors(form.avatarFile) }}
-                <div style="font-size: 12px; color: #6b7280; margin-top: 0.25rem;">JPG, PNG ou WEBP (max 3 Mo)</div>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 0.375rem;">JPG, PNG ou WEBP — max 3 Mo</div>
             </div>
         </div>
 
@@ -66,4 +84,42 @@
         {{ form_end(form) }}
     </div>
 </div>
+
+<script>
+(function () {
+    var input    = document.getElementById('avatar-input');
+    var preview  = document.getElementById('avatar-preview');
+    var wrap     = document.getElementById('avatar-preview-wrap');
+    var labelTxt = document.getElementById('avatar-label-text');
+    var removeBtn= document.getElementById('avatar-remove-preview');
+
+    if (!input) return;
+
+    input.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        if (file.size > 3 * 1024 * 1024) {
+            alert('Image trop lourde (max 3 Mo).');
+            this.value = '';
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            wrap.style.display = 'flex';
+            labelTxt.textContent = file.name.length > 24 ? file.name.slice(0, 22) + '…' : file.name;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function () {
+            input.value = '';
+            preview.src = '';
+            wrap.style.display = 'none';
+            labelTxt.textContent = 'Choisir une image';
+        });
+    }
+})();
+</script>
 {% endblock %}

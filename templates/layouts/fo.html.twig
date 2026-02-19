@@ -19,7 +19,25 @@
                 <div class="sidebar-section-title">Navigation</div>
                 <ul class="sidebar-menu">
                     <li>
-                        <a href="{{ path('fo_subjects_index') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_subjects_' ? 'active' : '' }}">
+                        <a href="{{ path('fo_subjects_index') }}" class="sidebar-link {{ app.request.get('_route') == 'fo_subjects_index' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                            <span>Accueil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_profile_show') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_profile_' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Mon Profil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fo_subjects_index') }}" class="sidebar-link {{ (app.request.get('_route') starts with 'fo_subjects_') and app.request.get('_route') != 'fo_subjects_index' ? 'active' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
                                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -91,7 +109,7 @@
             <a href="{{ path('fo_profile_show') }}" class="fo-user-card" style="text-decoration: none;">
                 <div class="fo-user-avatar" style="overflow: hidden; padding: 0;">
                     {% if app.user and app.user.profile and app.user.profile.avatarUrl %}
-                        <img src="{{ app.user.profile.avatarUrl }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        <img src="{{ app.user.profile.avatarUrl | imagine_filter('avatar_thumb') }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                     {% else %}
                         {{ app.user.fullName[:2]|upper|default('ET') }}
                     {% endif %}
@@ -115,6 +133,12 @@
     {# ─── MAIN CONTENT ─── #}
     <main class="app-main">
         <header class="app-topbar">
+            {# Mobile hamburger #}
+            <button id="fo-sidebar-toggle" aria-label="Menu" style="display: none; background: none; border: none; cursor: pointer; padding: 0.375rem; color: #6b7280; margin-right: 0.5rem;" onclick="document.querySelector('.fo-sidebar').classList.toggle('open')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
             <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
             <div class="topbar-spacer"></div>
             <div class="topbar-actions">
@@ -147,4 +171,77 @@
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 {% block drawers %}{% endblock %}
+
+{# ─── MERCURE REAL-TIME NOTIFICATIONS ─── #}
+<style>
+@media (max-width: 768px) {
+    #fo-sidebar-toggle { display: block !important; }
+    .fo-sidebar { transform: translateX(-100%); transition: transform 0.25s ease; position: fixed; z-index: 200; height: 100%; }
+    .fo-sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.18); }
+    .app-main { margin-left: 0 !important; }
+}
+</style>
+
+{% if app.user %}
+<script>
+(function () {
+    try {
+        var userId = {{ app.user.id|json_encode|raw }};
+        var topic = 'studysprint/notifications/user/' + userId;
+        var hubUrl = {{ mercure(topic)|json_encode|raw }};
+
+        if (!window.EventSource) return;
+
+        var es = new EventSource(hubUrl, { withCredentials: true });
+
+        es.onmessage = function (event) {
+            try {
+                var data = JSON.parse(event.data);
+
+                // Update the notification badge count
+                var badge = document.querySelector('a[href*="fo_notifications"] span');
+                if (badge) {
+                    var current = parseInt(badge.textContent) || 0;
+                    var next = current + 1;
+                    badge.textContent = next > 9 ? '9+' : next;
+                    badge.style.display = 'flex';
+                } else {
+                    // Badge doesn't exist yet — create it
+                    var bell = document.querySelector('a[href*="fo_notifications"]');
+                    if (bell) {
+                        var span = document.createElement('span');
+                        span.style.cssText = 'position:absolute;top:2px;right:2px;width:18px;height:18px;background:#ef4444;color:white;font-size:11px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;';
+                        span.textContent = '1';
+                        bell.appendChild(span);
+                    }
+                }
+
+                // Show a small toast notification
+                var toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:#1f2937;color:white;padding:0.875rem 1.25rem;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.25);max-width:320px;font-size:14px;line-height:1.5;animation:slideInRight 0.3s ease;';
+                toast.innerHTML = '<strong>' + (data.title || 'Notification') + '</strong><br><span style="opacity:0.8;">' + (data.message || '') + '</span>';
+                document.body.appendChild(toast);
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.4s';
+                    setTimeout(function () { toast.remove(); }, 400);
+                }, 5000);
+            } catch (e) {}
+        };
+
+        es.onerror = function () {
+            // Connection error — EventSource retries automatically
+        };
+    } catch (e) {
+        // Mercure hub not configured or unavailable — skip silently
+    }
+})();
+</script>
+<style>
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+</style>
+{% endif %}
 {% endblock %}

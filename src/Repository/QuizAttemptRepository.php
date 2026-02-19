@@ -24,6 +24,10 @@ class QuizAttemptRepository extends ServiceEntityRepository
     public function findByUser(User $user, int $limit = 50): array
     {
         return $this->createQueryBuilder('a')
+            ->leftJoin('a.quiz', 'q')
+            ->addSelect('q')
+            ->leftJoin('q.subject', 's')
+            ->addSelect('s')
             ->andWhere('a.user = :user')
             ->setParameter('user', $user)
             ->orderBy('a.startedAt', 'DESC')

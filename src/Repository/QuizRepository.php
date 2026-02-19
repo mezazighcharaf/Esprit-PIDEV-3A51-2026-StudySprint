@@ -20,8 +20,11 @@ class QuizRepository extends ServiceEntityRepository
     public function searchPublishedQuery(?string $q = null, ?string $difficulty = null, ?int $subjectId = null, string $sort = 'newest'): QueryBuilder
     {
         $qb = $this->createQueryBuilder('quiz')
-            ->andWhere('quiz.isPublished = true')
-            ->leftJoin('quiz.subject', 's');
+            ->leftJoin('quiz.subject', 's')
+            ->addSelect('s')
+            ->leftJoin('quiz.owner', 'o')
+            ->addSelect('o')
+            ->andWhere('quiz.isPublished = true');
 
         if ($q) {
             $qb->andWhere('quiz.title LIKE :q OR s.name LIKE :q')

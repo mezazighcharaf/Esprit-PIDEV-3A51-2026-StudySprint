@@ -3,40 +3,60 @@
 {% block title %}Encadrement - StudySprint BO{% endblock %}
 {% block breadcrumb %}Encadrement{% endblock %}
 
-{% block topbar_actions %}
-<button class="btn btn-primary btn-sm" data-drawer-open="add-group-drawer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Creer un groupe
-</button>
-{% endblock %}
-
 {% block content %}
-<div class="bo-page-header">
-    <h1 class="bo-page-title">Encadrement</h1>
-</div>
+{% if state == 'empty' %}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Encadrement</h1>
+    </div>
+    {{ include('components/_empty_state.html.twig', {
+        title: 'Aucun groupe',
+        description: 'Aucun groupe d\'etude n\'a encore ete cree.',
+        variant: 'bo'
+    }) }}
+{% else %}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Encadrement</h1>
+    </div>
 
-{# Tabs #}
-{{ include('components/_tabs.html.twig', {
-    id: 'mentoring-tabs',
-    tabs: data.tabs,
-    variant: 'bo'
-}) }}
+    {# Stats Row #}
+    <div class="bo-stats-row">
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.total_groups }}</span>
+            <span class="bo-stat-label">Groupes</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value" style="color: var(--color-success);">{{ data.stats.public_groups }}</span>
+            <span class="bo-stat-label">Publics</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.total_members }}</span>
+            <span class="bo-stat-label">Membres totaux</span>
+        </div>
+        <div class="bo-stat-item">
+            <span class="bo-stat-value">{{ data.stats.total_posts }}</span>
+            <span class="bo-stat-label">Posts</span>
+        </div>
+    </div>
 
-<div data-tab-content="mentoring-tabs">
+    {# Tabs #}
+    <div style="border-bottom: 1px solid var(--color-gray-200); margin-bottom: 1.25rem;">
+        <nav class="flex gap-4">
+            <button class="bo-tab active" data-tab="groups">Groupes</button>
+            <button class="bo-tab" data-tab="posts">Posts recents</button>
+        </nav>
+    </div>
+
     {# Tab: Groups #}
-    <div data-tab-panel="groups" class="tab-content active">
+    <div class="tab-panel" id="tab-groups">
         <div class="table-container">
             <table class="bo-table">
                 <thead>
                     <tr>
                         <th>Groupe</th>
-                        <th>Encadrant</th>
+                        <th>Confidentialite</th>
                         <th>Membres</th>
-                        <th>Sessions</th>
-                        <th>Statut</th>
+                        <th>Posts</th>
+                        <th>Cree le</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -44,162 +64,75 @@
                     {% for group in data.groups %}
                     <tr>
                         <td class="font-medium">{{ group.name }}</td>
-                        <td>{{ group.mentor }}</td>
+                        <td>
+                            <span class="badge badge-{{ group.privacy == 'PUBLIC' ? 'success' : 'neutral' }}">
+                                {{ group.privacy == 'PUBLIC' ? 'Public' : 'Prive' }}
+                            </span>
+                        </td>
                         <td>{{ group.members }}</td>
-                        <td>{{ group.sessions }}</td>
+                        <td>{{ group.posts }}</td>
+                        <td class="text-muted">{{ group.created_at }}</td>
                         <td>
-                            <span class="bo-status {{ group.status|lower == 'actif' ? 'active' : 'inactive' }}">
-                                <span class="bo-status-dot"></span>
-                                {{ group.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="1"/>
-                                        <circle cx="12" cy="5" r="1"/>
-                                        <circle cx="12" cy="19" r="1"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <button class="dropdown-item">Voir les membres</button>
-                                    <button class="dropdown-item">Modifier</button>
-                                    <button class="dropdown-item">Inviter des membres</button>
-                                    <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item danger">Supprimer</button>
-                                </div>
-                            </div>
+                            <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-ghost btn-sm" target="_blank">Voir</a>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted" style="padding: 2rem;">Aucun groupe</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    {# Tab: Invitations #}
-    <div data-tab-panel="invitations" class="tab-content">
+    {# Tab: Recent Posts #}
+    <div class="tab-panel" id="tab-posts" style="display: none;">
         <div class="table-container">
             <table class="bo-table">
                 <thead>
                     <tr>
-                        <th>Utilisateur</th>
+                        <th>Contenu</th>
+                        <th>Auteur</th>
                         <th>Groupe</th>
                         <th>Date</th>
-                        <th>Statut</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for invitation in data.invitations %}
+                    {% for post in data.recent_posts %}
                     <tr>
-                        <td class="font-medium">{{ invitation.user }}</td>
-                        <td>{{ invitation.group }}</td>
-                        <td class="text-muted">{{ invitation.date }}</td>
-                        <td>
-                            <span class="badge badge-{{ invitation.status == 'En attente' ? 'warning' : 'neutral' }}">
-                                {{ invitation.status }}
+                        <td style="max-width: 300px;">
+                            <span class="text-sm text-muted" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;">
+                                {{ post.excerpt }}
                             </span>
                         </td>
-                        <td>
-                            <div class="flex gap-2">
-                                <button class="btn btn-ghost btn-sm">Renvoyer</button>
-                                <button class="btn btn-ghost btn-sm" style="color: var(--color-error);">Annuler</button>
-                            </div>
-                        </td>
+                        <td class="font-medium">{{ post.author }}</td>
+                        <td>{{ post.group }}</td>
+                        <td class="text-muted">{{ post.created_at }}</td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted" style="padding: 2rem;">Aucun post</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
-    {# Tab: Feedbacks #}
-    <div data-tab-panel="feedbacks" class="tab-content">
-        <div class="table-container">
-            <table class="bo-table">
-                <thead>
-                    <tr>
-                        <th>De</th>
-                        <th>Pour</th>
-                        <th>Groupe</th>
-                        <th>Note</th>
-                        <th>Commentaire</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for feedback in data.feedbacks %}
-                    <tr>
-                        <td class="font-medium">{{ feedback.from }}</td>
-                        <td>{{ feedback.to }}</td>
-                        <td>{{ feedback.group }}</td>
-                        <td>
-                            <div class="flex gap-1">
-                                {% for i in 1..5 %}
-                                <svg viewBox="0 0 24 24" fill="{{ i <= feedback.rating ? 'var(--color-warning)' : 'none' }}" stroke="var(--color-warning)" stroke-width="2" width="12" height="12">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
-                                {% endfor %}
-                            </div>
-                        </td>
-                        <td class="text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            {{ feedback.comment }}
-                        </td>
-                        <td class="text-muted">{{ feedback.date }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+{% endif %}
 {% endblock %}
 
-{% block drawers %}
-{# Drawer: Add Group #}
-<div class="drawer" id="add-group-drawer">
-    <div class="drawer-header">
-        <h2 class="drawer-title">Creer un groupe</h2>
-        <button class="drawer-close" data-drawer-close aria-label="Fermer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-        </button>
-    </div>
-    <div class="drawer-body">
-        <div class="form-group">
-            <label class="form-label required">Nom du groupe</label>
-            <input type="text" class="form-input" placeholder="Ex: Prepa MPSI - Maths">
-        </div>
-        <div class="form-group">
-            <label class="form-label required">Encadrant</label>
-            <select class="form-select">
-                <option value="">Selectionner un encadrant</option>
-                <option value="1">Sophie Durand</option>
-                <option value="2">Marc Petit</option>
-                <option value="3">Julie Moreau</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="form-textarea" placeholder="Description du groupe..."></textarea>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Matiere principale</label>
-            <select class="form-select">
-                <option value="">Aucune</option>
-                <option value="math">Mathematiques</option>
-                <option value="physics">Physique</option>
-                <option value="chemistry">Chimie</option>
-            </select>
-        </div>
-    </div>
-    <div class="drawer-footer">
-        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
-        <button class="btn btn-primary">Creer le groupe</button>
-    </div>
-</div>
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.bo-tab');
+    const panels = document.querySelectorAll('.tab-panel');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', function () {
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.style.display = 'none');
+            this.classList.add('active');
+            const panel = document.getElementById('tab-' + this.dataset.tab);
+            if (panel) panel.style.display = '';
+        });
+    });
+});
+</script>
 {% endblock %}

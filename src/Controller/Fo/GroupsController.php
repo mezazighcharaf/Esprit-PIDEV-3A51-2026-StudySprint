@@ -35,15 +35,23 @@ class GroupsController extends AbstractController
         $currentUser = $this->getUser() ?? $userRepo->findOneBy([]);
         $q = $request->query->get('q');
 
-        // Get user's groups
-        $myGroupsMembers = $currentUser ? $memberRepo->findBy(['user' => $currentUser]) : [];
+        // Get user's groups with eager-loaded group to avoid N+1
+        if ($currentUser) {
+            $myGroupsQb = $memberRepo->createQueryBuilder('m')
+                ->join('m.group', 'g')
+                ->addSelect('g')
+                ->where('m.user = :user')
+                ->setParameter('user', $currentUser);
+            if ($q) {
+                $myGroupsQb->andWhere('g.name LIKE :q OR g.description LIKE :q')
+                    ->setParameter('q', '%' . $q . '%');
+            }
+            $myGroupsMembers = $myGroupsQb->getQuery()->getResult();
+        } else {
+            $myGroupsMembers = [];
+        }
         $myGroups = array_map(fn($m) => $m->getGroup(), $myGroupsMembers);
         $myGroupIds = array_map(fn($g) => $g->getId(), $myGroups);
-
-        // Filter user's groups by search
-        if ($q) {
-            $myGroups = array_filter($myGroups, fn($g) => stripos($g->getName(), $q) !== false || stripos($g->getDescription() ?? '', $q) !== false);
-        }
 
         // Get other public groups
         $qb = $repository->createQueryBuilder('g')
@@ -87,12 +95,19 @@ class GroupsController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $offset = ($page - 1) * self::POSTS_PER_PAGE;
 
-        // Get paginated root posts (parentPost IS NULL)
+        // Get paginated root posts with author + replies eager-loaded to avoid N+1
         $posts = $postRepo->createQueryBuilder('p')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
+            ->leftJoin('p.replies', 'r')
+            ->addSelect('r')
+            ->leftJoin('r.author', 'ra')
+            ->addSelect('ra')
             ->andWhere('p.group = :group')
             ->andWhere('p.parentPost IS NULL')
             ->setParameter('group', $group)
             ->orderBy('p.createdAt', 'DESC')
+            ->addOrderBy('r.createdAt', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults(self::POSTS_PER_PAGE)
             ->getQuery()

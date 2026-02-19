@@ -20,7 +20,14 @@
       "Bash(python -m pip install:*)",
       "Bash(pip install:*)",
       "Bash(python -c:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(del:*)",
+      "Bash(grep:*)",
+      "Bash(composer validate:*)",
+      "Bash(composer check-platform-reqs:*)",
+      "Bash(composer audit:*)",
+      "Bash(docker --version:*)",
+      "Bash(docker info:*)"
     ]
   }
 }

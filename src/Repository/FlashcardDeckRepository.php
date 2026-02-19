@@ -20,8 +20,11 @@ class FlashcardDeckRepository extends ServiceEntityRepository
     public function searchPublishedQuery(?string $q = null, ?int $subjectId = null, string $sort = 'newest'): QueryBuilder
     {
         $qb = $this->createQueryBuilder('d')
-            ->andWhere('d.isPublished = true')
-            ->leftJoin('d.subject', 's');
+            ->leftJoin('d.subject', 's')
+            ->addSelect('s')
+            ->leftJoin('d.owner', 'o')
+            ->addSelect('o')
+            ->andWhere('d.isPublished = true');
 
         if ($q) {
             $qb->andWhere('d.title LIKE :q OR s.name LIKE :q')

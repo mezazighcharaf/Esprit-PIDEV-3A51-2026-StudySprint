@@ -1,0 +1,15 @@
+{
+    http_port 3000
+    auto_https off
+}
+
+:3000 {
+    mercure {
+        publisher_jwt studysprint_mercure_secret_key_change_me HS256
+        subscriber_jwt studysprint_mercure_secret_key_change_me HS256
+        cors_origins http://localhost:8000 http://127.0.0.1:8000
+        anonymous
+        subscriptions
+    }
+    respond /healthz 200
+}
