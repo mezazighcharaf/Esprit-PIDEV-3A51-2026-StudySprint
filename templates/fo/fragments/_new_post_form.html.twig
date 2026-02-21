@@ -1,0 +1,80 @@
+{# NEW POST FORM #}
+<div class="forum-new-post" data-post-form>
+    <div class="forum-new-post-header">
+        <div class="avatar avatar-sm avatar-initials">{{ user.initials }}</div>
+        <input type="text" class="form-input" placeholder="Partager une question ou une idée..." data-post-form-trigger style="cursor: pointer;">
+    </div>
+
+    {# POST TYPE SELECTOR #}
+    <div class="forum-post-types" data-post-types style="display: none; margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-color);">
+        <button class="forum-post-type-btn active" data-type="text" type="button" title="Texte">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            <span>Texte</span>
+        </button>
+        <button class="forum-post-type-btn" data-type="file" type="button" title="Fichier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                <polyline points="13 2 13 9 20 9"/>
+                <line x1="12" y1="12" x2="12" y2="18"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <span>Fichier</span>
+        </button>
+        <button class="forum-post-type-btn" data-type="link" type="button" title="Lien">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <span>Lien</span>
+        </button>
+    </div>
+
+    {# TEXT POST FORM #}
+    <form class="forum-post-input-form" data-post-input-form="text" data-post-type="text" style="display: none; margin-top: var(--space-3);" method="post" action="{{ path('app_post_create', {id: group.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('create-post-' ~ group.id) }}">
+        <input type="text" class="form-input" name="title" placeholder="Titre de votre post (optionnel)" style="margin-bottom: var(--space-2);">
+        <textarea class="form-input" name="body" placeholder="Quelle est votre question ou idée?" rows="4" style="resize: vertical;"></textarea>
+        <div class="forum-form-actions">
+            <button type="button" class="btn btn-ghost btn-sm" data-post-cancel>Annuler</button>
+            <button type="submit" class="btn btn-primary btn-sm">Publier</button>
+        </div>
+    </form>
+
+    {# FILE POST FORM #}
+    <form class="forum-post-input-form" data-post-input-form="file" data-post-type="file" style="display: none; margin-top: var(--space-3);" method="post" action="{{ path('app_post_create', {id: group.id}) }}" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{ csrf_token('create-post-' ~ group.id) }}">
+        <input type="text" class="form-input" name="title" placeholder="Titre de votre fichier (optionnel)" style="margin-bottom: var(--space-2);">
+        <div class="forum-file-upload">
+            <input type="file" id="forum-file-input" name="files[]" multiple style="display: none;">
+            <button type="button" class="btn btn-secondary btn-sm" data-file-trigger>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Choisir des fichiers</span>
+            </button>
+            <div class="forum-file-list" data-file-list></div>
+        </div>
+        <textarea class="form-input" name="body" placeholder="Ajouter une description..." rows="3" style="margin-top: var(--space-2); resize: vertical;"></textarea>
+        <div class="forum-form-actions">
+            <button type="button" class="btn btn-ghost btn-sm" data-post-cancel>Annuler</button>
+            <button type="submit" class="btn btn-primary btn-sm">Publier</button>
+        </div>
+    </form>
+
+    {# LINK POST FORM #}
+    <form class="forum-post-input-form" data-post-input-form="link" data-post-type="link" style="display: none; margin-top: var(--space-3);" method="post" action="{{ path('app_post_create', {id: group.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('create-post-' ~ group.id) }}">
+        <input type="text" class="form-input" name="title" placeholder="Titre du lien (optionnel)" style="margin-bottom: var(--space-2);">
+        <input type="url" class="form-input" name="attachment_url" placeholder="https://exemple.com" style="margin-bottom: var(--space-2);">
+        <textarea class="form-input" name="body" placeholder="Ajouter un commentaire..." rows="3" style="resize: vertical;"></textarea>
+        <div class="forum-form-actions">
+            <button type="button" class="btn btn-ghost btn-sm" data-post-cancel>Annuler</button>
+            <button type="submit" class="btn btn-primary btn-sm">Publier</button>
+        </div>
+    </form>
+</div>

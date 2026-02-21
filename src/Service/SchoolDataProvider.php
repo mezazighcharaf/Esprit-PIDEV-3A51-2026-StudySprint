@@ -11,99 +11,112 @@ class SchoolDataProvider
                 'Sorbonne Université',
                 'École Polytechnique',
                 'CentraleSupélec',
-                'INSA Lyon'
+                'INSA Lyon',
+                'HEC Paris',
+                'Sciences Po Paris',
+                'Université PSL (Paris Sciences & Lettres)',
+                'Université Paris Cité',
+                'ESCP Business School',
+                'EM Lyon',
+                'EDHEC Business School'
             ],
             'niveaux' => [
-                'Baccalauréat',
-                'Licence 1',
-                'Licence 2',
-                'Licence 3',
-                'Master 1',
-                'Master 2',
-                'Doctorat'
+                'Seconde',
+                'Première',
+                'Terminale',
+                'Licence 1 (L1)',
+                'Licence 2 (L2)',
+                'Licence 3 (L3)',
+                'Master 1 (M1)',
+                'Master 2 (M2)',
+                'Doctorat',
+                'Classes Préparatoires (CPGE)',
+                'BTS / DUT'
             ]
         ],
         'TN' => [
             'etablissements' => [
-                // Universités et Facultés de Tunis
-                'Université de Tunis El Manar',
-                'Faculté de Médecine de Tunis',
-                'Institut Supérieur des Sciences Infirmières de Tunis (ISSIT)',
-                'Faculté des Sciences de Tunis (FST)',
-                'Ecole Nationale d\'Ingénieurs de Tunis (ENIT)',
-                'Institut Bourguiba des Langues Vivantes (IBLV)',
-
-                // Université de Carthage
-                'Université de Carthage',
-                'Institut des Hautes Etudes Commerciales de Carthage (IHEC)',
-                'Institut National des Sciences Appliquées et de Technologie (INSAT)',
-                'Faculté des Sciences Juridiques, Politiques et Sociales de Tunis',
-                'Ecole Polytechnique de Tunisie (EPT)',
-
-                // Université de la Manouba
-                'Université de la Manouba',
-                'Ecole Supérieure de Commerce de Tunis (ESCT)',
-                'Institut de Presse et des Sciences de l\'Information (IPSI)',
-                'Ecole Nationale des Sciences de l\'Informatique (ENSI)',
-
-                // Université de Tunis
-                'Université de Tunis',
-                'Ecole Supérieure des Sciences Economiques et Commerciales de Tunis (ESSEC)',
-                'Institut Supérieur de Gestion de Tunis (ISG)',
-                'Institut Préparatoire aux Etudes d\'Ingénieurs de Tunis (IPEIT)',
-                'Tunis Business School (TBS)',
-
-                // Régions
-                'Université de Sfax',
-                'Faculté de Médecine de Sfax',
-                'Ecole Nationale d\'Ingénieurs de Sfax (ENIS)',
-                'Université de Sousse',
-                'Faculté de Médecine de Sousse',
-                'Université de Monastir',
-                'Faculté de Médecine de Monastir',
-                'Faculté de Médecine Dentaire de Monastir',
-                'Faculté de Pharmacie de Monastir',
+                'Université de Tunis El Manar (FST, ENIT, Faculté de Médecine)',
+                'Université de Carthage (INSAT, IHEC, EPT, FSJPS)',
+                'Université de la Manouba (ENSI, ESCT, IPSI, ISAMM)',
+                'Université de Tunis (ESSEC, TBS, ISG, ENS)',
+                'Université de Sfax (ENIS, Faculté de Médecine, FSEG)',
+                'Université de Sousse (Faculté de Médecine, ISSAT, ISG)',
+                'Université de Monastir (Pharmacie, Dentaire, Médecine)',
                 'Université de Gabès',
                 'Université de Kairouan',
                 'Université de Gafsa',
                 'Université de Jendouba',
-
-                // Privé
                 'Esprit',
                 'Université Centrale',
                 'Dauphine Tunis',
-                'MSB (Mediterranean School of Business)'
+                'South Mediterranean University (MSB/MedTech)'
             ],
             'niveaux' => [
-                'Baccalauréat',
-                'Licence 1',
-                'Licence 2',
-                'Licence 3',
-                'Master 1',
-                'Master 2',
-                'Doctorat',
-                'Cycle Préparatoire 1ère année',
-                'Cycle Préparatoire 2ème année',
-                'Cycle Ingénieur 1ère année',
-                'Cycle Ingénieur 2ème année',
-                'Cycle Ingénieur 3ème année',
-                'Résidanat Médecine'
+                'Lycée (2ème/3ème/Bac)',
+                'Licence 1 (L1)',
+                'Licence 2 (L2)',
+                'Licence 3 (L3)',
+                'Professionnel / Mastère 1',
+                'Professionnel / Mastère 2',
+                'Cycle Ingénieur 1 (C1)',
+                'Cycle Ingénieur 2 (C2)',
+                'Cycle Ingénieur 3 (C3)',
+                'Cycle Préparatoire 1',
+                'Cycle Préparatoire 2',
+                'Doctorat'
             ]
         ],
         'US' => [
             'etablissements' => [
-                'MIT',
-                'Stanford University',
                 'Harvard University',
-                'Caltech'
+                'Stanford University',
+                'Massachusetts Institute of Technology (MIT)',
+                'California Institute of Technology (Caltech)',
+                'University of California, Berkeley (UCB)',
+                'Princeton University',
+                'Yale University',
+                'Columbia University',
+                'University of California, Los Angeles (UCLA)',
+                'University of Chicago',
+                'University of Pennsylvania',
+                'New York University (NYU)'
             ],
             'niveaux' => [
-                'High School',
-                'Freshman',
-                'Sophomore',
-                'Junior',
-                'Senior',
-                'Graduate'
+                'High School (Junior/Senior)',
+                'Undergraduate (Freshman)',
+                'Undergraduate (Sophomore)',
+                'Undergraduate (Junior)',
+                'Undergraduate (Senior)',
+                'Graduate (Master)',
+                'Graduate (PhD / Doctoral)',
+                'Post-Doc'
+            ]
+        ],
+        'CA' => [
+            'etablissements' => [
+                'University of Toronto',
+                'McGill University',
+                'University of British Columbia (UBC)',
+                'Université de Montréal',
+                'University of Waterloo',
+                'University of Alberta',
+                'McMaster University',
+                'Université Laval',
+                'University of Ottawa',
+                'Concordia University',
+                'HEC Montréal',
+                'Polytechnique Montréal'
+            ],
+            'niveaux' => [
+                'Secondaire',
+                'Cégep (Québec)',
+                'Baccalauréat / Bachelor (1ère année)',
+                'Baccalauréat / Bachelor (2ème année)',
+                'Baccalauréat / Bachelor (3ème année)',
+                'Baccalauréat / Bachelor (4ème année)',
+                'Maîtrise / Master',
+                'Doctorat (PhD)'
             ]
         ]
     ];

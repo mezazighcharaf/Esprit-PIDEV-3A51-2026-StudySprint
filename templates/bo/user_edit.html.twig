@@ -53,18 +53,82 @@
                     </div>
 
                     <div class="form-group">
+                        {{ form_label(form.telephone) }}
+                        {{ form_widget(form.telephone) }}
+                        {{ form_errors(form.telephone) }}
+                    </div>
+
+                    <div class="form-group">
                         {{ form_label(form.role) }}
                         {{ form_widget(form.role) }}
                         {{ form_errors(form.role) }}
                     </div>
 
-                    <div class="form-group">
-                        {{ form_label(form.motDePasse) }}
-                        {{ form_widget(form.motDePasse) }}
-                        {{ form_errors(form.motDePasse) }}
-                        <small style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem; display: block;">
-                            💡 Laissez vide pour conserver le mot de passe actuel
-                        </small>
+                    <div id="common-profile-fields" class="drawer-subsection" style="display: none;">
+                        <h4 class="drawer-subsection-title">👤 Profil & Origine</h4>
+                        <div class="form-group">
+                            {{ form_label(form.pays) }}
+                            {{ form_widget(form.pays) }}
+                            {{ form_errors(form.pays) }}
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                {{ form_label(form.age) }}
+                                {{ form_widget(form.age) }}
+                                {{ form_errors(form.age) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.sexe) }}
+                                {{ form_widget(form.sexe) }}
+                                {{ form_errors(form.sexe) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="student-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-primary);">
+                        <h4 class="drawer-subsection-title" style="color: var(--color-primary);">📚 Informations Étudiant</h4>
+                        <div class="form-group">
+                            {{ form_label(form.etablissement) }}
+                            {{ form_widget(form.etablissement) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.niveau) }}
+                            {{ form_widget(form.niveau) }}
+                        </div>
+                    </div>
+
+                    <div id="professor-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-secondary);">
+                        <h4 class="drawer-subsection-title" style="color: var(--color-secondary);">🎓 Informations Professeur</h4>
+                        <div class="form-group">
+                            {{ form_label(form.specialite) }}
+                            {{ form_widget(form.specialite) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.niveauEnseignement) }}
+                            {{ form_widget(form.niveauEnseignement) }}
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                {{ form_label(form.anneesExperience) }}
+                                {{ form_widget(form.anneesExperience) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.etablissementProfesseur) }}
+                                {{ form_widget(form.etablissementProfesseur) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drawer-subsection" style="background: #fffbeb; border-color: #fde68a;">
+                        <h4 class="drawer-subsection-title" style="color: #92400e;">🔐 Sécurité</h4>
+                        <div class="form-group">
+                            {{ form_label(form.motDePasse) }}
+                            {{ form_widget(form.motDePasse) }}
+                            {{ form_errors(form.motDePasse) }}
+                            <small style="color: #64748b; font-size: 0.875rem; margin-top: 0.25rem; display: block;">
+                                💡 Laissez vide pour conserver le mot de passe actuel
+                            </small>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0;">
@@ -135,4 +199,105 @@
             border: 1px solid #fca5a5;
         }
     </style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.querySelector('.role-selector-field');
+    const studentFields = document.getElementById('student-only-fields');
+    const professorFields = document.getElementById('professor-only-fields');
+    const commonProfileFields = document.getElementById('common-profile-fields');
+
+    function toggleFields() {
+        if (!roleSelect) return;
+        const role = roleSelect.value;
+        
+        if (role === 'ROLE_STUDENT') {
+            commonProfileFields.style.display = 'block';
+            studentFields.style.display = 'block';
+            professorFields.style.display = 'none';
+        } else if (role === 'ROLE_PROFESSOR') {
+            commonProfileFields.style.display = 'block';
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'block';
+        } else if (role === 'ROLE_ADMIN') {
+            commonProfileFields.style.display = 'block';
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'none';
+        } else {
+            commonProfileFields.style.display = 'none';
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'none';
+        }
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener('change', toggleFields);
+        toggleFields(); // Initial state
+    }
+
+    // Dynamic Country -> School/Level Logic
+    const countrySelect = document.querySelector('select[name*="[pays]"]');
+    const schoolSelects = document.querySelectorAll('.school-selector-field');
+    const levelSelects = document.querySelectorAll('.level-selector-field');
+
+    if (countrySelect && schoolSelects.length > 0) {
+        countrySelect.addEventListener('change', function() {
+            const countryCode = this.value;
+            
+            if (!countryCode) {
+                schoolSelects.forEach(resetSelect);
+                levelSelects.forEach(resetSelect);
+                return;
+            }
+
+            // Fetch Schools
+            fetch(`/api/location/schools/${countryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    schoolSelects.forEach(select => updateSelect(select, data));
+                });
+
+            // Fetch Levels
+            fetch(`/api/location/levels/${countryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    levelSelects.forEach(select => updateSelect(select, data));
+                });
+        });
+
+        // Trigger on load for existing selection
+        if (countrySelect.value) {
+            countrySelect.dispatchEvent(new Event('change'));
+        }
+    }
+
+    function updateSelect(selectElement, items) {
+        const currentValue = selectElement.value;
+        selectElement.innerHTML = '';
+        selectElement.disabled = false;
+        
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.text = 'Choisir...';
+        selectElement.appendChild(placeholder);
+
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.text = item;
+            if (item === currentValue) {
+                option.selected = true;
+            }
+            selectElement.appendChild(option);
+        });
+    }
+
+    function resetSelect(selectElement) {
+        selectElement.innerHTML = '<option value="">Choisir un pays d\'abord</option>';
+        selectElement.disabled = true;
+    }
+});
+</script>
 {% endblock %}

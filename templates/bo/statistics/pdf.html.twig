@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Statistiques Utilisateurs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #5AAEEF;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #5AAEEF;
+            margin: 0;
+            font-size: 24px;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .grid-kpi {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .kpi-cell {
+            width: 25%;
+            padding: 10px;
+            float: left;
+            text-align: center;
+        }
+        .card {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin: 10px 0;
+        }
+        .label {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: bold;
+        }
+        .section-title {
+            background: #f1f5f9;
+            padding: 8px 15px;
+            margin: 30px 0 15px;
+            border-left: 5px solid #5AAEEF;
+            font-weight: bold;
+            clear: both;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-size: 0.9rem;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #aaa;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Statistiques Utilisateurs - StudySprint</h1>
+        <div class="meta">Généré le {{ generatedAt|date('d/m/Y à H:i') }}</div>
+    </div>
+
+    <!-- KPI Summary -->
+    <div class="grid-kpi">
+        <div class="kpi-cell">
+            <div class="card">
+                <div class="label">Total Utilisateurs</div>
+                <div class="number">{{ stats.user_kpis.total_non_admins }}</div>
+            </div>
+        </div>
+        <div class="kpi-cell">
+            <div class="card">
+                <div class="label">Étudiants</div>
+                <div class="number" style="color: #5AAEEF;">{{ stats.user_kpis.students }}</div>
+            </div>
+        </div>
+        <div class="kpi-cell">
+            <div class="card">
+                <div class="label">Professeurs</div>
+                <div class="number" style="color: #FDB499;">{{ stats.user_kpis.professors }}</div>
+            </div>
+        </div>
+        <div class="kpi-cell">
+            <div class="card">
+                <div class="label">Actifs / Inactifs</div>
+                <div class="number">
+                    <span style="color: #2DCA73;">{{ stats.user_kpis.active }}</span> / <span style="color: #ef4444;">{{ stats.user_kpis.inactive }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-title">Répartition Globale</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Rôle</th>
+                <th>Nombre</th>
+                <th>Pourcentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Étudiants</td>
+                <td>{{ stats.user_kpis.students }}</td>
+                <td>{{ stats.user_kpis.total_non_admins > 0 ? ((stats.user_kpis.students / stats.user_kpis.total_non_admins) * 100)|round(1) : 0 }}%</td>
+            </tr>
+            <tr>
+                <td>Professeurs</td>
+                <td>{{ stats.user_kpis.professors }}</td>
+                <td>{{ stats.user_kpis.total_non_admins > 0 ? ((stats.user_kpis.professors / stats.user_kpis.total_non_admins) * 100)|round(1) : 0 }}%</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-title">Répartition par Pays</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Pays</th>
+                <th>Nombre d'utilisateurs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for country in stats.countries %}
+            <tr>
+                <td>{{ country.label|country_name }}</td>
+                <td>{{ country.value }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Expérience des Professeurs</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Niveau d'expérience</th>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for level in stats.professor_experience %}
+            <tr>
+                <td>{{ level.label }}</td>
+                <td>{{ level.value }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="2">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Répartition Hiérarchique des Professeurs</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Pays</th>
+                <th>Établissement</th>
+                <th>Nombre de professeurs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stats.professor_hierarchy %}
+            <tr>
+                <td>{{ item.pays|country_name }}</td>
+                <td>{{ item.etablissement }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Répartition Hiérarchique des Étudiants</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Pays</th>
+                <th>Établissement</th>
+                <th>Nombre d'étudiants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stats.student_hierarchy %}
+            <tr>
+                <td>{{ item.pays|country_name }}</td>
+                <td>{{ item.etablissement }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        © {{ 'now'|date('Y') }} StudySprint - Document généré automatiquement depuis l'interface d'administration.
+    </div>
+</body>
+</html>

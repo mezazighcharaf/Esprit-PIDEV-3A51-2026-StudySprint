@@ -38,41 +38,45 @@ class RegistrationType extends AbstractType
             ->add('nom', TextType::class, ['label' => 'Nom'])
             ->add('prenom', TextType::class, ['label' => 'Prénom'])
             ->add('email', EmailType::class, ['label' => 'Email'])
+            ->add('telephone', TextType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => ['placeholder' => '+216...'],
+            ])
             ->add('motDePasse', PasswordType::class, ['label' => 'Mot de passe'])
             
-            // Student specific
+            // Common for both Student and Professor but displayed conditionally in template
             ->add('age', IntegerType::class, [
                 'required' => false,
                 'label' => 'Âge',
-                'attr' => ['class' => 'student-field'],
-                'row_attr' => ['class' => 'student-field-row'],
+                'attr' => ['class' => 'common-field'],
+                'row_attr' => ['class' => 'common-field-row'],
             ])
             ->add('sexe', ChoiceType::class, [
                 'choices' => ['Homme' => 'H', 'Femme' => 'F'],
                 'required' => false,
                 'label' => 'Sexe',
-                'attr' => ['class' => 'student-field'],
-                'row_attr' => ['class' => 'student-field-row'],
+                'attr' => ['class' => 'common-field'],
+                'row_attr' => ['class' => 'common-field-row'],
             ])
             ->add('pays', CountryType::class, [
                 'required' => false,
                 'label' => 'Pays',
                 'placeholder' => 'Choisir un pays',
                 'preferred_choices' => ['TN', 'FR', 'US', 'CA'],
-                'attr' => ['class' => 'form-select mb-3'], // Common field now
+                'attr' => ['class' => 'form-select mb-3'],
                 'row_attr' => ['class' => 'mb-3'],
             ])
-            // These choice types need to be populated dynamically, essentially allow generic choices or handle via events
-            // For simplicity in this prototype, we'll allow extra fields or just use TextType on submit if we don't do strict valid on server side without data.
-            // But better: Use ChoiceType with empty choices, and rely on client side validation + permissive submit or PreSubmit event.
+            
             ->add('etablissement', ChoiceType::class, [
                 'required' => false,
-                'label' => 'Établissement',
+                'label' => 'Établissement / Faculté',
                 'choices' => [], // Populated via JS/Events
                 'placeholder' => 'Choisir un pays d\'abord',
-                'attr' => ['class' => 'student-field'],
-                'row_attr' => ['class' => 'student-field-row'],
+                'attr' => ['class' => 'common-field'],
+                'row_attr' => ['class' => 'common-field-row'],
             ])
+            
             ->add('niveau', ChoiceType::class, [
                 'required' => false,
                 'label' => 'Niveau d\'études',
@@ -88,7 +92,7 @@ class RegistrationType extends AbstractType
                 'label' => 'Spécialité',
                 'choices' => $this->professorDataProvider->getSpecialites(),
                 'placeholder' => 'Choisir une spécialité',
-                'attr' => ['class' => 'professor-field form-select'], // form-select for bootstrap styling
+                'attr' => ['class' => 'professor-field form-select'],
                 'row_attr' => ['class' => 'professor-field-row'],
             ])
             ->add('niveauEnseignement', ChoiceType::class, [
@@ -117,8 +121,8 @@ class RegistrationType extends AbstractType
                 $form->add('etablissement', ChoiceType::class, [
                     'choices' => [$data['etablissement'] => $data['etablissement']], // Hack to validate the submitted value
                     'required' => false,
-                    'attr' => ['class' => 'student-field'],
-                    'row_attr' => ['class' => 'student-field-row'],
+                    'attr' => ['class' => 'common-field'],
+                    'row_attr' => ['class' => 'common-field-row'],
                 ]);
             }
 
