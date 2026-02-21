@@ -20,7 +20,7 @@
                 {% for member in admin_members %}
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); background: var(--color-gray-50); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
                     <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
-                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div class="avatar avatar-sm avatar-role-admin">{{ member.initials }}</div>
                         <div style="min-width: 0;">
                             <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
                             <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
@@ -40,7 +40,7 @@
                 {% for member in moderator_members %}
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
                     <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
-                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div class="avatar avatar-sm avatar-role-moderator">{{ member.initials }}</div>
                         <div style="min-width: 0;">
                             <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
                             <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
@@ -79,7 +79,7 @@
                 {% for member in regular_members %}
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
                     <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
-                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div class="avatar avatar-sm avatar-role-member">{{ member.initials }}</div>
                         <div style="min-width: 0;">
                             <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
                             <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>

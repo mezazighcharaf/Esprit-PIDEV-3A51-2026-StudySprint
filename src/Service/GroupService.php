@@ -136,8 +136,16 @@ class GroupService
         return $member;
     }
 
-    public function removeMember(StudyGroup $group, User $user, User $currentUser): void
+    public function removeMember(StudyGroup $group, User $user, User $currentUser, bool $isAppAdmin = false): void
     {
+        // Check permission: must be group admin or app admin
+        if (!$isAppAdmin) {
+            $currentUserRole = $this->getUserRole($group, $currentUser);
+            if (!$currentUserRole || !$currentUserRole->canManageMembers()) {
+                throw new AccessDeniedHttpException('Seuls les administrateurs peuvent retirer des membres');
+            }
+        }
+
         $member = $this->memberRepository->findOneBy([
             'group' => $group,
             'user' => $user,
@@ -159,12 +167,14 @@ class GroupService
         }
     }
 
-    public function changeMemberRole(StudyGroup $group, User $member, GroupRole|string $newRole, User $currentUser): void
+    public function changeMemberRole(StudyGroup $group, User $member, GroupRole|string $newRole, User $currentUser, bool $isAppAdmin = false): void
     {
-        $currentUserRole = $this->getUserRole($group, $currentUser);
+        if (!$isAppAdmin) {
+            $currentUserRole = $this->getUserRole($group, $currentUser);
 
-        if (!$currentUserRole || !$currentUserRole->canManageMembers()) {
-            throw new AccessDeniedHttpException('Seuls les administrateurs peuvent modifier les rôles');
+            if (!$currentUserRole || !$currentUserRole->canManageMembers()) {
+                throw new AccessDeniedHttpException('Seuls les administrateurs peuvent modifier les rôles');
+            }
         }
 
         $groupMember = $this->memberRepository->findOneBy([

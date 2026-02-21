@@ -12,11 +12,17 @@ use App\Repository\GroupInvitationRepository;
 use App\Repository\GroupMemberRepository;
 use App\Repository\GroupPostRepository;
 use App\Repository\PostCommentRepository;
+use App\Repository\PostLikeRepository;
+use App\Repository\PostRatingRepository;
 use App\Repository\StudyGroupRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\GroupVoter;
+use App\Service\AvatarService;
+use App\Service\ContentSanitizer;
 use App\Service\FormattingService;
+use App\Service\GroupInputValidator;
 use App\Service\GroupInvitationService;
+use App\Service\GroupRoleChecker;
 use App\Service\GroupService;
 use App\Service\PostInteractionService;
 use App\Service\PostService;
@@ -33,14 +39,9 @@ class GroupsController extends AbstractController
 {
     // Input validation constants
     private const VALID_SORT_OPTIONS = ['date', 'likes', 'comments', 'rating'];
-    private const VALID_INVITATION_ROLES = ['member', 'moderator'];
     private const VALID_MEMBER_ROLES = ['member', 'moderator', 'admin'];
     private const VALID_INVITATION_ACTIONS = ['accept', 'decline'];
-    private const MAX_COMMENT_LENGTH = 2000;
-    private const MAX_INVITATION_CODE_LENGTH = 64;
-    private const MAX_POST_TITLE_LENGTH = 255;
-    private const MAX_POST_BODY_LENGTH = 10000;
-    private const MAX_EMAIL_COUNT = 50;
+    private const MAX_INVITATION_CODE_LENGTH = 12;
 
     public function __construct(
         private StudyGroupRepository $groupRepository,
@@ -48,6 +49,8 @@ class GroupsController extends AbstractController
         private GroupPostRepository $postRepository,
         private GroupInvitationRepository $invitationRepository,
         private PostCommentRepository $commentRepository,
+        private PostRatingRepository $ratingRepository,
+        private PostLikeRepository $likeRepository,
         private GroupService $groupService,
         private GroupInvitationService $invitationService,
         private PostService $postService,
@@ -56,6 +59,10 @@ class GroupsController extends AbstractController
         private CsrfTokenManagerInterface $csrfTokenManager,
         private FormattingService $formattingService,
         private ValidatorInterface $validator,
+        private GroupRoleChecker $roleChecker,
+        private GroupInputValidator $inputValidator,
+        private ContentSanitizer $contentSanitizer,
+        private AvatarService $avatarService,
     ) {}
 
     // ==================== HELPER METHODS ====================
@@ -82,50 +89,6 @@ class GroupsController extends AbstractController
     private function successResponse(array $data = [], string $message = ''): JsonResponse
     {
         return $this->json(array_merge(['success' => true, 'message' => $message], $data));
-    }
-
-    /**
-     * Validate and sanitize email addresses
-     * @return array{valid: string[], invalid: string[]}
-     */
-    private function validateEmails(array $emails): array
-    {
-        $valid = [];
-        $invalid = [];
-        
-        foreach ($emails as $email) {
-            $email = trim($email);
-            if (empty($email)) {
-                continue;
-            }
-            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $valid[] = strtolower($email);
-            } else {
-                $invalid[] = $email;
-            }
-        }
-        
-        return ['valid' => array_unique($valid), 'invalid' => $invalid];
-    }
-
-    /**
-     * Extract form errors as array of messages
-     */
-    private function getFormErrors(\Symfony\Component\Form\FormInterface $form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return $errors;
-    }
-
-    /**
-     * Validate positive integer ID
-     */
-    private function isValidId(mixed $id): bool
-    {
-        return is_numeric($id) && (int) $id > 0;
     }
 
     // ==================== PUBLIC ROUTES ====================
@@ -170,14 +133,38 @@ class GroupsController extends AbstractController
                 ];
             }
 
-            // Fetch pending invitations
+            // Fetch pending invitations (received)
             $pendingInvitations = $this->invitationRepository->findPendingByEmail($user->getEmail());
             foreach ($pendingInvitations as $invitation) {
                 $invitations[] = [
                     'id' => $invitation->getId(),
-                    'group_name' => $invitation->getGroup()->getName(),
-                    'invited_by' => $invitation->getInvitedBy() ? $invitation->getInvitedBy()->getFullName() : 'Système',
-                    'date' => $this->formattingService->formatTimeAgo($invitation->getInvitedAt()),
+                    'group' => [
+                        'id' => $invitation->getGroup()->getId(),
+                        'name' => $invitation->getGroup()->getName(),
+                    ],
+                    'email' => $invitation->getEmail(),
+                    'invitedBy' => $invitation->getInvitedBy() ? $invitation->getInvitedBy()->getFullName() : 'Système',
+                    'invitedAt' => $invitation->getInvitedAt(),
+                    'status' => $invitation->getStatus(),
+                    'role' => $invitation->getRole(),
+                ];
+            }
+
+            // Fetch sent invitations
+            $sentInvitations = $this->invitationRepository->findSent($user);
+            $sentInvitationsData = [];
+            foreach ($sentInvitations as $invitation) {
+                $sentInvitationsData[] = [
+                    'id' => $invitation->getId(),
+                    'group' => [
+                        'id' => $invitation->getGroup()->getId(),
+                        'name' => $invitation->getGroup()->getName(),
+                    ],
+                    'email' => $invitation->getEmail(),
+                    'code' => $invitation->getCode(),
+                    'invitedAt' => $invitation->getInvitedAt(),
+                    'status' => $invitation->getStatus(),
+                    'role' => $invitation->getRole(),
                 ];
             }
         }
@@ -188,8 +175,9 @@ class GroupsController extends AbstractController
                 'user' => $this->formattingService->formatUserForView($user),
                 'groups' => $userGroups,
                 'invitations' => $invitations,
+                'sent_invitations' => $sentInvitationsData ?? [],
                 'available_groups' => $user ? $this->getSortedAvailableGroups($user) : [],
-                'feedbacks' => [],
+                'feedbacks' => $user ? $this->getUserFeedbacks($user) : [],
             ],
         ];
 
@@ -216,6 +204,79 @@ class GroupsController extends AbstractController
         usort($availableGroups, fn($a, $b) => $b['members_count'] <=> $a['members_count']);
 
         return $availableGroups;
+    }
+
+    /**
+     * Build feedbacks (ratings, likes, comments) received on the user's posts
+     */
+    private function getUserFeedbacks(User $user, int $limit = 50): array
+    {
+        $feedbacks = [];
+
+        // Ratings received on user's posts
+        $ratings = $this->ratingRepository->findByPostAuthorOrderByCreatedAtDesc($user, $limit);
+        foreach ($ratings as $rating) {
+            $post = $rating->getPost();
+            $group = $post->getGroup();
+            $rater = $rating->getUser();
+            $postExcerpt = $post->getTitle() ?: $this->formattingService->truncateText($post->getBody() ?? '', 80);
+            $feedbacks[] = [
+                'type' => 'rating',
+                'sort_at' => $rating->getCreatedAt()->getTimestamp(),
+                'from' => $this->formattingService->formatUserName($rater),
+                'from_initials' => $this->formattingService->getInitials($this->formattingService->formatUserName($rater)),
+                'group' => $group->getName(),
+                'group_id' => $group->getId(),
+                'post_id' => $post->getId(),
+                'rating' => $rating->getRating(),
+                'comment' => $postExcerpt,
+                'date' => $this->formattingService->formatTimeAgo($rating->getCreatedAt()),
+            ];
+        }
+
+        // Likes received on user's posts
+        $likes = $this->likeRepository->findByPostAuthorOrderByCreatedAtDesc($user, $limit);
+        foreach ($likes as $like) {
+            $post = $like->getPost();
+            $group = $post->getGroup();
+            $liker = $like->getUser();
+            $postExcerpt = $post->getTitle() ?: $this->formattingService->truncateText($post->getBody() ?? '', 80);
+            $feedbacks[] = [
+                'type' => 'like',
+                'sort_at' => $like->getCreatedAt()->getTimestamp(),
+                'from' => $this->formattingService->formatUserName($liker),
+                'from_initials' => $this->formattingService->getInitials($this->formattingService->formatUserName($liker)),
+                'group' => $group->getName(),
+                'group_id' => $group->getId(),
+                'post_id' => $post->getId(),
+                'comment' => $postExcerpt,
+                'date' => $this->formattingService->formatTimeAgo($like->getCreatedAt()),
+            ];
+        }
+
+        // Comments received on user's posts
+        $comments = $this->commentRepository->findByPostAuthorOrderByCreatedAtDesc($user, $limit);
+        foreach ($comments as $comment) {
+            $post = $comment->getPost();
+            $group = $post->getGroup();
+            $commentAuthor = $comment->getAuthor();
+            $feedbacks[] = [
+                'type' => 'comment',
+                'sort_at' => $comment->getCreatedAt()->getTimestamp(),
+                'from' => $this->formattingService->formatUserName($commentAuthor),
+                'from_initials' => $this->formattingService->getInitials($this->formattingService->formatUserName($commentAuthor)),
+                'group' => $group->getName(),
+                'group_id' => $group->getId(),
+                'post_id' => $post->getId(),
+                'body' => $this->formattingService->truncateText($comment->getBody() ?? '', 120),
+                'date' => $this->formattingService->formatTimeAgo($comment->getCreatedAt()),
+            ];
+        }
+
+        // Sort all feedbacks by date DESC
+        usort($feedbacks, fn($a, $b) => $b['sort_at'] <=> $a['sort_at']);
+
+        return array_slice($feedbacks, 0, $limit);
     }
 
     #[Route('/app/groupes/creer', name: 'app_group_create', methods: ['GET', 'POST'])]
@@ -459,7 +520,7 @@ class GroupsController extends AbstractController
             return $this->redirectToRoute('app_group_detail', ['id' => $id]);
         }
 
-        // Parse and validate emails
+        // Parse and validate emails using GroupInputValidator
         $emailsInput = $request->request->get('emails', '');
         $rawEmails = preg_split('/[\r\n,;]+/', $emailsInput);
         $rawEmails = array_map('trim', $rawEmails);
@@ -470,23 +531,24 @@ class GroupsController extends AbstractController
             return $this->redirectToRoute('app_group_detail', ['id' => $id]);
         }
 
-        // Limit number of emails per invitation
-        if (count($rawEmails) > self::MAX_EMAIL_COUNT) {
-            $this->addFlash('error', sprintf('Vous ne pouvez pas inviter plus de %d personnes à la fois.', self::MAX_EMAIL_COUNT));
+        // Use GroupInputValidator for email validation and disposable domain check
+        try {
+            $emailValidation = $this->inputValidator->validateEmails($rawEmails);
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
             return $this->redirectToRoute('app_group_detail', ['id' => $id]);
         }
-
-        // Validate email format
-        $emailValidation = $this->validateEmails($rawEmails);
         
         if (empty($emailValidation['valid'])) {
             $this->addFlash('error', 'Aucune adresse email valide trouvée.');
             return $this->redirectToRoute('app_group_detail', ['id' => $id]);
         }
 
-        // Validate role - only allow member or moderator for invitations (not admin)
+        // Validate role using GroupInputValidator
         $role = $request->request->get('role', 'member');
-        if (!in_array($role, self::VALID_INVITATION_ROLES, true)) {
+        try {
+            $this->inputValidator->validateRole($role);
+        } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', 'Rôle invalide.');
             return $this->redirectToRoute('app_group_detail', ['id' => $id]);
         }
@@ -507,7 +569,7 @@ class GroupsController extends AbstractController
         return $this->redirectToRoute('app_group_detail', ['id' => $id]);
     }
 
-    #[Route('/app/invitations/{id}/{action}', name: 'app_invitation_respond', methods: ['POST'])]
+    #[Route('/app/invitations/{id}/{action}', name: 'app_invitation_respond', methods: ['POST'], requirements: ['action' => 'accept|decline'])]
     public function respondInvitation(int $id, string $action, Request $request): Response
     {
         /** @var User $user */
@@ -554,6 +616,37 @@ class GroupsController extends AbstractController
         return $this->redirectToRoute('app_groups');
     }
 
+    #[Route('/app/invitations/{id}/cancel', name: 'app_invitation_cancel', methods: ['POST'])]
+    public function cancelInvitation(int $id, Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $invitation = $this->groupRepository->getEntityManager()->getRepository(GroupInvitation::class)->find($id);
+
+        if (!$invitation) {
+            throw $this->createNotFoundException('Invitation non trouvée');
+        }
+
+        // Verify CSRF token
+        if (!$this->isCsrfTokenValid('cancel-invitation-' . $invitation->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide');
+            return $this->redirectToRoute('app_groups');
+        }
+
+        try {
+            $this->invitationService->cancelInvitation($invitation, $user);
+            $this->addFlash('success', 'Invitation annulée');
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_groups');
+    }
+
     #[Route('/app/groupes/join/code', name: 'app_group_join_code', methods: ['POST'])]
     public function joinByCode(Request $request): Response
     {
@@ -577,7 +670,7 @@ class GroupsController extends AbstractController
         }
 
         // Validate code format (hex string, max length)
-        if (strlen($code) > self::MAX_INVITATION_CODE_LENGTH || !ctype_xdigit($code)) {
+        if (strlen($code) > self::MAX_INVITATION_CODE_LENGTH || !preg_match('/^INV-[A-F0-9]{8}$/i', $code)) {
             $this->addFlash('error', 'Code d\'invitation invalide');
             return $this->redirectToRoute('app_groups');
         }
@@ -681,6 +774,7 @@ class GroupsController extends AbstractController
                 'id' => $post->getId(),
                 'title' => $post->getTitle(),
                 'body' => $post->getBody(),
+                'post_type' => $post->getPostType(),
                 'attachment_url' => $post->getAttachmentUrl(),
                 'author' => $this->formattingService->formatUserName($author),
                 'author_initials' => $this->formattingService->getInitials($this->formattingService->formatUserName($author)),
@@ -769,6 +863,7 @@ class GroupsController extends AbstractController
                 'id' => $post->getId(),
                 'title' => $post->getTitle(),
                 'body' => $post->getBody(),
+                'post_type' => $post->getPostType(),
                 'attachment_url' => $post->getAttachmentUrl(),
                 'author' => $this->formattingService->formatUserName($author),
                 'author_initials' => $this->formattingService->getInitials($this->formattingService->formatUserName($author)),
@@ -800,7 +895,7 @@ class GroupsController extends AbstractController
         }
 
         // Validate user ID
-        if (!$this->isValidId($userId)) {
+        if (!$this->inputValidator->isValidId($userId)) {
             return $this->errorResponse('ID utilisateur invalide');
         }
 
@@ -827,7 +922,8 @@ class GroupsController extends AbstractController
         }
 
         try {
-            $this->groupService->changeMemberRole($group, $memberUser, $newRole, $currentUser);
+            $isAppAdmin = $this->isGranted('ROLE_ADMIN');
+            $this->groupService->changeMemberRole($group, $memberUser, $newRole, $currentUser, $isAppAdmin);
             
             return $this->successResponse([
                 'user_id' => $userId,
@@ -849,7 +945,7 @@ class GroupsController extends AbstractController
         }
 
         // Validate user ID
-        if (!$this->isValidId($userId)) {
+        if (!$this->inputValidator->isValidId($userId)) {
             return $this->errorResponse('ID utilisateur invalide');
         }
 
@@ -870,7 +966,8 @@ class GroupsController extends AbstractController
         }
 
         try {
-            $this->groupService->removeMember($group, $memberUser, $currentUser);
+            $isAppAdmin = $this->isGranted('ROLE_ADMIN');
+            $this->groupService->removeMember($group, $memberUser, $currentUser, $isAppAdmin);
             
             return $this->successResponse([
                 'user_id' => $userId,
@@ -907,7 +1004,9 @@ class GroupsController extends AbstractController
         try {
             $dto = new PostCreateDTO();
             $dto->title = trim($request->request->get('title', ''));
-            $dto->body = trim($request->request->get('body', ''));
+            // Sanitize the body content to prevent XSS attacks
+            $rawBody = trim($request->request->get('body', ''));
+            $dto->body = $this->contentSanitizer->sanitizeRich($rawBody);
             $dto->postType = $request->request->get('post_type', 'text');
             $dto->attachmentUrl = trim($request->request->get('attachment_url', ''));
 
@@ -950,6 +1049,18 @@ class GroupsController extends AbstractController
             $authorData = $this->formattingService->formatUserForView($user);
             $authorData['role'] = $userRole;
 
+            // Build attachment info for file posts
+            $attachmentName = null;
+            if ($post->getPostType() === 'file' && $post->getAttachmentUrl()) {
+                // Extract original-ish name: remove the uniqid suffix
+                $basename = basename($post->getAttachmentUrl());
+                $attachmentName = $basename;
+                // For the original file name from DTO
+                if ($dto->file) {
+                    $attachmentName = $dto->file->getClientOriginalName();
+                }
+            }
+
             return $this->successResponse([
                 'csrf_tokens' => $tokens,
                 'post' => [
@@ -958,6 +1069,7 @@ class GroupsController extends AbstractController
                     'body' => $post->getBody(),
                     'type' => $post->getPostType(),
                     'attachmentUrl' => $post->getAttachmentUrl(),
+                    'attachmentName' => $attachmentName,
                     'author' => $authorData,
                     'createdAt' => $post->getCreatedAt()->format('c'),
                     'timeAgo' => $this->formattingService->formatTimeAgo($post->getCreatedAt()),
@@ -977,7 +1089,7 @@ class GroupsController extends AbstractController
     public function deletePost(int $groupId, int $postId, Request $request): JsonResponse
     {
         // Validate post ID
-        if (!$this->isValidId($postId)) {
+        if (!$this->inputValidator->isValidId($postId)) {
             return $this->errorResponse('ID de post invalide');
         }
 
@@ -1153,9 +1265,15 @@ class GroupsController extends AbstractController
             return $this->errorResponse('Le commentaire ne peut pas être vide');
         }
         
-        if (mb_strlen($body) > self::MAX_COMMENT_LENGTH) {
-            return $this->errorResponse('Le commentaire ne peut pas dépasser ' . self::MAX_COMMENT_LENGTH . ' caractères');
+        try {
+            // Validate comment body length using GroupInputValidator
+            $this->inputValidator->validateCommentBody($body);
+        } catch (\InvalidArgumentException $e) {
+            return $this->errorResponse($e->getMessage());
         }
+        
+        // Sanitize the comment body to prevent XSS
+        $body = $this->contentSanitizer->sanitizePlain($body);
         
         // Validate parent ID if provided
         $parent = null;

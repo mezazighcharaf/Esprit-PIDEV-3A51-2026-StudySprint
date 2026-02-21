@@ -53,6 +53,11 @@ class GroupVoter extends Voter
             return false;
         }
 
+        // App admins (ROLE_ADMIN) can do everything on any group
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return true;
+        }
+
         /** @var StudyGroup $group */
         $group = $subject;
         

@@ -33,6 +33,15 @@
         {% endif %}
         <p class="fo-post-text">{{ post.body }}</p>
         {% if post.attachment_url %}
+            {% if post.post_type == 'file' %}
+        <a href="{{ post.attachment_url }}" target="_blank" class="fo-post-attachment" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                <polyline points="13 2 13 9 20 9"/>
+            </svg>
+            {{ post.attachment_url|split('/')|last }}
+        </a>
+            {% else %}
         <a href="{{ post.attachment_url }}" target="_blank" class="fo-post-attachment">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
@@ -40,19 +49,20 @@
             </svg>
             {{ post.attachment_url }}
         </a>
+            {% endif %}
         {% endif %}
     </div>
 
     <div class="fo-post-actions">
         <button class="fo-post-action-btn {{ post.user_liked ? 'liked' : '' }}" data-post-like="{{ post.id }}" data-liked="{{ post.user_liked ? 'true' : 'false' }}">
-            <svg viewBox="0 0 24 24" fill="{{ post.user_liked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
+            <svg viewBox="0 0 24 24" fill="{{ post.user_liked ? 'var(--color-error)' : 'none' }}" stroke="{{ post.user_liked ? 'var(--color-error)' : 'currentColor' }}" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
             <span data-likes-count="{{ post.id }}">{{ post.likes_count }}</span>
         </button>
         
         <button class="fo-post-action-btn" data-comments-toggle="{{ post.id }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2-2z"/>
             </svg>
             <span data-comments-count="{{ post.id }}">{{ post.comments_count }}</span>
@@ -64,8 +74,8 @@
                     data-rate-post="{{ post.id }}" 
                     data-rating="{{ i }}" 
                     viewBox="0 0 24 24" 
-                    fill="{{ post.user_rating >= i ? 'currentColor' : 'none' }}" 
-                    stroke="currentColor" 
+                    fill="{{ post.user_rating >= i ? 'var(--color-warning)' : 'none' }}" 
+                    stroke="var(--color-warning)" 
                     stroke-width="2" 
                     width="16" 
                     height="16">

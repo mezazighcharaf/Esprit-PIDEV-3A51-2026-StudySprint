@@ -237,6 +237,9 @@
 
   // ─── DROPDOWN ───
   const Dropdown = {
+    GAP: 4,
+    PADDING: 8,
+
     init() {
       document.addEventListener('click', (e) => {
         const trigger = e.target.closest('[data-dropdown-toggle]');
@@ -252,6 +255,13 @@
           // Toggle current
           if (!isOpen) {
             dropdown.classList.add('open');
+            // Position fixed dropdowns (e.g. inside tables) so they stay on screen
+            if (trigger.hasAttribute('data-dropdown-fixed')) {
+              const menu = dropdown.querySelector('.dropdown-menu');
+              if (menu) {
+                requestAnimationFrame(() => this.positionFixedMenu(trigger, menu));
+              }
+            }
           }
           return;
         }
@@ -266,6 +276,46 @@
           this.closeAll();
         }
       });
+    },
+
+    /**
+     * Position a dropdown menu with position:fixed so it stays on screen.
+     * Used for dropdowns inside overflow containers (e.g. tables).
+     * Trigger must have data-dropdown-fixed.
+     */
+    positionFixedMenu(trigger, menu) {
+      menu.style.position = 'fixed';
+      const rect = trigger.getBoundingClientRect();
+      const menuWidth = menu.offsetWidth;
+      const menuHeight = menu.offsetHeight;
+      const gap = this.GAP;
+      const pad = this.PADDING;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      let left = rect.left;
+      if (left + menuWidth > vw - pad) {
+        left = Math.max(pad, vw - menuWidth - pad);
+      }
+      if (left < pad) {
+        left = pad;
+      }
+
+      let top = rect.bottom + gap;
+      if (top + menuHeight > vh - pad) {
+        top = rect.top - gap - menuHeight;
+      }
+      if (top < pad) {
+        top = pad;
+      }
+      if (top + menuHeight > vh - pad) {
+        top = vh - menuHeight - pad;
+      }
+
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
     },
 
     closeAll() {
@@ -458,11 +508,13 @@
         const newRole = memberActionBtn.dataset.newRole;
         const csrfToken = memberActionBtn.dataset.csrf;
         const memberName = memberItem.querySelector('.member-name')?.textContent || 'Unknown';
+        const groupId = this.getGroupId(memberItem);
+        if (!groupId) return;
 
         if (action === 'remove') {
-          this.handleRemoveMember(userId, memberName, csrfToken, memberItem);
+          this.handleRemoveMember(userId, memberName, csrfToken, memberItem, groupId);
         } else if (action === 'change-role') {
-          this.handleChangeRole(userId, newRole, csrfToken, memberItem, memberName);
+          this.handleChangeRole(userId, newRole, csrfToken, memberItem, memberName, groupId);
         }
 
         // Close dropdown
@@ -470,9 +522,7 @@
       });
     },
 
-    handleRemoveMember(userId, memberName, csrfToken, memberItem) {
-      // Get group ID from URL
-      const groupId = this.getGroupId();
+    handleRemoveMember(userId, memberName, csrfToken, memberItem, groupId) {
       if (!groupId) return;
 
       // Show confirmation dialog
@@ -508,10 +558,11 @@
                   }
                 }
 
-                // Update global counter
-                const globalCounter = document.querySelector('[data-member-count]');
+                // Update global counter (prefer counter in same modal/context as memberItem)
+                const context = memberItem.closest('[data-group-id]') || memberItem.closest('.group-detail-sidebar');
+                const globalCounter = context ? context.querySelector('[data-member-count]') : document.querySelector('[data-member-count]');
                 if (globalCounter) {
-                  globalCounter.textContent = Math.max(0, parseInt(globalCounter.textContent) - 1);
+                  globalCounter.textContent = Math.max(0, parseInt(globalCounter.textContent, 10) - 1);
                 }
 
                 // Animate and remove the member from the list
@@ -530,9 +581,7 @@
       );
     },
 
-    handleChangeRole(userId, newRole, csrfToken, memberItem, memberName) {
-      // Get group ID from URL
-      const groupId = this.getGroupId();
+    handleChangeRole(userId, newRole, csrfToken, memberItem, memberName, groupId) {
       if (!groupId) return;
 
       let roleLabel = '';
@@ -568,8 +617,13 @@
         });
     },
 
-    getGroupId() {
-      // Extract group ID from URL
+    getGroupId(memberItem) {
+      // BO modals: group id on modal container (data-group-id)
+      const withContext = memberItem && memberItem.closest('[data-group-id]');
+      if (withContext) {
+        return withContext.getAttribute('data-group-id');
+      }
+      // FO group detail: extract from URL
       const match = window.location.pathname.match(/\/app\/groupes\/(\d+)/);
       return match ? match[1] : null;
     }
@@ -641,6 +695,20 @@
           const action = leaveGroupBtn.dataset.action;
           const csrfToken = leaveGroupBtn.dataset.csrf;
           this.handleDeleteGroup(groupId, groupName, action, csrfToken);
+        }
+
+        // Handle cancel invitation button
+        const cancelBtn = e.target.closest('.cancel-invitation-btn');
+        if (cancelBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const email = cancelBtn.dataset.email;
+          const form = cancelBtn.closest('.cancel-invitation-form');
+          ConfirmDialog.show(
+            `Annuler l'invitation ?`,
+            `L'invitation envoyée à ${email} sera annulée.`,
+            () => { if (form) form.submit(); }
+          );
         }
       });
     },
@@ -773,9 +841,10 @@
                   : `Vous avez quitté ${groupName} avec succès.`;
                 Toast.success('Succès', message);
 
-                // Redirect to groups page after a short delay
+                // Redirect after a short delay
                 setTimeout(() => {
-                  window.location.href = '/app/groupes';
+                  const isBO = window.location.pathname.startsWith('/admin');
+                  window.location.href = isBO ? '/admin/encadrement' : '/app/groupes';
                 }, 1500);
               } else {
                 Toast.error('Erreur', result.data?.error || `Erreur lors du ${action} du groupe`);
@@ -1010,26 +1079,33 @@
                 <div class="fo-post-body-content">
                     ${post.title ? `<h3 class="fo-post-title">${this.escapeHtml(post.title)}</h3>` : ''}
                     <p class="fo-post-text">${this.escapeHtml(post.body)}</p>
-                    ${post.attachmentUrl ? `
+                    ${post.attachmentUrl ? (post.type === 'file' ? `
+                    <a href="${post.attachmentUrl}" target="_blank" class="fo-post-attachment" download>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                            <polyline points="13 2 13 9 20 9"/>
+                        </svg>
+                        ${this.escapeHtml(post.attachmentName || post.attachmentUrl)}
+                    </a>` : `
                     <a href="${post.attachmentUrl}" target="_blank" class="fo-post-attachment">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                         </svg>
-                        ${post.attachmentUrl}
-                    </a>` : ''}
+                        ${this.escapeHtml(post.attachmentUrl)}
+                    </a>`) : ''}
                 </div>
 
                 <div class="fo-post-actions">
                     <button class="fo-post-action-btn ${post.stats.userLiked ? 'liked' : ''}" data-post-like="${post.id}" data-liked="${post.stats.userLiked}">
-                        <svg viewBox="0 0 24 24" fill="${post.stats.userLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="${post.stats.userLiked ? 'var(--color-error)' : 'none'}" stroke="${post.stats.userLiked ? 'var(--color-error)' : 'currentColor'}" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                         </svg>
                         <span data-likes-count="${post.id}">${post.stats.likesCount}</span>
                     </button>
                     
                     <button class="fo-post-action-btn" data-comments-toggle="${post.id}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                         <span data-comments-count="${post.id}">${post.stats.commentsCount}</span>
@@ -1058,7 +1134,7 @@
         const filled = userRating >= i;
         starsHtml += `
           <svg class="fo-rating-star ${filled ? 'filled' : ''}" data-rate-post="${postId}" data-rating="${i}" 
-               viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" width="16" height="16">
+               viewBox="0 0 24 24" fill="${filled ? 'var(--color-warning)' : 'none'}" stroke="var(--color-warning)" stroke-width="2" width="16" height="16">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>`;
       }
@@ -1164,7 +1240,8 @@
             btn.dataset.liked = data.liked;
             btn.classList.toggle('liked', data.liked);
             const svg = btn.querySelector('svg');
-            svg.setAttribute('fill', data.liked ? 'currentColor' : 'none');
+            svg.setAttribute('fill', data.liked ? 'var(--color-error)' : 'none');
+            svg.setAttribute('stroke', data.liked ? 'var(--color-error)' : 'currentColor');
             const count = btn.querySelector('[data-likes-count]');
             if (count) count.textContent = data.likesCount;
           }
@@ -1196,7 +1273,7 @@
             stars.forEach((star, idx) => {
               const filled = (idx + 1) <= data.userRating;
               star.classList.toggle('filled', filled);
-              star.setAttribute('fill', filled ? 'currentColor' : 'none');
+              star.setAttribute('fill', filled ? 'var(--color-warning)' : 'none');
             });
             const avg = ratingContainer.querySelector('[data-avg-rating]');
             if (avg) avg.textContent = data.averageRating.toFixed(1);
@@ -1425,7 +1502,7 @@
       this.searchInput = document.getElementById('group-search-input');
       this.sortSelect = document.getElementById('group-sort-select');
       this.roleFilter = document.getElementById('group-filter-role');
-      this.container = document.getElementById('my-groups-container');
+      this.container = document.getElementById('groups-container');
 
       if (!this.container) return;
 

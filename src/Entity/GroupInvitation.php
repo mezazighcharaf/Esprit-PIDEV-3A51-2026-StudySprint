@@ -45,7 +45,7 @@ class GroupInvitation
     private string $code;
 
     #[ORM\Column(length: 10)]
-    #[Assert\Choice(choices: ['pending', 'accepted', 'declined'])]
+    #[Assert\Choice(choices: ['pending', 'accepted', 'declined', 'cancelled'])]
     private string $status = 'pending';
 
     #[ORM\Column(length: 20)]

@@ -31,6 +31,9 @@ class PostComment
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?PostComment $parentComment = null;
 
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private int $depth = 0;
+
     #[ORM\Column(type: 'text')]
     #[Assert\NotBlank(message: 'Le commentaire ne peut pas être vide')]
     #[Assert\Length(
@@ -82,6 +85,25 @@ class PostComment
     public function setParentComment(?self $parentComment): static
     {
         $this->parentComment = $parentComment;
+        
+        // Auto-calculate depth from parent
+        if ($parentComment === null) {
+            $this->depth = 0;
+        } else {
+            $this->depth = $parentComment->getDepth() + 1;
+        }
+        
+        return $this;
+    }
+
+    public function getDepth(): int
+    {
+        return $this->depth;
+    }
+
+    public function setDepth(int $depth): static
+    {
+        $this->depth = max(0, min($depth, 3)); // Limit to 0-3
         return $this;
     }
 

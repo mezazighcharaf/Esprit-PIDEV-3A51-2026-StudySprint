@@ -20,3 +20,6 @@
 /public/marketing/node_modules/
 /public/marketing/package-lock.json
 /.env.dev
+
+# Uploaded files
+/public/uploads/

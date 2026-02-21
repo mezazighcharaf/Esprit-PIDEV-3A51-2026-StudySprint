@@ -68,7 +68,7 @@ class GroupInvitationService
                 
                 // If declined or no longer a member, we "re-use" the invitation record
                 $invitation->setStatus('pending');
-                $invitation->setCode(bin2hex(random_bytes(16)));
+                $invitation->setCode($this->generateInvitationCode());
                 $invitation->setInvitedBy($inviter);
                 $invitation->setInvitedAt(new \DateTimeImmutable());
                 $invitation->setRespondedAt(null);
@@ -85,7 +85,7 @@ class GroupInvitationService
                 $invitation->setGroup($group);
                 $invitation->setEmail($email);
                 $invitation->setInvitedBy($inviter);
-                $invitation->setCode(bin2hex(random_bytes(16)));
+                $invitation->setCode($this->generateInvitationCode());
                 $invitation->setStatus('pending');
                 $invitation->setRole($roleValue);
                 $this->entityManager->persist($invitation);
@@ -155,6 +155,37 @@ class GroupInvitationService
         }
 
         $invitation->setStatus('declined');
+        $invitation->setRespondedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Generate a short readable invitation code (e.g. INV-A3F8B2C1)
+     */
+    private function generateInvitationCode(): string
+    {
+        return 'INV-' . strtoupper(bin2hex(random_bytes(4)));
+    }
+
+    /**
+     * Cancel an invitation (by the inviter)
+     */
+    public function cancelInvitation(GroupInvitation $invitation, User $user): void
+    {
+        if ($invitation->getStatus() !== 'pending') {
+            throw new \LogicException('Seules les invitations en attente peuvent être annulées.');
+        }
+
+        if (!$invitation->getInvitedBy() || $invitation->getInvitedBy()->getId() !== $user->getId()) {
+            // Also allow group admins or BO admins to cancel
+            $isBoAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
+            if (!$isBoAdmin && !$this->groupService->canEditGroup($invitation->getGroup(), $user)) {
+                throw new AccessDeniedHttpException('Vous n\'êtes pas autorisé à annuler cette invitation.');
+            }
+        }
+
+        $invitation->setStatus('cancelled');
         $invitation->setRespondedAt(new \DateTimeImmutable());
 
         $this->entityManager->flush();

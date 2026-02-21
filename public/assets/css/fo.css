@@ -221,6 +221,22 @@
   white-space: nowrap;
 }
 
+/* Avatar colors aligned with role badges (visual link) */
+.avatar-role-admin {
+  background: var(--color-primary);
+  color: white;
+}
+
+.avatar-role-moderator {
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+}
+
+.avatar-role-member {
+  background: var(--color-gray-100);
+  color: var(--color-gray-600);
+}
+
 /* ─── POSTS TOOLBAR ─── */
 .fo-posts-toolbar {
   display: flex;
@@ -734,7 +750,7 @@
 }
 
 .fo-post-action-btn.liked {
-  color: var(--color-primary);
+  color: var(--color-error);
 }
 
 .fo-post-action-btn svg {
@@ -756,7 +772,7 @@
 }
 
 .fo-rating-star.filled {
-  color: var(--color-primary);
+  color: var(--color-warning);
 }
 
 .fo-rating-star:hover {

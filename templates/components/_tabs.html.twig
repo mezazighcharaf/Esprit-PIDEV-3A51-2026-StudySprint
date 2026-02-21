@@ -29,7 +29,7 @@
     >
         {{ tab.label }}
         {% if tab.count is defined %}
-        <span class="{{ variant|default('default') == 'bo' ? 'bo-tab-count' : '' }}">{{ tab.count }}</span>
+        <span class="{{ variant|default('default') == 'bo' ? 'bo-tab-count' : 'tab-count' }}">{{ tab.count }}</span>
         {% endif %}
     </button>
     {% endfor %}

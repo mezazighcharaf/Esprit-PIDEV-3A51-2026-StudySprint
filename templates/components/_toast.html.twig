@@ -1,48 +1,248 @@
 {#
-  Toast Component (for server-side rendering)
-  Usage:
+  TOAST NOTIFICATION SYSTEM
+  Unified toast/notification component
+  
+  Server-side usage (if needed):
   {{ include('components/_toast.html.twig', {
-      type: 'success', // success | error | warning | info
-      title: 'Succes',
-      message: 'Action effectuee avec succes.'
+      type: 'success',
+      message: 'Action completed successfully'
   }) }}
 
-  Note: For dynamic toasts, use the JS API:
-  window.StudySprint.Toast.success('Titre', 'Message');
+  Client-side usage (recommended):
+  Toast.success('Message here');
+  Toast.error('Error message');
+  Toast.warning('Warning message');
+  Toast.info('Info message');
 #}
 
-<div class="toast toast-{{ type|default('info') }}">
-    <span class="toast-icon">
-        {% if type == 'success' %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        {% elseif type == 'error' %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="15" y1="9" x2="9" y2="15"/>
-            <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
-        {% elseif type == 'warning' %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        {% else %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-        {% endif %}
-    </span>
-    <div class="toast-content">
-        {% if title %}<div class="toast-title">{{ title }}</div>{% endif %}
-        {% if message %}<div class="toast-message">{{ message }}</div>{% endif %}
-    </div>
-    <button class="toast-close" aria-label="Fermer">
+{# Toast Container for dynamic toasts #}
+<div class="toast-container" data-toast-container role="region" aria-live="polite" aria-atomic="true"></div>
+
+<style>
+  .toast-container {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 9999;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--color-gray-400);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    animation: slideInRight 0.3s ease-out;
+    min-height: 48px;
+  }
+
+  .toast.toast-success {
+    border-left-color: var(--color-success);
+  }
+
+  .toast.toast-success .toast-icon {
+    color: var(--color-success);
+  }
+
+  .toast.toast-error {
+    border-left-color: var(--color-error);
+  }
+
+  .toast.toast-error .toast-icon {
+    color: var(--color-error);
+  }
+
+  .toast.toast-warning {
+    border-left-color: var(--color-warning);
+  }
+
+  .toast.toast-warning .toast-icon {
+    color: var(--color-warning);
+  }
+
+  .toast.toast-info {
+    border-left-color: var(--color-info);
+  }
+
+  .toast.toast-info .toast-icon {
+    color: var(--color-info);
+  }
+
+  .toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+  }
+
+  .toast-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .toast-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toast-content p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    word-break: break-word;
+  }
+
+  .toast .btn {
+    flex-shrink: 0;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(400px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(400px);
+    }
+  }
+
+  .toast.removing {
+    animation: slideOutRight 0.3s ease-out forwards;
+  }
+
+  @media (max-width: 640px) {
+    .toast-container {
+      max-width: 100%;
+      left: var(--space-3);
+      right: var(--space-3);
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Toast notification system
+   * Provides methods to show toast notifications
+   */
+  window.Toast = {
+    icons: {
+      success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
+      error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+      warning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3.05h16.94a2 2 0 0 0 1.71-3.05L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+    },
+
+    /**
+     * Show a toast notification
+     * @param {string} message - The message to display
+     * @param {string} type - The type: 'success', 'error', 'warning', 'info'
+     * @param {number} duration - How long to show (milliseconds). 0 = no auto-close
+     */
+    show(message, type = 'info', duration = 4000) {
+      const container = document.querySelector('[data-toast-container]');
+      if (!container) {
+        console.warn('Toast container not found');
+        return;
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.setAttribute('role', 'status');
+      
+      const icon = this.icons[type] || this.icons.info;
+      
+      toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+          <p>${Toast.escapeHtml(message)}</p>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-xs" type="button" onclick="this.closest('.toast').remove()" aria-label="Close notification">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      // Auto-close after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+          }
+        }, duration);
+      }
+    },
+
+    success(message, duration = 4000) {
+      this.show(message, 'success', duration);
+    },
+
+    error(message, duration = 5000) {
+      this.show(message, 'error', duration);
+    },
+
+    warning(message, duration = 4000) {
+      this.show(message, 'warning', duration);
+    },
+
+    info(message, duration = 4000) {
+      this.show(message, 'info', duration);
+    },
+
+    /**
+     * Helper to escape HTML in messages
+     */
+    escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+  };
+
+  // Handle flash messages from backend
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashes = document.querySelectorAll('[data-flash]');
+    flashes.forEach(flash => {
+      const type = flash.dataset.flash;
+      const message = flash.textContent.trim();
+      if (message) {
+        Toast[type](message);
+      }
+    });
+  });
+</script>
+>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
             <line x1="6" y1="6" x2="18" y2="18"/>

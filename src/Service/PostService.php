@@ -37,10 +37,15 @@ class PostService
         
         // Handle file upload
         if ($dto->file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
-            $uploadsDir = 'uploads/groups/posts';
-            $filename = uniqid() . '.' . $dto->file->guessExtension();
+            $uploadsDir = __DIR__ . '/../../public/uploads/groups/posts';
+            if (!is_dir($uploadsDir)) {
+                mkdir($uploadsDir, 0775, true);
+            }
+            $originalName = pathinfo($dto->file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $dto->file->guessExtension() ?? $dto->file->getClientOriginalExtension();
+            $filename = $originalName . '-' . uniqid() . '.' . $extension;
             $dto->file->move($uploadsDir, $filename);
-            $post->setAttachmentUrl('/' . $uploadsDir . '/' . $filename);
+            $post->setAttachmentUrl('/uploads/groups/posts/' . $filename);
         } else {
             $post->setAttachmentUrl($dto->attachmentUrl);
         }

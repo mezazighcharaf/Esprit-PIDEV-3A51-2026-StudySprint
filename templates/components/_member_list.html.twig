@@ -1,0 +1,444 @@
+{#
+  MEMBER LIST COMPONENT
+  Reusable component for displaying and managing group members
+  
+  Usage:
+  {% include 'components/_member_list.html.twig' with {
+      members: group.members,
+      currentUser: app.user,
+      isManager: isGranted('manage_members', group),
+      showActions: true
+  } %}
+#}
+
+{% macro member_list(members, currentUser = null, isManager = false, showActions = true) %}
+    <div class="member-list-container" data-component="member-list">
+        {% if members|length == 0 %}
+            <div class="member-list-empty">
+                <svg class="member-list-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <p class="member-list-empty-text">Aucun membre pour le moment</p>
+            </div>
+        {% else %}
+            <div class="member-list">
+                {% set grouped = _self.groupByRole(members) %}
+                
+                {% for role, groupMembers in grouped %}
+                    <div class="member-list-section" data-role="{{ role }}">
+                        <header class="member-list-section-header">
+                            <h3 class="member-list-section-title">
+                                {{ _self.roleLabel(role) }}
+                                <span class="member-list-section-count">({{ groupMembers|length }})</span>
+                            </h3>
+                        </header>
+                        
+                        <div class="member-list-items">
+                            {% for member in groupMembers %}
+                                <div class="member-list-item" data-member-id="{{ member.user.id }}">
+                                    <div class="member-list-item-content">
+                                        <div class="member-avatar-container">
+                                            {% if member.user.profilePicture %}
+                                                <img 
+                                                    src="{{ member.user.profilePicture }}" 
+                                                    alt="{{ member.user.name }}" 
+                                                    class="member-avatar-image"
+                                                />
+                                            {% else %}
+                                                <div 
+                                                    class="member-avatar-placeholder"
+                                                    style="background-color: var(--color-{{ member.user.name|avatar_color }})"
+                                                >
+                                                    {{ member.user.name|initials }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="member-info">
+                                            <div class="member-name">
+                                                {{ member.user.name }}
+                                                {% if currentUser and member.user.id == currentUser.id %}
+                                                    <span class="member-label member-label-current">(Vous)</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="member-email">{{ member.user.email }}</div>
+                                            <div class="member-meta">
+                                                <span class="member-joined">
+                                                    Rejoint le {{ member.createdAt|format_date('long') }}
+                                                </span>
+                                                {% if member.lastActivityAt %}
+                                                    <span class="member-separator">•</span>
+                                                    <span class="member-activity">
+                                                        Actif il y a {{ member.lastActivityAt|ago }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if showActions and isManager and member.user.id != currentUser.id %}
+                                        <div class="member-list-item-actions">
+                                            {% if member.role.value != 'admin' %}
+                                                <button 
+                                                    class="btn btn-ghost btn-sm btn-icon"
+                                                    type="button"
+                                                    title="Promouvoir administrateur"
+                                                    data-action="promote"
+                                                    data-member-id="{{ member.user.id }}"
+                                                    aria-label="Promote to admin"
+                                                >
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                                    </svg>
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if member.role.value != 'member' %}
+                                                <button 
+                                                    class="btn btn-ghost btn-sm btn-icon"
+                                                    type="button"
+                                                    title="Rétrograder membre"
+                                                    data-action="demote"
+                                                    data-member-id="{{ member.user.id }}"
+                                                    aria-label="Demote to member"
+                                                >
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <path d="M13 14v7l9-11h-7V3l-9 11h7z"/>
+                                                    </svg>
+                                                </button>
+                                            {% endif %}
+                                            
+                                            <button 
+                                                class="btn btn-danger btn-ghost btn-sm btn-icon"
+                                                type="button"
+                                                title="Retirer du groupe"
+                                                data-action="remove"
+                                                data-member-id="{{ member.user.id }}"
+                                                aria-label="Remove from group"
+                                            >
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <polyline points="3 6 5 6 21 6"/>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro groupByRole(members) %}
+    {% set grouped = {} %}
+    {% for member in members %}
+        {% set role = member.role.value %}
+        {% if not grouped[role] %}
+            {% set grouped = grouped|merge({(role): []}) %}
+        {% endif %}
+        {% set grouped = grouped|merge({(role): grouped[role]|merge([member])}) %}
+    {% endfor %}
+    
+    {% set roleOrder = ['admin', 'moderator', 'member'] %}
+    {% set ordered = {} %}
+    {% for role in roleOrder %}
+        {% if grouped[role] %}
+            {% set ordered = ordered|merge({(role): grouped[role]}) %}
+        {% endif %}
+    {% endfor %}
+    
+    {{ ordered }}
+{% endmacro %}
+
+{% macro roleLabel(role) %}
+    {% switch role %}
+        {% case 'admin' %}
+            Administrateurs
+        {% case 'moderator' %}
+            Modérateurs
+        {% case 'member' %}
+            Membres
+        {% default %}
+            {{ role|capitalize }}
+    {% endswitch %}
+{% endmacro %}
+
+<style>
+  .member-list-container {
+    width: 100%;
+  }
+
+  /* Empty State */
+  .member-list-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-8);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    text-align: center;
+  }
+
+  .member-list-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-3);
+    color: var(--color-text-secondary);
+  }
+
+  .member-list-empty-text {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  /* Member List */
+  .member-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .member-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .member-list-section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .member-list-section-title {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text);
+  }
+
+  .member-list-section-count {
+    color: var(--color-text-secondary);
+    font-weight: 400;
+    font-size: var(--text-xs);
+  }
+
+  .member-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* Member Item */
+  .member-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+  }
+
+  .member-list-item:hover {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+  }
+
+  .member-list-item-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .member-avatar-container {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-secondary);
+  }
+
+  .member-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .member-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+
+  .member-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .member-name {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    word-break: break-word;
+  }
+
+  .member-email {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+  }
+
+  .member-meta {
+    margin-top: var(--space-1);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+  }
+
+  .member-joined,
+  .member-activity {
+    white-space: nowrap;
+  }
+
+  .member-separator {
+    opacity: 0.5;
+  }
+
+  .member-label {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  .member-label-current {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--color-primary);
+  }
+
+  /* Member Actions */
+  .member-list-item-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  .member-list-item-actions .btn {
+    padding: var(--space-2);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .member-list-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .member-list-item-content {
+      width: 100%;
+    }
+
+    .member-list-item-actions {
+      width: 100%;
+      display: flex;
+      gap: var(--space-1);
+    }
+
+    .member-list-item-actions .btn {
+      flex: 1;
+      padding: var(--space-2);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .member-list-section-header {
+      padding: var(--space-3) 0;
+    }
+
+    .member-list-item {
+      padding: var(--space-2);
+    }
+
+    .member-avatar-container {
+      width: 40px;
+      height: 40px;
+    }
+
+    .member-name {
+      font-size: 14px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const memberLists = document.querySelectorAll('[data-component="member-list"]');
+
+    memberLists.forEach(container => {
+      container.addEventListener('click', function(e) {
+        const actionButton = e.target.closest('[data-action]');
+        if (!actionButton) return;
+
+        const action = actionButton.dataset.action;
+        const memberId = actionButton.dataset.memberId;
+
+        if (action === 'remove') {
+          // Dispatch custom event for confirmation dialog
+          const event = new CustomEvent('member:remove', {
+            detail: { memberId },
+            bubbles: true
+          });
+          container.dispatchEvent(event);
+        } else if (action === 'promote') {
+          const event = new CustomEvent('member:promote', {
+            detail: { memberId },
+            bubbles: true
+          });
+          container.dispatchEvent(event);
+        } else if (action === 'demote') {
+          const event = new CustomEvent('member:demote', {
+            detail: { memberId },
+            bubbles: true
+          });
+          container.dispatchEvent(event);
+        }
+      });
+    });
+  });
+</script>

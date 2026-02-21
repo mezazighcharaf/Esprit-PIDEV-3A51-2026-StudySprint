@@ -54,4 +54,45 @@ class PostRatingRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['post' => $post, 'user' => $user]);
     }
+
+    /**
+     * Find all ratings for BO (feedbacks), ordered by most recent, with post/user/group loaded.
+     */
+    public function findAllOrderByCreatedAtDesc(int $limit = 100): array
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('r.post', 'p')
+            ->addSelect('p')
+            ->innerJoin('r.user', 'u')
+            ->addSelect('u')
+            ->innerJoin('p.group', 'g')
+            ->addSelect('g')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
+            ->orderBy('r.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find ratings on posts authored by a given user (feedback received), ordered by most recent.
+     */
+    public function findByPostAuthorOrderByCreatedAtDesc(User $author, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('r')
+            ->innerJoin('r.post', 'p')
+            ->addSelect('p')
+            ->innerJoin('r.user', 'u')
+            ->addSelect('u')
+            ->innerJoin('p.group', 'g')
+            ->addSelect('g')
+            ->where('p.author = :author')
+            ->andWhere('r.user != :author')
+            ->setParameter('author', $author)
+            ->orderBy('r.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

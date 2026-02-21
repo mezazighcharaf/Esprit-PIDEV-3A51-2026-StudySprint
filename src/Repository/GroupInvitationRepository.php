@@ -100,4 +100,18 @@ class GroupInvitationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Find all invitations (for BO admin), ordered by most recent first.
+     */
+    public function findAllOrderByInvitedAtDesc(): array
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.group', 'g')
+            ->addSelect('g')
+            ->leftJoin('i.invitedBy', 'u')
+            ->addSelect('u')
+            ->orderBy('i.invitedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -38,4 +38,45 @@ class PostLikeRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['post' => $post, 'user' => $user]);
     }
+
+    /**
+     * Find all likes for BO, ordered by most recent, with post/user/group loaded.
+     */
+    public function findAllOrderByCreatedAtDesc(int $limit = 100): array
+    {
+        return $this->createQueryBuilder('l')
+            ->innerJoin('l.post', 'p')
+            ->addSelect('p')
+            ->innerJoin('l.user', 'u')
+            ->addSelect('u')
+            ->innerJoin('p.group', 'g')
+            ->addSelect('g')
+            ->leftJoin('p.author', 'a')
+            ->addSelect('a')
+            ->orderBy('l.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find likes on posts authored by a given user (feedback received), ordered by most recent.
+     */
+    public function findByPostAuthorOrderByCreatedAtDesc(User $author, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('l')
+            ->innerJoin('l.post', 'p')
+            ->addSelect('p')
+            ->innerJoin('l.user', 'u')
+            ->addSelect('u')
+            ->innerJoin('p.group', 'g')
+            ->addSelect('g')
+            ->where('p.author = :author')
+            ->andWhere('l.user != :author')
+            ->setParameter('author', $author)
+            ->orderBy('l.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

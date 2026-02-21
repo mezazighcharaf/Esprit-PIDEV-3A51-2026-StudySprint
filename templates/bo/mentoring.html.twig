@@ -3,14 +3,58 @@
 {% block title %}Encadrement - StudySprint BO{% endblock %}
 {% block breadcrumb %}Encadrement{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+    <style>
+        /* Dropdowns dans le tableau : visibles au-dessus du tableau (pas coupés) */
+        .bo-mentoring-table-wrap {
+            overflow-x: auto;
+        }
+        .bo-mentoring-table-wrap .bo-table td > .dropdown {
+            position: relative;
+            display: inline-flex;
+        }
+        .bo-mentoring-table-wrap .bo-table .dropdown .bo-actions-btn {
+            padding: var(--space-2);
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+        .bo-mentoring-table-wrap .bo-table .dropdown .bo-actions-btn:hover {
+            background: var(--color-gray-200);
+            color: var(--color-gray-900);
+            border-color: var(--color-gray-300);
+        }
+        .bo-mentoring-table-wrap .bo-table .dropdown .dropdown-menu {
+            min-width: 200px;
+            position: fixed;
+            z-index: 9999;
+            margin-top: 4px;
+        }
+        .bo-mentoring-table-wrap         .bo-table .dropdown.open .dropdown-menu {
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .bo-table .dropdown-item-form { margin: 0; padding: 0; }
+        .bo-member-section { margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color); }
+        .bo-member-section:last-child { border-bottom: none; }
+        .bo-member-section-title { font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2); }
+        .bo-member-item { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px; flex-wrap: wrap; gap: var(--space-2); }
+        .bo-member-item:hover { background: var(--color-gray-50); }
+        .bo-member-info { display: flex; align-items: center; gap: var(--space-2); min-width: 0; flex: 1; }
+        .bo-member-name { font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900); }
+        .bo-member-email { font-size: 0.75rem; color: var(--color-gray-500); }
+        .bo-member-actions { display: flex; align-items: center; gap: var(--space-2); }
+        .fo-rating-inline { display: inline-flex; align-items: center; gap: 2px; }
+        .fo-rating-inline .fo-rating-star.filled { color: var(--color-warning); }
+        .bo-feedback-row { transition: background var(--transition-fast); }
+        .bo-feedback-row:hover { background: var(--color-gray-50); }
+        .bo-activity-type-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--border-radius); background: var(--color-gray-100); }
+    </style>
+{% endblock %}
+
 {% block topbar_actions %}
-<button class="btn btn-primary btn-sm" data-drawer-open="add-group-drawer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    Creer un groupe
-</button>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +62,7 @@
     <h1 class="bo-page-title">Encadrement</h1>
 </div>
 
-{# Tabs #}
+{# Tabs (même style que FO groups) #}
 {{ include('components/_tabs.html.twig', {
     id: 'mentoring-tabs',
     tabs: data.tabs,
@@ -26,142 +70,382 @@
 }) }}
 
 <div data-tab-content="mentoring-tabs">
-    {# Tab: Groups #}
+    {# ─── Tab: Groupes (données réelles, UI alignée FO) ─── #}
     <div data-tab-panel="groups" class="tab-content active">
-        <div class="table-container">
-            <table class="bo-table">
-                <thead>
-                    <tr>
-                        <th>Groupe</th>
-                        <th>Encadrant</th>
-                        <th>Membres</th>
-                        <th>Sessions</th>
-                        <th>Statut</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for group in data.groups %}
-                    <tr>
-                        <td class="font-medium">{{ group.name }}</td>
-                        <td>{{ group.mentor }}</td>
-                        <td>{{ group.members }}</td>
-                        <td>{{ group.sessions }}</td>
-                        <td>
-                            <span class="bo-status {{ group.status|lower == 'actif' ? 'active' : 'inactive' }}">
-                                <span class="bo-status-dot"></span>
-                                {{ group.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="1"/>
-                                        <circle cx="12" cy="5" r="1"/>
-                                        <circle cx="12" cy="19" r="1"/>
-                                    </svg>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <button class="dropdown-item">Voir les membres</button>
-                                    <button class="dropdown-item">Modifier</button>
-                                    <button class="dropdown-item">Inviter des membres</button>
-                                    <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item danger">Supprimer</button>
+        {# Barre d'action + lien app #}
+        <div class="fo-groups-toolbar mb-4" style="display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; background: var(--color-gray-50); padding: var(--space-3); border-radius: 8px;">
+            <a href="{{ path('app_groups') }}" class="btn btn-primary btn-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Voir tous les groupes dans l'app
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container bo-mentoring-table-wrap">
+                    <table class="bo-table">
+                        <thead>
+                            <tr>
+                                <th>Groupe</th>
+                                <th>Créateur</th>
+                                <th>Membres</th>
+                                <th>Matière</th>
+                                <th>Visibilité</th>
+                                <th style="width: 52px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for group in data.groups %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_group_detail', { id: group.id }) }}" class="cell-user" style="text-decoration: none; color: inherit;">
+                                        <div class="fo-group-avatar" style="width: 36px; height: 36px; font-size: 14px;">
+                                            {{ group.name|slice(0, 2)|upper }}
+                                        </div>
+                                        <div class="cell-user-info">
+                                            <div class="cell-user-name">{{ group.name }}</div>
+                                            {% if group.description %}
+                                            <div class="cell-user-email" style="max-width: 200px;">{{ group.description|slice(0, 50) }}{% if group.description|length > 50 %}…{% endif %}</div>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if group.createdBy %}
+                                    <div class="cell-user">
+                                        <div class="cell-user-avatar">{{ group.createdBy.initials }}</div>
+                                        <div class="cell-user-info">
+                                            <div class="cell-user-name">{{ group.createdBy.fullName }}</div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-ghost btn-sm" data-modal-open="bo-members-modal-{{ group.id }}" title="Voir les membres">
+                                        <span class="badge" style="background: var(--color-gray-100); color: var(--color-gray-700); padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                                            {{ group.members|length }} membre{{ group.members|length > 1 ? 's' : '' }}
+                                        </span>
+                                    </button>
+                                </td>
+                                <td>
+                                    {% if group.subject %}
+                                    <span class="badge" style="background: var(--color-secondary-light); color: var(--color-secondary); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                                        {{ group.subject }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="bo-status {{ group.privacy == 'public' ? 'active' : 'inactive' }}">
+                                        <span class="bo-status-dot"></span>
+                                        {{ group.privacy == 'public' ? 'Public' : 'Privé' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="bo-actions-btn" data-dropdown-toggle data-dropdown-fixed aria-label="Actions">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="1"/>
+                                                <circle cx="12" cy="5" r="1"/>
+                                                <circle cx="12" cy="19" r="1"/>
+                                            </svg>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a href="{{ path('app_group_detail', { id: group.id }) }}" class="dropdown-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                Voir le groupe
+                                            </a>
+                                            <button type="button" class="dropdown-item" data-modal-open="bo-members-modal-{{ group.id }}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                Voir les membres
+                                            </button>
+                                            <a href="{{ path('app_group_edit', { id: group.id }) }}" class="dropdown-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                Modifier
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <button type="button" class="dropdown-item danger leave-group-btn" data-group-id="{{ group.id }}" data-group-name="{{ group.name }}" data-action="delete" data-csrf="{{ csrf_token('delete-group-' ~ group.id) }}">
+                                                Supprimer le groupe
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center p-8">
+                                    <div class="bo-empty-state">
+                                        <div class="bo-empty-state-title">Aucun groupe</div>
+                                        <p class="bo-empty-state-text">Les groupes sont créés et gérés dans l'application.</p>
+                                        <a href="{{ path('app_groups') }}" class="btn btn-primary btn-sm">Ouvrir l'app Groupes</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Modals Membres (hors tableau, un par groupe) #}
+        {% for group in data.groups %}
+        <div class="modal" id="bo-members-modal-{{ group.id }}" data-group-id="{{ group.id }}">
+            <div class="modal-dialog" style="width: 90%; max-width: 420px;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title">Membres — {{ group.name }} (<span data-member-count>{{ group.members|length }}</span>)</h2>
+                        <button class="modal-close" data-modal-close aria-label="Fermer">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="max-height: 420px; overflow-y: auto;">
+                            {% set admins = group.members|filter(m => m.role == 'admin') %}
+                            {% if admins|length > 0 %}
+                            <div class="bo-member-section" data-member-section="admin">
+                                <div class="bo-member-section-title">Administrateurs (<span data-member-section-count="admin">{{ admins|length }}</span>)</div>
+                                {% for member in admins %}
+                                <div class="bo-member-item member-item" data-member-user-id="{{ member.user_id }}">
+                                    <div class="bo-member-info">
+                                        <div class="avatar avatar-sm avatar-role-admin">{{ member.initials }}</div>
+                                        <div>
+                                            <div class="bo-member-name member-name">{{ member.name }}</div>
+                                            <div class="bo-member-email">{{ member.email }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="bo-member-actions">
+                                        <span class="badge-role-admin">Admin</span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle>⋮</button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="moderator" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Rétrograder modérateur</button>
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="member" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Rétrograder membre</button>
+                                                <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {# Tab: Invitations #}
-    <div data-tab-panel="invitations" class="tab-content">
-        <div class="table-container">
-            <table class="bo-table">
-                <thead>
-                    <tr>
-                        <th>Utilisateur</th>
-                        <th>Groupe</th>
-                        <th>Date</th>
-                        <th>Statut</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for invitation in data.invitations %}
-                    <tr>
-                        <td class="font-medium">{{ invitation.user }}</td>
-                        <td>{{ invitation.group }}</td>
-                        <td class="text-muted">{{ invitation.date }}</td>
-                        <td>
-                            <span class="badge badge-{{ invitation.status == 'En attente' ? 'warning' : 'neutral' }}">
-                                {{ invitation.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="flex gap-2">
-                                <button class="btn btn-ghost btn-sm">Renvoyer</button>
-                                <button class="btn btn-ghost btn-sm" style="color: var(--color-error);">Annuler</button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {# Tab: Feedbacks #}
-    <div data-tab-panel="feedbacks" class="tab-content">
-        <div class="table-container">
-            <table class="bo-table">
-                <thead>
-                    <tr>
-                        <th>De</th>
-                        <th>Pour</th>
-                        <th>Groupe</th>
-                        <th>Note</th>
-                        <th>Commentaire</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for feedback in data.feedbacks %}
-                    <tr>
-                        <td class="font-medium">{{ feedback.from }}</td>
-                        <td>{{ feedback.to }}</td>
-                        <td>{{ feedback.group }}</td>
-                        <td>
-                            <div class="flex gap-1">
-                                {% for i in 1..5 %}
-                                <svg viewBox="0 0 24 24" fill="{{ i <= feedback.rating ? 'var(--color-warning)' : 'none' }}" stroke="var(--color-warning)" stroke-width="2" width="12" height="12">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                                </svg>
                                 {% endfor %}
                             </div>
-                        </td>
-                        <td class="text-muted" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {% endif %}
+
+                            {% set moderators = group.members|filter(m => m.role == 'moderator') %}
+                            {% if moderators|length > 0 %}
+                            <div class="bo-member-section" data-member-section="moderator">
+                                <div class="bo-member-section-title">Modérateurs (<span data-member-section-count="moderator">{{ moderators|length }}</span>)</div>
+                                {% for member in moderators %}
+                                <div class="bo-member-item member-item" data-member-user-id="{{ member.user_id }}">
+                                    <div class="bo-member-info">
+                                        <div class="avatar avatar-sm avatar-role-moderator">{{ member.initials }}</div>
+                                        <div>
+                                            <div class="bo-member-name member-name">{{ member.name }}</div>
+                                            <div class="bo-member-email">{{ member.email }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="bo-member-actions">
+                                        <span class="badge-role-moderator">Modérateur</span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle>⋮</button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="member" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Rétrograder membre</button>
+                                                <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            {% set regular_members = group.members|filter(m => m.role == 'member') %}
+                            {% if regular_members|length > 0 %}
+                            <div class="bo-member-section" data-member-section="member">
+                                <div class="bo-member-section-title">Membres (<span data-member-section-count="member">{{ regular_members|length }}</span>)</div>
+                                {% for member in regular_members %}
+                                <div class="bo-member-item member-item" data-member-user-id="{{ member.user_id }}">
+                                    <div class="bo-member-info">
+                                        <div class="avatar avatar-sm avatar-role-member">{{ member.initials }}</div>
+                                        <div>
+                                            <div class="bo-member-name member-name">{{ member.name }}</div>
+                                            <div class="bo-member-email">{{ member.email }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="bo-member-actions">
+                                        <span class="badge-role-member">Membre</span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle>⋮</button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="moderator" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir modérateur</button>
+                                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                                <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-modal-close>Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ─── Tab: Invitations (données réelles) ─── #}
+    <div data-tab-panel="invitations" class="tab-content">
+        {% if data.invitations is not empty %}
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% for invitation in data.invitations %}
+                <div class="flex items-center justify-between p-4" style="{{ not loop.last ? 'border-bottom: 1px solid var(--border-color);' : '' }}">
+                    <div class="flex items-center gap-3">
+                        <div class="fo-group-avatar" style="width: 40px; height: 40px; font-size: 14px;">
+                            {{ invitation.group.name|slice(0, 2)|upper }}
+                        </div>
+                        <div>
+                            <div class="font-medium">{{ invitation.email }}</div>
+                            <div class="text-sm text-muted">
+                                Groupe <a href="{{ path('app_group_detail', { id: invitation.group.id }) }}" class="text-primary" style="text-decoration: none;">{{ invitation.group.name }}</a>
+                                {% if invitation.invitedBy %}
+                                · Invité par {{ invitation.invitedBy.fullName }}
+                                {% endif %}
+                                · {{ invitation.invitedAt|date('d/m/Y H:i') }}
+                            </div>
+                            <div class="mt-1">
+                                <span class="badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;
+                                    {% if invitation.status == 'pending' %}background: var(--color-warning-light, #fef3c7); color: var(--color-warning-dark, #92400e);{% endif %}
+                                    {% if invitation.status == 'accepted' %}background: var(--color-success-light, #d1fae5); color: var(--color-success-dark, #065f46);{% endif %}
+                                    {% if invitation.status == 'declined' %}background: var(--color-gray-100); color: var(--color-gray-600);{% endif %}
+                                    {% if invitation.status == 'cancelled' %}background: var(--color-error-light, #fef2f2); color: var(--color-error);{% endif %}
+                                ">
+                                    {% if invitation.status == 'pending' %}En attente{% endif %}
+                                    {% if invitation.status == 'accepted' %}Acceptée{% endif %}
+                                    {% if invitation.status == 'declined' %}Refusée{% endif %}
+                                    {% if invitation.status == 'cancelled' %}Annulée{% endif %}
+                                </span>
+                                <span class="badge" style="background: var(--color-gray-100); color: var(--color-gray-600); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-left: 4px;">
+                                    Rôle : {{ invitation.role == 'moderator' ? 'Modérateur' : 'Membre' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        {% if invitation.status == 'pending' %}
+                        <form action="{{ path('app_invitation_cancel', {id: invitation.id}) }}" method="post" style="margin: 0;" class="cancel-invitation-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cancel-invitation-' ~ invitation.id) }}">
+                            <button type="button" class="btn btn-secondary btn-sm cancel-invitation-btn" style="color: var(--color-error); border-color: var(--color-error-light, #fecaca);" data-email="{{ invitation.email }}">Annuler</button>
+                        </form>
+                        {% endif %}
+                        <a href="{{ path('app_group_detail', { id: invitation.group.id }) }}" class="btn btn-secondary btn-sm">Voir le groupe</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body">
+                <div class="bo-empty-state">
+                    <div class="bo-empty-state-title">Aucune invitation</div>
+                    <p class="bo-empty-state-text">Aucune invitation de groupe pour le moment. Les invitations sont créées depuis l’app Groupes.</p>
+                    <a href="{{ path('app_groups') }}" class="btn btn-secondary btn-sm">Ouvrir l’app Groupes</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ─── Tab: Feedbacks (notes, j'aimes, commentaires — données réelles) ─── #}
+    <div data-tab-panel="feedbacks" class="tab-content">
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% if data.feedbacks is not empty %}
+                {% for feedback in data.feedbacks %}
+                <div class="flex items-center gap-3 p-4 bo-feedback-row" style="{{ not loop.last ? 'border-bottom: 1px solid var(--border-color);' : '' }}">
+                    <div class="avatar avatar-sm avatar-role-member">{{ feedback.from_initials }}</div>
+                    <div class="bo-activity-type-icon" title="{% if feedback.type == 'rating' %}Note{% elseif feedback.type == 'like' %}J'aime{% else %}Commentaire{% endif %}">
+                        {% if feedback.type == 'rating' %}
+                        <svg viewBox="0 0 24 24" fill="var(--color-warning)" stroke="var(--color-warning)" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        {% elseif feedback.type == 'like' %}
+                        <svg viewBox="0 0 24 24" fill="var(--color-error)" stroke="var(--color-error)" stroke-width="2" width="18" height="18"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1" style="min-width: 0;">
+                        <div class="font-medium">{{ feedback.from }}</div>
+                        <div class="text-sm text-muted">
+                            {% if feedback.type == 'rating' %}
+                            Note pour <strong>{{ feedback.to }}</strong>
+                            {% elseif feedback.type == 'like' %}
+                            A aimé le post de <strong>{{ feedback.to }}</strong>
+                            {% else %}
+                            A commenté le post de <strong>{{ feedback.to }}</strong>
+                            {% endif %}
+                            · Groupe <a href="{{ path('app_group_detail', { id: feedback.group_id }) }}" class="text-primary" style="text-decoration: none;">{{ feedback.group }}</a>
+                        </div>
+                        <div class="text-sm mt-1 bo-activity-excerpt" style="color: var(--color-gray-600); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {% if feedback.type == 'comment' and feedback.body is defined %}
+                            {{ feedback.body }}
+                            {% elseif feedback.comment is defined %}
                             {{ feedback.comment }}
-                        </td>
-                        <td class="text-muted">{{ feedback.date }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2" style="flex-shrink: 0;">
+                        {% if feedback.type == 'rating' and feedback.rating is defined %}
+                        <div class="fo-rating-inline" aria-label="Note {{ feedback.rating }}/5">
+                            {% for i in 1..5 %}
+                            <svg class="fo-rating-star {{ i <= feedback.rating ? 'filled' : '' }}" viewBox="0 0 24 24" fill="{{ i <= feedback.rating ? 'var(--color-warning)' : 'none' }}" stroke="var(--color-warning)" stroke-width="2" width="14" height="14">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            {% endfor %}
+                        </div>
+                        {% elseif feedback.type == 'like' %}
+                        <span class="badge" style="background: var(--color-error-light); color: var(--color-error); font-size: 0.7rem;">J'aime</span>
+                        {% else %}
+                        <span class="badge" style="background: var(--color-primary-light); color: var(--color-primary); font-size: 0.7rem;">Commentaire</span>
+                        {% endif %}
+                        <span class="text-xs text-muted">{{ feedback.date }}</span>
+                    </div>
+                    <a href="{{ path('app_group_detail', { id: feedback.group_id }) }}#post-{{ feedback.post_id }}" class="btn btn-ghost btn-sm" title="Voir le post">Voir</a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="bo-empty-state p-8">
+                    <div class="bo-empty-state-title">Aucune activité</div>
+                    <p class="bo-empty-state-text">Les notes, j'aimes et commentaires sur les posts des groupes apparaîtront ici.</p>
+                    <a href="{{ path('app_groups') }}" class="btn btn-secondary btn-sm">Ouvrir l'app Groupes</a>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block drawers %}
-{# Drawer: Add Group #}
+{# Drawer: Add Group — redirection vers l'app #}
 <div class="drawer" id="add-group-drawer">
     <div class="drawer-header">
-        <h2 class="drawer-title">Creer un groupe</h2>
+        <h2 class="drawer-title">Créer un groupe</h2>
         <button class="drawer-close" data-drawer-close aria-label="Fermer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -170,36 +454,11 @@
         </button>
     </div>
     <div class="drawer-body">
-        <div class="form-group">
-            <label class="form-label required">Nom du groupe</label>
-            <input type="text" class="form-input" placeholder="Ex: Prepa MPSI - Maths">
-        </div>
-        <div class="form-group">
-            <label class="form-label required">Encadrant</label>
-            <select class="form-select">
-                <option value="">Selectionner un encadrant</option>
-                <option value="1">Sophie Durand</option>
-                <option value="2">Marc Petit</option>
-                <option value="3">Julie Moreau</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="form-textarea" placeholder="Description du groupe..."></textarea>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Matiere principale</label>
-            <select class="form-select">
-                <option value="">Aucune</option>
-                <option value="math">Mathematiques</option>
-                <option value="physics">Physique</option>
-                <option value="chemistry">Chimie</option>
-            </select>
-        </div>
+        <p class="text-sm text-muted mb-4">Les groupes se créent depuis l’application. Vous serez redirigé vers la page de création.</p>
+        <a href="{{ path('app_group_create') }}" class="btn btn-primary" style="width: 100%;">Ouvrir l’app et créer un groupe</a>
     </div>
     <div class="drawer-footer">
         <button class="btn btn-secondary" data-drawer-close>Annuler</button>
-        <button class="btn btn-primary">Creer le groupe</button>
     </div>
 </div>
 {% endblock %}

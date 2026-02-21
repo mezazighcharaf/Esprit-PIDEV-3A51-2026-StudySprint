@@ -13,11 +13,12 @@ class PostCreateDTO
     )]
     public ?string $title = null;
 
-    #[Assert\NotBlank(message: 'Le contenu du post est requis')]
+    #[Assert\When(
+        expression: 'this.postType == "text"',
+        constraints: [new Assert\NotBlank(message: 'Le contenu du post est requis')]
+    )]
     #[Assert\Length(
-        min: 3,
         max: 5000,
-        minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères',
         maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères'
     )]
     public ?string $body = null;
