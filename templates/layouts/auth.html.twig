@@ -2,6 +2,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('assets/css/bo.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/forms.css') }}">
     <style>
         .auth-container {
             min-height: 100vh;
@@ -73,26 +74,7 @@
             background: var(--color-primary-light, #eff6ff);
         }
         
-        /* Error messages */
-        .form-group ul, .role-selector-wrapper ul {
-            color: #dc2626;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            list-style: none;
-            padding: 0;
-            background: #fef2f2;
-            padding: 0.5rem;
-            border-radius: 4px;
-            border: 1px solid #fecaca;
-        }
-        .form-group ul li, .role-selector-wrapper ul li {
-             display: flex;
-             align-items: center;
-             gap: 0.5rem;
-        }
-        .form-control.is-invalid, .form-select.is-invalid {
-            border-color: #dc2626;
-        }
+        /* Error messages are now handled by forms.css and custom_theme.html.twig */
     </style>
 {% endblock %}
 
@@ -102,6 +84,15 @@
         <div class="auth-logo">
             {{ include('components/_logo.html.twig', { size: 'lg', show_text: true }) }}
         </div>
+        
+        {# Display Flash Messages #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4" style="padding: 1rem; border-radius: 8px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
         
         {% block content %}{% endblock %}
     </div>

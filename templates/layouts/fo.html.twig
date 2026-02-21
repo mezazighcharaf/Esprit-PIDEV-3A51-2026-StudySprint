@@ -1,6 +1,11 @@
 {% extends 'layouts/base.html.twig' %}
 
 {% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
 {% endblock %}
 
@@ -87,13 +92,30 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="fo-user-card">
-                <div class="fo-user-avatar">{{ user.initials|default('ET') }}</div>
-                <div class="fo-user-info">
-                    <div class="fo-user-name">{{ user.name|default('Etudiant Test') }}</div>
-                    <div class="fo-user-role">{{ user.role|default('Etudiant') }}</div>
-                </div>
-            </div>
+            <a href="{{ path('app_profile') }}" class="fo-user-card" style="text-decoration: none; color: inherit; display: flex;">
+                {% if app.user %}
+                    <div class="fo-user-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                        <div class="fo-user-role">
+                            {% if is_granted('ROLE_ADMIN') %}
+                                Administrateur
+                            {% elseif is_granted('ROLE_PROFESSOR') %}
+                                Professeur
+                            {% elseif is_granted('ROLE_STUDENT') %}
+                                Étudiant
+                            {% else %}
+                                {{ app.user.role|capitalize }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="fo-user-avatar">?</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">Invité</div>
+                    </div>
+                {% endif %}
+            </a>
         </div>
     </aside>
 
@@ -104,13 +126,6 @@
             <div class="topbar-spacer"></div>
             <div class="topbar-actions">
                 {% block topbar_actions %}{% endblock %}
-                <div class="topbar-search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" placeholder="Rechercher...">
-                </div>
             </div>
         </header>
 
@@ -123,5 +138,30 @@
 {# ─── DRAWER BACKDROP ─── #}
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
+{# ─── CONFIRMATION DIALOG ─── #}
+<div class="modal" id="confirm-dialog">
+    <div class="modal-dialog" style="max-width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmation</h2>
+                <button class="modal-close" data-modal-close aria-label="Fermer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message" style="margin: 0; color: var(--color-gray-700);">Etes-vous sur de vouloir continuer?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal-close>Annuler</button>
+                <button class="btn btn-danger" id="confirm-action-btn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block drawers %}{% endblock %}
+{% block modals %}{% endblock %}
 {% endblock %}

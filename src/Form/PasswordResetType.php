@@ -16,7 +16,7 @@ class PasswordResetType extends AbstractType
         $builder
             ->add('verificationCode', TextType::class, [
                 'label' => 'Code de vérification',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Code reçu par email'],
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Code de vérification'],
             ])
             ->add('newPassword', PasswordType::class, [
                 'label' => 'Nouveau mot de passe',

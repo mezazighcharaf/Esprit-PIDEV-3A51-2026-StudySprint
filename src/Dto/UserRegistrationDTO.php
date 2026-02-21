@@ -6,21 +6,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class UserRegistrationDTO
 {
-    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\NotBlank(message: "remplire le champ nom")]
     public ?string $nom = null;
 
-    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\NotBlank(message: "remplire le champs prenom")]
     public ?string $prenom = null;
 
-    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\NotBlank(message: "obligatoire")]
     #[Assert\Email(message: "L'email n'est pas valide")]
     public ?string $email = null;
 
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[Assert\Regex(
+        pattern: "/^(\+?\d{1,4})?\d{8,15}$/",
+        message: "Format de numéro de téléphone invalide"
+    )]
+    public ?string $telephone = null;
+
+    #[Assert\NotBlank(message: "obligatoire")]
     #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
     #[Assert\Regex(
-        pattern: "/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
-        message: "Le mot de passe doit contenir des lettres, des chiffres et au moins un caractère spécial (@$!%*#?&)"
+        pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\/\.\-_])[A-Za-z\d@$!%*?&\/\.\-_]{8,}$/",
+        message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial"
     )]
     public ?string $motDePasse = null;
 
@@ -29,32 +35,33 @@ class UserRegistrationDTO
     public ?string $role = null;
 
     // Student fields
-    #[Assert\NotBlank(groups: ['student'], message: "L'âge est obligatoire")]
-    #[Assert\Range(min: 10, max: 100, groups: ['student'])]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Range(min: 16, groups: ['student', 'professor'], minMessage: "age > 15")]
     public ?int $age = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "Le sexe est obligatoire")]
-    #[Assert\Choice(choices: ['H', 'F'], groups: ['student'])]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Choice(choices: ['H', 'F'], groups: ['student', 'professor'])]
     public ?string $sexe = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "Le pays est obligatoire")]
-    #[Assert\Country(groups: ['student'])]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Country(groups: ['student', 'professor'])]
     public ?string $pays = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "L'établissement est obligatoire")]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
     public ?string $etablissement = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "Le niveau est obligatoire")]
+    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
     public ?string $niveau = null;
 
     // Professor fields
-    #[Assert\NotBlank(groups: ['professor'], message: "La spécialité est obligatoire")]
+    #[Assert\NotBlank(groups: ['professor'], message: "obligatoire")]
     public ?string $specialite = null;
 
-    #[Assert\NotBlank(groups: ['professor'], message: "Le niveau enseigné est obligatoire")]
+    #[Assert\NotBlank(groups: ['professor'], message: "obligatoire")]
     public ?string $niveauEnseignement = null;
 
-    #[Assert\NotBlank(groups: ['professor'], message: "Les années d'expérience sont obligatoires")]
+    #[Assert\NotBlank(groups: ['professor'], message: "obligatoire")]
     #[Assert\PositiveOrZero(groups: ['professor'])]
     public ?int $anneesExperience = null;
+
 }

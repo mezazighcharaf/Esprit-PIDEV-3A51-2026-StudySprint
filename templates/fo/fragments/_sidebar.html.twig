@@ -1,0 +1,162 @@
+{# ─── SIDEBAR ─── #}
+<aside class="group-detail-sidebar">
+    {# MEMBERS WIDGET #}
+    <div class="sidebar-widget">
+        {% set current_user_group_role = null %}
+        {% for member in group.members %}
+            {% if member.user_id == user.id %}
+                {% set current_user_group_role = member.role %}
+            {% endif %}
+        {% endfor %}
+
+        <h3 class="sidebar-widget-title">Membres (<span data-member-count>{{ group.members|length }}</span>)</h3>
+        
+        <div style="{% if group.members|length > 4 %}max-height: 300px; overflow-y: auto;{% endif %}">
+            {# Administrators Section #}
+            {% set admin_members = group.members|filter(m => m.role == 'admin') %}
+            {% if admin_members|length > 0 %}
+            <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color);" data-member-section="admin">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Administrateurs (<span data-member-section-count="admin">{{ admin_members|length }}</span>)</div>
+                {% for member in admin_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); background: var(--color-gray-50); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <span class="badge-role-admin">Admin</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Moderators Section #}
+            {% set moderator_members = group.members|filter(m => m.role == 'moderator') %}
+            {% if moderator_members|length > 0 %}
+            <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color);" data-member-section="moderator">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Modérateurs (<span data-member-section-count="moderator">{{ moderator_members|length }}</span>)</div>
+                {% for member in moderator_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span class="badge-role-moderator">Modérateur</span>
+                        {% if current_user_group_role == 'admin' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="member" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Rétrograder membre</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Members Section #}
+            {% set regular_members = group.members|filter(m => m.role == 'member') %}
+            {% if regular_members|length > 0 %}
+            <div data-member-section="member">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Membres (<span data-member-section-count="member">{{ regular_members|length }}</span>)</div>
+                {% for member in regular_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-initials">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span class="badge-role-member">Membre</span>
+                        {% if current_user_group_role == 'admin' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="moderator" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir modérateur</button>
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% elseif current_user_group_role == 'moderator' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# INFO WIDGET #}
+    <div class="sidebar-widget">
+        <h3 class="sidebar-widget-title">Informations</h3>
+        <div class="sidebar-widget-content">
+            <div class="info-row">
+                <span class="info-label">Matière:</span>
+                <span class="info-value">{{ group.subject }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Type:</span>
+                <span class="info-value">{{ group.privacy == 'public' ? 'Public' : 'Privé' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Créé:</span>
+                <span class="info-value">{{ group.created_at }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Posts:</span>
+                <span class="info-value">{{ posts|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# RULES WIDGET #}
+    <div class="sidebar-widget">
+        <h3 class="sidebar-widget-title">Règles du groupe</h3>
+        <ul class="sidebar-rules">
+            <li>Soyez respectueux envers les autres membres</li>
+            <li>Pas de spam ou de contenu promotionnel</li>
+            <li>Posez des questions claires et précises</li>
+            <li>Aidez les autres membres quand vous pouvez</li>
+        </ul>
+    </div>
+</aside>

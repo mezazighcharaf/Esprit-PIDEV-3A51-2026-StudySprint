@@ -92,125 +92,114 @@
 
     {# KPIs Row #}
     <div class="bo-kpi-row">
-        {% for kpi in data.kpis %}
         <div class="bo-kpi-card">
             <div class="bo-kpi-header">
-                <span class="bo-kpi-label">{{ kpi.label }}</span>
-                {% if kpi.trend %}
-                <span class="bo-kpi-trend {{ kpi.trend_direction }}">
-                    {% if kpi.trend_direction == 'up' %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                    </svg>
-                    {% elseif kpi.trend_direction == 'down' %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
-                    </svg>
-                    {% endif %}
-                    {{ kpi.trend }}
-                </span>
-                {% endif %}
+                <span class="bo-kpi-label">Utilisateurs (Hors Admin)</span>
             </div>
-            <div class="bo-kpi-value">{{ kpi.value }}</div>
-            <div class="bo-kpi-subtitle">{{ kpi.subtitle }}</div>
-            {% if kpi.sparkline %}
-            <div class="bo-kpi-sparkline">
-                <svg viewBox="0 0 100 32" preserveAspectRatio="none">
-                    <polyline
-                        fill="none"
-                        stroke="var(--color-primary)"
-                        stroke-width="2"
-                        points="0,28 15,24 30,26 45,18 60,20 75,12 90,16 100,8"
-                    />
-                </svg>
-            </div>
-            {% endif %}
+            <div class="bo-kpi-value">{{ stats.user_kpis.total_non_admins }}</div>
+            <div class="bo-kpi-subtitle">Total communautaire</div>
         </div>
-        {% endfor %}
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Etudiants</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-primary);">{{ stats.user_kpis.students }}</div>
+            <div class="bo-kpi-subtitle">Apprenants inscrits</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Professeurs</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-secondary);">{{ stats.user_kpis.professors }}</div>
+            <div class="bo-kpi-subtitle">Enseignants actifs</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Actifs / Inactifs</span>
+            </div>
+            <div class="bo-kpi-value">
+                <span style="color: var(--color-success);">{{ stats.user_kpis.active }}</span>
+                <span style="color: var(--color-gray-300);">/</span>
+                <span style="color: var(--color-error);">{{ stats.user_kpis.inactive }}</span>
+            </div>
+            <div class="bo-kpi-subtitle">Statut des comptes</div>
+        </div>
     </div>
 
     {# Main Analytics Grid #}
     <div class="bo-analytics-grid">
         <div class="bo-analytics-main">
-            {# Activity Trend Chart #}
+            {# Registration Trend Chart (LINE) #}
             <div class="bo-chart-card">
                 <div class="bo-chart-header">
-                    <h3 class="bo-chart-title">Tendance activite (7 jours)</h3>
-                    <div class="flex gap-4 text-xs">
-                        <span class="flex items-center gap-1">
-                            <span style="width: 12px; height: 3px; background: var(--color-primary); border-radius: 2px;"></span>
-                            Cette semaine
-                        </span>
-                        <span class="flex items-center gap-1">
-                            <span style="width: 12px; height: 3px; background: var(--color-gray-300); border-radius: 2px;"></span>
-                            Semaine precedente
-                        </span>
-                    </div>
+                    <h3 class="bo-chart-title">Inscriptions par annee</h3>
                 </div>
-                <div class="bo-chart-body">
-                    {# SVG Chart #}
-                    <svg viewBox="0 0 700 200" style="width: 100%; height: 200px;">
-                        {# Grid lines #}
-                        <line x1="50" y1="20" x2="680" y2="20" stroke="var(--color-gray-100)" stroke-width="1"/>
-                        <line x1="50" y1="60" x2="680" y2="60" stroke="var(--color-gray-100)" stroke-width="1"/>
-                        <line x1="50" y1="100" x2="680" y2="100" stroke="var(--color-gray-100)" stroke-width="1"/>
-                        <line x1="50" y1="140" x2="680" y2="140" stroke="var(--color-gray-100)" stroke-width="1"/>
-                        <line x1="50" y1="180" x2="680" y2="180" stroke="var(--color-gray-200)" stroke-width="1"/>
-
-                        {# Y-axis labels #}
-                        <text x="40" y="24" text-anchor="end" fill="var(--color-gray-400)" font-size="11">100</text>
-                        <text x="40" y="64" text-anchor="end" fill="var(--color-gray-400)" font-size="11">75</text>
-                        <text x="40" y="104" text-anchor="end" fill="var(--color-gray-400)" font-size="11">50</text>
-                        <text x="40" y="144" text-anchor="end" fill="var(--color-gray-400)" font-size="11">25</text>
-                        <text x="40" y="184" text-anchor="end" fill="var(--color-gray-400)" font-size="11">0</text>
-
-                        {# X-axis labels #}
-                        {% for i, label in data.activity_trend.labels %}
-                        <text x="{{ 95 + i * 90 }}" y="198" text-anchor="middle" fill="var(--color-gray-400)" font-size="11">{{ label }}</text>
-                        {% endfor %}
-
-                        {# Previous week line (background) #}
-                        <polyline
-                            fill="none"
-                            stroke="var(--color-gray-300)"
-                            stroke-width="2"
-                            stroke-dasharray="4,4"
-                            points="{% for i, val in data.activity_trend.previous %}{{ 95 + i * 90 }},{{ 180 - (val * 1.6) }}{% if not loop.last %} {% endif %}{% endfor %}"
-                        />
-
-                        {# Current week area #}
-                        <polygon
-                            fill="url(#gradient-fill)"
-                            opacity="0.1"
-                            points="95,180 {% for i, val in data.activity_trend.data %}{{ 95 + i * 90 }},{{ 180 - (val * 1.6) }}{% if not loop.last %} {% endif %}{% endfor %} 635,180"
-                        />
-
-                        {# Current week line #}
-                        <polyline
-                            fill="none"
-                            stroke="var(--color-primary)"
-                            stroke-width="3"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            points="{% for i, val in data.activity_trend.data %}{{ 95 + i * 90 }},{{ 180 - (val * 1.6) }}{% if not loop.last %} {% endif %}{% endfor %}"
-                        />
-
-                        {# Data points #}
-                        {% for i, val in data.activity_trend.data %}
-                        <circle cx="{{ 95 + i * 90 }}" cy="{{ 180 - (val * 1.6) }}" r="5" fill="var(--color-primary)"/>
-                        <circle cx="{{ 95 + i * 90 }}" cy="{{ 180 - (val * 1.6) }}" r="3" fill="white"/>
-                        {% endfor %}
-
-                        <defs>
-                            <linearGradient id="gradient-fill" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:var(--color-primary);stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:var(--color-primary);stop-opacity:0" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
+                <div class="bo-chart-body" style="height: 300px;">
+                    <canvas id="registrationChart"></canvas>
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 gap-4">
+                {# Age Distribution Chart (COLUMN/BAR) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Repartition par age (Etudiants)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="ageChart"></canvas>
+                    </div>
+                </div>
+
+                {# Country Distribution Chart (PIE) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Repartition par pays</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="countryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Professor Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Professeurs (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="profHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Student Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Étudiants (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="studentHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Professor Experience Chart (BAR) #}
+            <div class="bo-chart-card" style="margin-top: 1.5rem;">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Expérience des Professeurs</h3>
+                </div>
+                <div class="bo-chart-body" style="height: 250px;">
+                    <canvas id="profExpChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bo-analytics-side">
             {# Insights #}
             <div class="bo-chart-card">
                 <div class="bo-chart-header">
@@ -257,9 +246,7 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bo-analytics-side">
             {# Top Subjects #}
             <div class="bo-chart-card">
                 <div class="bo-chart-header">
@@ -324,7 +311,302 @@
             </div>
         </div>
     </div>
+
+    </div>
 {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colors from tokens
+    const primaryColor = '#5AAEEF';
+    const orangeColor = '#FDB499';
+    const successColor = '#2DCA73';
+    const warningColor = '#FFB800';
+    const grayColor = '#94a3b8';
+
+    // Helper to wrap long labels into arrays for multiline display
+    const wrapLabel = (label, maxLength = 12) => {
+        if (!label) return label;
+        if (label.length <= maxLength) return label;
+        const words = label.split(' ');
+        const lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxLength) {
+                if (currentLine) lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + ' ';
+            }
+        });
+        if (currentLine) lines.push(currentLine.trim());
+        return lines;
+    };
+
+    // 1. Registration Line Chart
+    const regCtx = document.getElementById('registrationChart');
+    if (regCtx) {
+        const regData = {{ stats.registrations|json_encode|raw }};
+        new Chart(regCtx, {
+            type: 'line',
+            data: {
+                labels: regData.map(d => d.year),
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: regData.map(d => d.count),
+                    borderColor: primaryColor,
+                    backgroundColor: primaryColor + '20',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'white',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 2. Age Distribution Column Chart
+    const ageCtx = document.getElementById('ageChart');
+    if (ageCtx) {
+        const ageData = {{ stats.age_distribution|json_encode|raw }};
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ageData.labels,
+                datasets: ageData.datasets.map((ds, index) => ({
+                    label: ds.label,
+                    data: ds.data,
+                    backgroundColor: index === 0 ? primaryColor : orangeColor,
+                    borderRadius: 4
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 10 } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Country Pie Chart
+    const countryCtx = document.getElementById('countryChart');
+    if (countryCtx) {
+        const countryData = {{ stats.countries|json_encode|raw }};
+        new Chart(countryCtx, {
+            type: 'pie',
+            data: {
+                labels: countryData.map(d => d.label),
+                datasets: [{
+                    data: countryData.map(d => d.value),
+                    backgroundColor: [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899'],
+                    borderWidth: 2,
+                    borderColor: 'white'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Professor Experience Chart
+    const expCtx = document.getElementById('profExpChart');
+    if (expCtx) {
+        const expData = {{ stats.professor_experience|json_encode|raw }};
+        new Chart(expCtx, {
+            type: 'bar',
+            data: {
+                labels: expData.map(d => d.label),
+                datasets: [{
+                    label: 'Professeurs',
+                    data: expData.map(d => d.value),
+                    backgroundColor: '#8B5CF6',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Professor Hierarchy Chart
+    const profHierCtx = document.getElementById('profHierarchyChart');
+    if (profHierCtx) {
+        const rawData = {{ stats.professor_hierarchy|json_encode|raw }};
+        
+        // Group data by country for multi-dataset approach (for legend)
+        const countries = [...new Set(rawData.map(d => d.pays))];
+        const establishments = rawData.map(d => wrapLabel(d.etablissement, 15));
+        
+        const palette = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasets = countries.map((country, index) => {
+            return {
+                label: country, // Country Code (TN, FR, etc.)
+                data: rawData.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: palette[index % palette.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(profHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishments, // Only establishments on X axis
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawData[index].pays + ' - ' + rawData[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Student Hierarchy Chart
+    const studHierCtx = document.getElementById('studentHierarchyChart');
+    if (studHierCtx) {
+        const rawDataStud = {{ stats.student_hierarchy|json_encode|raw }};
+        
+        const countriesStud = [...new Set(rawDataStud.map(d => d.pays))];
+        const establishmentsStud = rawDataStud.map(d => wrapLabel(d.etablissement, 15));
+        
+        const paletteStud = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasetsStud = countriesStud.map((country, index) => {
+            return {
+                label: country,
+                data: rawDataStud.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: paletteStud[index % paletteStud.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(studHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishmentsStud,
+                datasets: datasetsStud
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawDataStud[index].pays + ' - ' + rawDataStud[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
 
 {% block drawers %}

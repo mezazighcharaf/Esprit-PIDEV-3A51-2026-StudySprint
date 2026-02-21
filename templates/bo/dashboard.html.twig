@@ -41,29 +41,45 @@
 
     {# KPIs Row #}
     <div class="bo-kpi-row">
-        {% for kpi in data.kpis %}
         <div class="bo-kpi-card">
             <div class="bo-kpi-header">
-                <span class="bo-kpi-label">{{ kpi.label }}</span>
-                {% if kpi.trend %}
-                <span class="bo-kpi-trend {{ kpi.trend_direction }}">
-                    {% if kpi.trend_direction == 'up' %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                    </svg>
-                    {% elseif kpi.trend_direction == 'down' %}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
-                    </svg>
-                    {% endif %}
-                    {{ kpi.trend }}
-                </span>
-                {% endif %}
+                <span class="bo-kpi-label">Utilisateurs</span>
             </div>
-            <div class="bo-kpi-value">{{ kpi.value }}</div>
-            <div class="bo-kpi-subtitle">{{ kpi.subtitle }}</div>
+            <div class="bo-kpi-value">{{ user_kpis.total_non_admins }}</div>
+            <div class="bo-kpi-subtitle">Communauté totale</div>
         </div>
-        {% endfor %}
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Etudiants</span>
+            </div>
+            <div class="bo-kpi-value text-primary">{{ user_kpis.students }}</div>
+            <div class="bo-kpi-subtitle">Apprenants inscrits</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Professeurs</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-secondary);">{{ user_kpis.professors }}</div>
+            <div class="bo-kpi-subtitle">Enseignants actifs</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Actifs</span>
+            </div>
+            <div class="bo-kpi-value text-success">{{ user_kpis.active }}</div>
+            <div class="bo-kpi-subtitle">En ligne / Actifs</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Inactifs</span>
+            </div>
+            <div class="bo-kpi-value text-muted">{{ user_kpis.inactive }}</div>
+            <div class="bo-kpi-subtitle">Comptes désactivés</div>
+        </div>
     </div>
 
     {# Alerts #}
@@ -113,7 +129,7 @@
                 </thead>
                 <tbody>
                 <tbody>
-                    {% for user in users %}
+                    {% for user in recent_users %}
                     <tr>
                         <td>
                             <div class="cell-user">

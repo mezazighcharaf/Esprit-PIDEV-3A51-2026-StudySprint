@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/tokens.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/base.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {% block stylesheets %}{% endblock %}
 
     {# ─── Favicon ─── #}
@@ -26,6 +27,26 @@
 
     {# ─── JS ─── #}
     <script src="{{ asset('assets/js/ui.js') }}"></script>
+    
+    {# ─── Flash Messages as Toasts ─── #}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    {% if label == 'success' %}
+                        StudySprint.Toast.success('Succès', '{{ message|e('js') }}');
+                    {% elseif label == 'error' %}
+                        StudySprint.Toast.error('Erreur', '{{ message|e('js') }}');
+                    {% elseif label == 'warning' %}
+                        StudySprint.Toast.warning('Attention', '{{ message|e('js') }}');
+                    {% else %}
+                        StudySprint.Toast.info('Info', '{{ message|e('js') }}');
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        });
+    </script>
+
     {% block javascripts %}{% endblock %}
 </body>
 </html>
