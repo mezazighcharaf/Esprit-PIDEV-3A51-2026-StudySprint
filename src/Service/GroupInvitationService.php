@@ -16,7 +16,8 @@ class GroupInvitationService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private GroupInvitationRepository $invitationRepository,
-        private GroupService $groupService
+        private GroupService $groupService,
+        private InvitationMailer $invitationMailer,
     ) {}
 
     /**
@@ -69,6 +70,8 @@ class GroupInvitationService
                 // If declined or no longer a member, we "re-use" the invitation record
                 $invitation->setStatus('pending');
                 $invitation->setCode($this->generateInvitationCode());
+                $invitation->setToken(bin2hex(random_bytes(32)));
+                $invitation->setExpiresAt(new \DateTimeImmutable('+7 days'));
                 $invitation->setInvitedBy($inviter);
                 $invitation->setInvitedAt(new \DateTimeImmutable());
                 $invitation->setRespondedAt(null);
@@ -96,7 +99,30 @@ class GroupInvitationService
 
         $this->entityManager->flush();
 
+        // Send invitation emails with the 3 methods (link, code, QR code)
+        foreach ($invitations as $invitation) {
+            $this->invitationMailer->sendInvitation($invitation);
+        }
+
         return $invitations;
+    }
+
+    /**
+     * Accept an invitation using its token (from email link or QR code)
+     */
+    public function acceptInvitationByToken(string $token, User $user): void
+    {
+        $invitation = $this->invitationRepository->findValidByToken($token);
+
+        if (!$invitation) {
+            throw new NotFoundHttpException('Invitation invalide ou expirée.');
+        }
+
+        if ($invitation->isExpired()) {
+            throw new AccessDeniedHttpException('Cette invitation a expiré.');
+        }
+
+        $this->acceptInvitation($invitation, $user);
     }
 
     /**

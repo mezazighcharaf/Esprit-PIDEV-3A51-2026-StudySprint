@@ -255,6 +255,7 @@
 {% block javascripts %}
     {{ parent() }}
 
+    <script src="{{ asset('assets/js/translate.js') }}"></script>
     
     {# CSRF Tokens for Post Actions #}
     <meta name="csrf-token-create-post-{{ group.id }}" content="{{ csrf_token('create-post-' ~ group.id) }}">

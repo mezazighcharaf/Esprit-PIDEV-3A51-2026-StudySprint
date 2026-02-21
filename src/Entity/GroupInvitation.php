@@ -20,6 +20,7 @@ use App\Repository\GroupInvitationRepository;
 #[ORM\Index(name: 'idx_invitation_email', columns: ['email'])]
 #[ORM\Index(name: 'idx_invitation_status', columns: ['status'])]
 #[ORM\Index(name: 'idx_invitation_code', columns: ['code'])]
+#[ORM\Index(name: 'idx_invitation_token', columns: ['token'])]
 class GroupInvitation
 {
     #[ORM\Id]
@@ -54,9 +55,20 @@ class GroupInvitation
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $respondedAt = null;
 
+    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    private ?string $token = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $message = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $expiresAt = null;
+
     public function __construct()
     {
         $this->invitedAt = new \DateTimeImmutable();
+        $this->token = bin2hex(random_bytes(32));
+        $this->expiresAt = new \DateTimeImmutable('+7 days');
     }
 
 
@@ -148,5 +160,40 @@ class GroupInvitation
     public function setRole(string $role): void
     {
         $this->role = $role;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): void
+    {
+        $this->token = $token;
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(?string $message): void
+    {
+        $this->message = $message;
+    }
+
+    public function getExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->expiresAt;
+    }
+
+    public function setExpiresAt(?\DateTimeImmutable $expiresAt): void
+    {
+        $this->expiresAt = $expiresAt;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expiresAt !== null && $this->expiresAt < new \DateTimeImmutable();
     }
 }

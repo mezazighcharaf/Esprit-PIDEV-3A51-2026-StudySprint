@@ -29,9 +29,19 @@
 
     <div class="fo-post-body-content">
         {% if post.title %}
-        <h3 class="fo-post-title">{{ post.title }}</h3>
+        <h3 class="fo-post-title" data-post-title="{{ post.id }}">{{ post.title }}</h3>
         {% endif %}
-        <p class="fo-post-text">{{ post.body }}</p>
+        <p class="fo-post-text" data-post-content="{{ post.id }}">{{ post.body }}</p>
+
+        {# ─── Translation result (hidden by default) ─── #}
+        <div class="fo-post-translation" data-translation-result="{{ post.id }}" style="display: none; margin-top: 8px; padding: 10px 12px; background: var(--color-primary-50, #EFF6FF); border-left: 3px solid var(--color-primary, #3B82F6); border-radius: 0 6px 6px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 11px; color: var(--color-primary, #3B82F6); font-weight: 600;">🌐 Traduction</span>
+                <button type="button" data-translation-close="{{ post.id }}" style="background: none; border: none; cursor: pointer; color: var(--color-gray-400, #9CA3AF); font-size: 14px; padding: 0; line-height: 1;">✕</button>
+            </div>
+            <h4 data-translation-title="{{ post.id }}" style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 600; color: var(--color-gray-900, #0f172a); display: none;"></h4>
+            <p data-translation-text="{{ post.id }}" style="margin: 0; font-size: 0.9rem; color: var(--color-gray-800, #1e293b);"></p>
+        </div>
         {% if post.attachment_url %}
             {% if post.post_type == 'file' %}
         <a href="{{ post.attachment_url }}" target="_blank" class="fo-post-attachment" download>
@@ -83,6 +93,27 @@
             </svg>
             {% endfor %}
             <span class="text-xs text-muted ml-1" data-avg-rating="{{ post.id }}">{{ post.avg_rating|number_format(1) }}</span>
+        </div>
+
+        {# ─── Translate button ─── #}
+        <div class="fo-translate-wrapper" style="margin-left: auto; position: relative;">
+            <button class="fo-post-action-btn" data-translate-toggle="{{ post.id }}" title="Traduire ce post">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                </svg>
+            </button>
+            <div class="fo-translate-dropdown" data-translate-dropdown="{{ post.id }}" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--color-white, #fff); border: 1px solid var(--color-gray-200, #e5e7eb); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px; z-index: 10; min-width: 140px;">
+                <div style="font-size: 11px; color: var(--color-gray-500, #6B7280); font-weight: 600; padding: 4px 8px; margin-bottom: 4px;">Traduire en :</div>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="fr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-fr" style="flex-shrink: 0;"></span> Français</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="en" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-gb" style="flex-shrink: 0;"></span> English</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="es" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-es" style="flex-shrink: 0;"></span> Español</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="de" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-de" style="flex-shrink: 0;"></span> Deutsch</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="ar" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-sa" style="flex-shrink: 0;"></span> العربية</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="it" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-it" style="flex-shrink: 0;"></span> Italiano</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="pt" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-pt" style="flex-shrink: 0;"></span> Português</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="tr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-tr" style="flex-shrink: 0;"></span> Türkçe</button>
+                <button type="button" class="fo-translate-lang-btn" data-translate-post="{{ post.id }}" data-lang="zh" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 6px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 13px; color: var(--color-gray-700, #374151);"><span class="fi fi-cn" style="flex-shrink: 0;"></span> 中文</button>
+            </div>
         </div>
     </div>
 

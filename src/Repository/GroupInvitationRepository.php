@@ -33,6 +33,20 @@ class GroupInvitationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find a valid invitation by token
+     */
+    public function findValidByToken(string $token): ?GroupInvitation
+    {
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.token = :token')
+            ->andWhere('i.status = :status')
+            ->setParameter('token', $token)
+            ->setParameter('status', 'pending')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
      * Find pending invitations for a given email
      */
     public function findPendingByEmail(string $email): array
@@ -81,10 +95,8 @@ class GroupInvitationRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('i')
             ->andWhere('LOWER(i.email) = LOWER(:email)')
             ->andWhere('i.status = :status')
-            ->setParameters([
-                'email' => $user->getEmail(),
-                'status' => 'pending',
-            ])
+            ->setParameter('email', $user->getEmail())
+            ->setParameter('status', 'pending')
             ->orderBy('i.invitedAt', 'DESC')
             ->getQuery()
             ->getResult();

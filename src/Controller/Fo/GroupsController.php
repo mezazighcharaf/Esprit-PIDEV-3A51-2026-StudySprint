@@ -24,8 +24,10 @@ use App\Service\GroupInputValidator;
 use App\Service\GroupInvitationService;
 use App\Service\GroupRoleChecker;
 use App\Service\GroupService;
+use App\Service\InvitationMailer;
 use App\Service\PostInteractionService;
 use App\Service\PostService;
+use App\Service\TranslationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,6 +65,7 @@ class GroupsController extends AbstractController
         private GroupInputValidator $inputValidator,
         private ContentSanitizer $contentSanitizer,
         private AvatarService $avatarService,
+        private TranslationService $translationService,
     ) {}
 
     // ==================== HELPER METHODS ====================
@@ -89,6 +92,18 @@ class GroupsController extends AbstractController
     private function successResponse(array $data = [], string $message = ''): JsonResponse
     {
         return $this->json(array_merge(['success' => true, 'message' => $message], $data));
+    }
+
+    /**
+     * Extract form errors as an array of strings
+     */
+    private function getFormErrors(\Symfony\Component\Form\FormInterface $form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+        return $errors;
     }
 
     // ==================== PUBLIC ROUTES ====================
@@ -640,6 +655,33 @@ class GroupsController extends AbstractController
         try {
             $this->invitationService->cancelInvitation($invitation, $user);
             $this->addFlash('success', 'Invitation annulée');
+        } catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_groups');
+    }
+
+    /**
+     * Accept an invitation via email link or QR code (token-based)
+     */
+    #[Route('/app/invitation/{token}', name: 'app_invitation_accept_token')]
+    public function acceptByToken(string $token, Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            // Store the token URL so user can be redirected after login
+            $request->getSession()->set('_security.main.target_path',
+                $this->generateUrl('app_invitation_accept_token', ['token' => $token])
+            );
+            $this->addFlash('info', 'Veuillez vous connecter pour accepter l\'invitation.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        try {
+            $this->invitationService->acceptInvitationByToken($token, $user);
+            $this->addFlash('success', 'Invitation acceptée, vous avez rejoint le groupe !');
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
         }
@@ -1336,6 +1378,61 @@ class GroupsController extends AbstractController
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), Response::HTTP_FORBIDDEN);
         }
+    }
+
+    // ==================== TRANSLATION API ====================
+
+    /**
+     * API: Translate a post's text content via Lingva Translate (external API)
+     */
+    #[Route('/app/api/translate', name: 'app_api_translate', methods: ['POST'])]
+    public function translatePost(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        $text = $data['text'] ?? '';
+        $targetLang = $data['target'] ?? 'fr';
+        $sourceLang = $data['source'] ?? 'auto';
+
+        if (empty(trim($text))) {
+            return $this->errorResponse('Texte vide');
+        }
+
+        // Validate target language
+        $supportedLangs = array_keys($this->translationService->getSupportedLanguages());
+        if (!in_array($targetLang, $supportedLangs, true)) {
+            return $this->errorResponse('Langue cible non supportée');
+        }
+
+        $translation = $this->translationService->translate($text, $targetLang, $sourceLang);
+
+        if ($translation === null) {
+            return $this->errorResponse('Échec de la traduction. Veuillez réessayer.', Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        return $this->json([
+            'success' => true,
+            'translation' => $translation,
+            'source' => $sourceLang,
+            'target' => $targetLang,
+        ]);
+    }
+
+    /**
+     * API: Get supported translation languages
+     */
+    #[Route('/app/api/translate/languages', name: 'app_api_translate_languages', methods: ['GET'])]
+    public function getTranslationLanguages(): JsonResponse
+    {
+        return $this->json([
+            'languages' => $this->translationService->getSupportedLanguages(),
+        ]);
     }
 }
 

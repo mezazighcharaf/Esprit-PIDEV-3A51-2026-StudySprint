@@ -1344,10 +1344,39 @@
                         <span class="fo-comment-author">${comment.author.name}</span>
                         <span class="fo-comment-date">${comment.timeAgo}</span>
                     </div>
-                    <div class="fo-comment-text">${this.escapeHtml(comment.body)}</div>
+                    <div class="fo-comment-text" data-comment-content="${comment.id}">${this.escapeHtml(comment.body)}</div>
+
+                    <div class="fo-comment-translation" data-comment-translation-result="${comment.id}" style="display: none; margin-top: 6px; padding: 8px 10px; background: var(--color-primary-50, #EFF6FF); border-left: 3px solid var(--color-primary, #3B82F6); border-radius: 0 6px 6px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                            <span style="font-size: 10px; color: var(--color-primary, #3B82F6); font-weight: 600;">🌐 Traduction</span>
+                            <button type="button" data-comment-translation-close="${comment.id}" style="background: none; border: none; cursor: pointer; color: var(--color-gray-400, #9CA3AF); font-size: 12px; padding: 0; line-height: 1;">✕</button>
+                        </div>
+                        <p data-comment-translation-text="${comment.id}" style="margin: 0; font-size: 0.85rem; color: var(--color-gray-800, #1e293b);"></p>
+                    </div>
+
                     <div class="fo-comment-actions">
                         <button class="fo-comment-action" data-reply-to="${comment.id}">Répondre</button>
                         ${comment.canDelete ? `<button class="fo-comment-action delete" data-delete-comment="${comment.id}" data-delete-token="${comment.deleteToken || ''}">Supprimer</button>` : ''}
+                        <div class="fo-comment-translate-wrapper" style="position: relative; display: inline-block; margin-left: 4px;">
+                            <button type="button" class="fo-comment-action" data-translate-comment-toggle="${comment.id}" title="Traduire">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="vertical-align: middle; margin-right: 2px;">
+                                    <path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                                </svg>
+                                Traduire
+                            </button>
+                            <div class="fo-translate-dropdown" data-translate-comment-dropdown="${comment.id}" style="display: none; position: absolute; left: 0; bottom: 100%; margin-bottom: 4px; background: var(--color-white, #fff); border: 1px solid var(--color-gray-200, #e5e7eb); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px; z-index: 20; min-width: 140px;">
+                                <div style="font-size: 11px; color: var(--color-gray-500, #6B7280); font-weight: 600; padding: 4px 8px; margin-bottom: 4px;">Traduire en :</div>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="fr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-fr" style="flex-shrink: 0;"></span> Français</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="en" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-gb" style="flex-shrink: 0;"></span> English</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="es" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-es" style="flex-shrink: 0;"></span> Español</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="de" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-de" style="flex-shrink: 0;"></span> Deutsch</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="ar" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-sa" style="flex-shrink: 0;"></span> العربية</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="it" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-it" style="flex-shrink: 0;"></span> Italiano</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="pt" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-pt" style="flex-shrink: 0;"></span> Português</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="tr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-tr" style="flex-shrink: 0;"></span> Türkçe</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="zh" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-cn" style="flex-shrink: 0;"></span> 中文</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
