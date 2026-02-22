@@ -32,7 +32,7 @@
                     {{ group.posts|length }} post{{ group.posts|length > 1 ? 's' : '' }}
                 </span>
             </div>
-            <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-primary btn-sm">
+            <a href="{{ path('app_group_detail', {id: group.id}) }}" class="btn btn-primary btn-sm">
                 Voir le groupe
             </a>
         </div>

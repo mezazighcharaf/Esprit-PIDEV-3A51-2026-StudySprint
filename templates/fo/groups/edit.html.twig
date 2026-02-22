@@ -3,7 +3,7 @@
 
 {% block content %}
 <div style="margin-bottom: 1.5rem;">
-    <a href="{{ path('fo_groups_show', {id: group.id}) }}" style="color: #6366f1; text-decoration: none; font-size: 14px;">
+    <a href="{{ path('app_group_detail', {id: group.id}) }}" style="color: #6366f1; text-decoration: none; font-size: 14px;">
         ← Retour au groupe
     </a>
 </div>
@@ -35,7 +35,7 @@
             </div>
 
             <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-ghost">Annuler</a>
+                <a href="{{ path('app_group_detail', {id: group.id}) }}" class="btn btn-ghost">Annuler</a>
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
             </div>
         </div>

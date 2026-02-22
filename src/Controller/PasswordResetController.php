@@ -171,7 +171,7 @@ class PasswordResetController extends AbstractController
 
             // Reset password
             $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->newPassword);
-            $user->setMotDePasse($hashedPassword);
+            $user->setPassword($hashedPassword);
             $user->setResetToken(null);
             $user->setResetTokenExpiresAt(null);
 

@@ -73,7 +73,7 @@
                         <td>{{ group.posts }}</td>
                         <td class="text-muted">{{ group.created_at }}</td>
                         <td>
-                            <a href="{{ path('fo_groups_show', {id: group.id}) }}" class="btn btn-ghost btn-sm" target="_blank">Voir</a>
+                            <a href="{{ path('app_group_detail', {id: group.id}) }}" class="btn btn-ghost btn-sm" target="_blank">Voir</a>
                         </td>
                     </tr>
                     {% else %}

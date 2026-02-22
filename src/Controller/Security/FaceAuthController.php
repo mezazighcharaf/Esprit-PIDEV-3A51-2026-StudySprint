@@ -84,7 +84,7 @@ class FaceAuthController extends AbstractController
 
         return $this->json([
             'success' => true,
-            'targetUrl' => $this->generateUrl('app_post_login')
+            'targetUrl' => $this->generateUrl('app_groups')
         ]);
     }
 }
