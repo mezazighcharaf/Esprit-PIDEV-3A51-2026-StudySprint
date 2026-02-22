@@ -58,10 +58,20 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Country]
     private ?string $pays = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Regex(
+        pattern: "/^(\+?\d{1,4})?\d{8,15}$/",
+        message: "Format de numéro de téléphone invalide"
+    )]
+    private ?string $telephone = null;
+
     #[ORM\Column(nullable: true)]
     #[Assert\PositiveOrZero]
     #[Assert\NotBlank(groups: ['professor'], message: "Les années d'expérience sont obligatoires")]
     private ?int $anneesExperience = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
 
 
     public function __construct()
@@ -241,6 +251,17 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
     public function getAnneesExperience(): ?int
     {
         return $this->anneesExperience;
@@ -262,5 +283,16 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
         $prenom = $this->prenom ? strtoupper(substr($this->prenom, 0, 1)) : '';
         $nom = $this->nom ? strtoupper(substr($this->nom, 0, 1)) : '';
         return $prenom . $nom;
+    }
+
+    public function getFaceDescriptor(): ?array
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?array $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
     }
 }

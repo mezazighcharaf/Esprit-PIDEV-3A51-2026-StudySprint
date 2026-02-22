@@ -47,6 +47,12 @@
         </div>
 
         <div class="form-group">
+            {{ form_label(registrationForm.telephone) }}
+            {{ form_widget(registrationForm.telephone, {'attr': {'class': 'form-control', 'placeholder': '+216...'}}) }}
+            {{ form_errors(registrationForm.telephone) }}
+        </div>
+
+        <div class="form-group">
             {{ form_label(registrationForm.motDePasse) }}
             {{ form_widget(registrationForm.motDePasse, {'attr': {'class': 'form-control', 'placeholder': '••••••••'}}) }}
             {{ form_errors(registrationForm.motDePasse) }}
@@ -58,46 +64,53 @@
             {{ form_errors(registrationForm.pays) }}
         </div>
 
-        {# Student Fields #}
-        <div id="student-fields" style="display:none; border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
-            <h5 style="margin-bottom: 1rem; color: var(--color-primary); font-size: 1rem;">Informations Étudiant</h5>
+        {# Common Academic Fields (Age, Sexe, Etablissement) - Hidden by default #}
+        <div id="common-academic-fields" style="display:none; border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
             <div class="grid grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group">
                     {{ form_label(registrationForm.age) }}
                     {{ form_widget(registrationForm.age, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(registrationForm.age) }}
                 </div>
                 <div class="form-group">
                     {{ form_label(registrationForm.sexe) }}
                     {{ form_widget(registrationForm.sexe, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(registrationForm.sexe) }}
                 </div>
             </div>
-            
-            {# Pays moved to common area #}
 
             <div class="form-group">
                 {{ form_label(registrationForm.etablissement) }}
                 {{ form_widget(registrationForm.etablissement, {'attr': {'class': 'form-select', 'disabled': 'disabled'}}) }}
-            </div>
-            <div class="form-group">
-                {{ form_label(registrationForm.niveau) }}
-                {{ form_widget(registrationForm.niveau, {'attr': {'class': 'form-select', 'disabled': 'disabled'}}) }}
+                {{ form_errors(registrationForm.etablissement) }}
             </div>
         </div>
 
-        {# Professor Fields #}
-        <div id="professor-fields" style="display:none; border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
-            <h5 style="margin-bottom: 1rem; color: var(--color-primary); font-size: 1rem;">Informations Professeur</h5>
+        {# Student Specific Fields #}
+        <div id="student-fields" style="display:none;">
+            <div class="form-group">
+                {{ form_label(registrationForm.niveau) }}
+                {{ form_widget(registrationForm.niveau, {'attr': {'class': 'form-select', 'disabled': 'disabled'}}) }}
+                {{ form_errors(registrationForm.niveau) }}
+            </div>
+        </div>
+
+        {# Professor Specific Fields #}
+        <div id="professor-fields" style="display:none;">
             <div class="form-group">
                 {{ form_label(registrationForm.specialite) }}
                 {{ form_widget(registrationForm.specialite, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(registrationForm.specialite) }}
             </div>
             <div class="form-group">
                 {{ form_label(registrationForm.niveauEnseignement) }}
                 {{ form_widget(registrationForm.niveauEnseignement, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(registrationForm.niveauEnseignement) }}
             </div>
             <div class="form-group">
                 {{ form_label(registrationForm.anneesExperience) }}
                 {{ form_widget(registrationForm.anneesExperience, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(registrationForm.anneesExperience) }}
             </div>
             <div class="form-group">
                 {{ form_label(registrationForm.etablissementProfesseur) }}
@@ -126,17 +139,22 @@
         const schoolSelect = document.getElementById('registration_etablissement');
         const levelSelect = document.getElementById('registration_niveau');
 
+        const commonAcademicFields = document.getElementById('common-academic-fields');
+
         // Toggle Fields based on Role
         function toggleFields() {
             let selectedRole = document.querySelector('input[name="registration[role]"]:checked')?.value;
             
             if (selectedRole === 'student') {
+                commonAcademicFields.style.display = 'block';
                 studentFields.style.display = 'block';
                 professorFields.style.display = 'none';
             } else if (selectedRole === 'professor') {
+                commonAcademicFields.style.display = 'block';
                 studentFields.style.display = 'none';
                 professorFields.style.display = 'block';
             } else {
+                commonAcademicFields.style.display = 'none';
                 studentFields.style.display = 'none';
                 professorFields.style.display = 'none';
             }
@@ -158,19 +176,21 @@
                 return;
             }
 
-            // Fetch Schools
+            // Fetch Schools (used by both Student and Professor)
             fetch(`/api/location/schools/${countryCode}`)
                 .then(response => response.json())
                 .then(data => {
                     updateSelect(schoolSelect, data);
                 });
 
-            // Fetch Levels
-            fetch(`/api/location/levels/${countryCode}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateSelect(levelSelect, data);
-                });
+            // Fetch Levels (only for students, but harmless if fetch runs)
+            if (levelSelect) {
+                fetch(`/api/location/levels/${countryCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateSelect(levelSelect, data);
+                    });
+            }
         });
 
         function updateSelect(selectElement, items) {

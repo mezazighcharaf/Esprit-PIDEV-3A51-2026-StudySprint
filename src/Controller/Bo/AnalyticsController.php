@@ -57,6 +57,8 @@ class AnalyticsController extends AbstractController
                 ],
                 'countries' => $countryStats,
                 'professor_experience' => $profExperienceStats,
+                'professor_hierarchy' => $this->userRepository->countProfessorsByCountryAndEstablishment(),
+                'student_hierarchy' => $this->userRepository->countStudentsByCountryAndEstablishment(),
                 'user_kpis' => $userKpis,
             ]
         ];

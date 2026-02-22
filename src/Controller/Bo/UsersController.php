@@ -4,9 +4,12 @@ namespace App\Controller\Bo;
 
 use App\Repository\UserRepository;
 use App\Service\Mock\BoMockDataProvider;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -17,59 +20,76 @@ class UsersController extends AbstractController
         private BoMockDataProvider $mockProvider,
         private UserRepository $userRepository,
         private \Doctrine\ORM\EntityManagerInterface $entityManager,
-        private \Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface $passwordHasher
+        private \Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface $passwordHasher,
+        private \Symfony\Component\Mailer\MailerInterface $mailer
     ) {}
 
     #[Route('/admin/utilisateurs', name: 'admin_users')]
     public function index(Request $request): Response
     {
         $dto = new \App\Dto\BoUserCreateDTO();
-        $form = $this->createForm(\App\Form\Bo\UserCreateType::class, $dto);
+        $form = $this->createForm(\App\Form\Bo\UserCreateType::class, $dto, [
+            'validation_groups' => function($form) {
+                $data = $form->getData();
+                $groups = ['Default', 'create'];
+                if ($data->role === 'ROLE_STUDENT') $groups[] = 'student';
+                if ($data->role === 'ROLE_PROFESSOR') $groups[] = 'professor';
+                return $groups;
+            }
+        ]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Validate password is provided for new users
-            if (empty($dto->motDePasse)) {
-                $this->addFlash('danger', 'Le mot de passe est obligatoire lors de la création d\'un utilisateur.');
-            } else {
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
                 // Check if email already exists
                 $existingUser = $this->userRepository->findOneBy(['email' => $dto->email]);
                 if ($existingUser) {
-                    $this->addFlash('danger', 'Cet email est déjà utilisé par un autre utilisateur.');
+                    $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
                 } else {
-                    $user = match ($dto->role) {
-                        'ROLE_ADMIN' => new \App\Entity\Administrator(),
-                        'ROLE_PROFESSOR' => new \App\Entity\Professor(),
-                        default => new \App\Entity\Student(),
-                    };
+                    try {
+                        $user = match ($dto->role) {
+                            'ROLE_ADMIN' => new \App\Entity\Administrator(),
+                            'ROLE_PROFESSOR' => new \App\Entity\Professor(),
+                            default => new \App\Entity\Student(),
+                        };
 
-                    $user->setNom($dto->nom);
-                    $user->setPrenom($dto->prenom);
-                    $user->setEmail($dto->email);
-                    $user->setRole($dto->role); 
-                    $user->setPays($dto->pays ?? 'TN');
+                        $user->setNom($dto->nom);
+                        $user->setPrenom($dto->prenom);
+                        $user->setEmail($dto->email);
+                        $user->setTelephone($dto->telephone);
+                        $user->setRole($dto->role); 
+                        $user->setPays($dto->pays ?? 'TN');
 
-                    if ($user instanceof \App\Entity\Student) {
-                        $user->setAge($dto->age ?? 18);
-                        $user->setSexe($dto->sexe ?? 'H');
-                        $user->setEtablissement($dto->etablissement ?? 'N/A');
-                        $user->setNiveau($dto->niveau ?? 'N/A');
-                    } elseif ($user instanceof \App\Entity\Professor) {
-                        $user->setSpecialite($dto->specialite ?? 'N/A');
-                        $user->setNiveauEnseignement($dto->niveauEnseignement ?? 'N/A');
-                        $user->setAnneesExperience($dto->anneesExperience ?? 0);
-                        $user->setEtablissement($dto->etablissementProfesseur ?? 'N/A');
+                        if ($user instanceof \App\Entity\Student) {
+                            $user->setAge($dto->age);
+                            $user->setSexe($dto->sexe);
+                            $user->setEtablissement($dto->etablissement);
+                            $user->setNiveau($dto->niveau);
+                        } elseif ($user instanceof \App\Entity\Professor) {
+                            $user->setAge($dto->age);
+                            $user->setSexe($dto->sexe);
+                            $user->setSpecialite($dto->specialite);
+                            $user->setNiveauEnseignement($dto->niveauEnseignement);
+                            $user->setAnneesExperience($dto->anneesExperience);
+                            $user->setEtablissement($dto->etablissementProfesseur);
+                        }
+
+                        $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->motDePasse);
+                        $user->setMotDePasse($hashedPassword);
+                        $user->setStatut('actif');
+
+                        $this->entityManager->persist($user);
+                        $this->entityManager->flush();
+
+                        $this->addFlash('success', 'Utilisateur créé avec succès');
+                        return $this->redirectToRoute('admin_users');
+                    } catch (\Exception $e) {
+                        $this->addFlash('error', 'Erreur lors de l\'enregistrement : ' . $e->getMessage());
                     }
-
-                    $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->motDePasse);
-                    $user->setMotDePasse($hashedPassword);
-                    $user->setStatut('actif');
-
-                    $this->entityManager->persist($user);
-                    $this->entityManager->flush();
-
-                    $this->addFlash('success', 'Utilisateur créé avec succès');
-                    return $this->redirectToRoute('admin_users');
+                }
+            } else {
+                foreach ($form->getErrors(true) as $error) {
+                    $this->addFlash('error', 'Erreur de validation : ' . $error->getMessage());
                 }
             }
         }
@@ -77,35 +97,70 @@ class UsersController extends AbstractController
         $state = $request->query->get('state', 'default');
         
         // Search, Filters & Sorting parameters
-        $query = $request->query->get('q');
-        $role = $request->query->get('role');
-        $status = $request->query->get('status');
-        $sort = $request->query->get('sort', 'dateInscription');
+        $query     = $request->query->get('q');
+        $role      = $request->query->get('role');
+        $status    = $request->query->get('status');
+        $sort      = $request->query->get('sort', 'dateInscription');
         $direction = $request->query->get('direction', 'DESC');
+        $page      = max(1, (int) $request->query->get('page', 1));
+        $perPage   = (int) $request->query->get('perPage', 25);
 
-        $users = $this->userRepository->findBySearchQuery($query, $role, $status, $sort, $direction);
+        $pagination = $this->userRepository->findPaginated($query, $role, $status, $sort, $direction, $page, $perPage);
         
         $mockData = $this->mockProvider->getUsersData();
-        $mockData['users'] = $users; 
+        $mockData['users'] = $pagination['users'];
         
         $userKpis = $this->userRepository->getUsersKpiData();
         
         $viewModel = [
-            'state' => $state,
-            'data' => $mockData,
-            'users' => $users,
-            'form' => $form->createView(),
-            'user_kpis' => $userKpis,
-            'filters' => [
-                'q' => $query,
-                'role' => $role,
-                'status' => $status,
-                'sort' => $sort,
-                'direction' => $direction
+            'state'      => $state,
+            'data'       => $mockData,
+            'users'      => $pagination['users'],
+            'form'       => $form->createView(),
+            'user_kpis'  => $userKpis,
+            'pagination' => $pagination,
+            'filters'    => [
+                'q'         => $query,
+                'role'      => $role,
+                'status'    => $status,
+                'sort'      => $sort,
+                'direction' => $direction,
+                'page'      => $pagination['page'],
+                'perPage'   => $pagination['perPage'],
             ]
         ];
 
         return $this->render('bo/users.html.twig', $viewModel);
+    }
+
+    #[Route('/admin/utilisateurs/search', name: 'admin_users_search', methods: ['GET'])]
+    public function search(Request $request): Response
+    {
+        $query     = $request->query->get('q');
+        $role      = $request->query->get('role');
+        $status    = $request->query->get('status');
+        $sort      = $request->query->get('sort', 'dateInscription');
+        $direction = $request->query->get('direction', 'DESC');
+        $page      = max(1, (int) $request->query->get('page', 1));
+        $perPage   = (int) $request->query->get('perPage', 25);
+
+        $pagination = $this->userRepository->findPaginated($query, $role, $status, $sort, $direction, $page, $perPage);
+        
+        // Render the table rows partial
+        $html = $this->renderView('bo/_user_table_rows.html.twig', [
+            'users' => $pagination['users']
+        ]);
+
+        return $this->json([
+            'success' => true,
+            'html'    => $html,
+            'count'   => count($pagination['users']),
+            'total'   => $pagination['total'],
+            'pages'   => $pagination['pages'],
+            'page'    => $pagination['page'],
+            'perPage' => $pagination['perPage'],
+            'query'   => $query,
+        ]);
     }
 
     #[Route('/admin/utilisateurs/{id}/modifier', name: 'admin_user_edit', methods: ['GET', 'POST'])]
@@ -114,7 +169,7 @@ class UsersController extends AbstractController
         $user = $this->userRepository->find($id);
 
         if (!$user) {
-            $this->addFlash('danger', 'Utilisateur introuvable.');
+            $this->addFlash('error', 'Utilisateur introuvable.');
             return $this->redirectToRoute('admin_users');
         }
 
@@ -123,6 +178,7 @@ class UsersController extends AbstractController
         $dto->nom = $user->getNom();
         $dto->prenom = $user->getPrenom();
         $dto->email = $user->getEmail();
+        $dto->telephone = $user->getTelephone();
         $dto->role = $user->getRole();
         $dto->pays = method_exists($user, 'getPays') ? $user->getPays() : 'TN';
         $dto->motDePasse = ''; // Don't prefill password
@@ -133,6 +189,8 @@ class UsersController extends AbstractController
             $dto->etablissement = $user->getEtablissement();
             $dto->niveau = $user->getNiveau();
         } elseif ($user instanceof \App\Entity\Professor) {
+            $dto->age = $user->getAge();
+            $dto->sexe = $user->getSexe();
             $dto->specialite = $user->getSpecialite();
             $dto->niveauEnseignement = $user->getNiveauEnseignement();
             $dto->anneesExperience = $user->getAnneesExperience();
@@ -146,7 +204,7 @@ class UsersController extends AbstractController
             // Check if email is already taken by ANOTHER user
             $existingUser = $this->userRepository->findOneBy(['email' => $dto->email]);
             if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                $this->addFlash('danger', 'Cet email est déjà utilisé par un autre utilisateur.');
+                $this->addFlash('error', 'Cet email est déjà utilisé par un autre utilisateur.');
                 return $this->render('bo/user_edit.html.twig', [
                     'form' => $form->createView(),
                     'user' => $user,
@@ -156,6 +214,7 @@ class UsersController extends AbstractController
             $user->setNom($dto->nom);
             $user->setPrenom($dto->prenom);
             $user->setEmail($dto->email);
+            $user->setTelephone($dto->telephone);
             $user->setRole($dto->role);
 
             $user->setPays($dto->pays ?? 'TN');
@@ -167,6 +226,8 @@ class UsersController extends AbstractController
                 $user->setEtablissement($dto->etablissement ?? $user->getEtablissement());
                 $user->setNiveau($dto->niveau ?? $user->getNiveau());
             } elseif ($user instanceof \App\Entity\Professor) {
+                $user->setAge($dto->age ?? $user->getAge());
+                $user->setSexe($dto->sexe ?? $user->getSexe());
                 $user->setSpecialite($dto->specialite ?? $user->getSpecialite());
                 $user->setNiveauEnseignement($dto->niveauEnseignement ?? $user->getNiveauEnseignement());
                 $user->setAnneesExperience($dto->anneesExperience ?? $user->getAnneesExperience());
@@ -197,20 +258,20 @@ class UsersController extends AbstractController
         $user = $this->userRepository->find($id);
 
         if (!$user) {
-            $this->addFlash('danger', 'Utilisateur introuvable.');
+            $this->addFlash('error', 'Utilisateur introuvable.');
             return $this->redirectToRoute('admin_users');
         }
 
         // Prevent deleting yourself
         if ($user->getId() === $this->getUser()->getId()) {
-            $this->addFlash('danger', 'Vous ne pouvez pas supprimer votre propre compte.');
+            $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return $this->redirectToRoute('admin_users');
         }
 
         // CSRF protection
         $token = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('delete_user_' . $id, $token)) {
-            $this->addFlash('danger', 'Token de sécurité invalide.');
+            $this->addFlash('error', 'Token de sécurité invalide.');
             return $this->redirectToRoute('admin_users');
         }
 
@@ -227,14 +288,14 @@ class UsersController extends AbstractController
         $user = $this->userRepository->find($id);
 
         if (!$user) {
-            $this->addFlash('danger', 'Utilisateur introuvable.');
+            $this->addFlash('error', 'Utilisateur introuvable.');
             return $this->redirectToRoute('admin_users');
         }
 
         // CSRF protection
         $token = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('toggle_status_' . $id, $token)) {
-            $this->addFlash('danger', 'Token de sécurité invalide.');
+            $this->addFlash('error', 'Token de sécurité invalide.');
             return $this->redirectToRoute('admin_users');
         }
 
@@ -244,6 +305,23 @@ class UsersController extends AbstractController
         $user->setStatut($newStatus);
 
         $this->entityManager->flush();
+
+        // Send email notification if account was deactivated
+        if ($newStatus === 'inactif') {
+            try {
+                $email = (new \Symfony\Bridge\Twig\Mime\TemplatedEmail())
+                    ->from('noreply@studysprint.com')
+                    ->to($user->getEmail())
+                    ->subject('Votre compte StudySprint a été désactivé')
+                    ->htmlTemplate('emails/account_disabled.html.twig')
+                    ->context(['user' => $user]);
+
+                $this->mailer->send($email);
+            } catch (\Exception $e) {
+                // Log error but don't block the status change
+                $this->addFlash('warning', 'Compte désactivé mais l\'email de notification n\'a pas pu être envoyé.');
+            }
+        }
 
         $statusLabel = $newStatus === 'actif' ? 'activé' : 'désactivé';
         $this->addFlash('success', sprintf('Utilisateur %s avec succès.', $statusLabel));
@@ -257,7 +335,7 @@ class UsersController extends AbstractController
         // CSRF protection
         $token = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('deactivate_inactive', $token)) {
-            $this->addFlash('danger', 'Token de sécurité invalide.');
+            $this->addFlash('error', 'Token de sécurité invalide.');
             return $this->redirectToRoute('admin_users');
         }
 
@@ -289,5 +367,149 @@ class UsersController extends AbstractController
         $this->addFlash('success', sprintf('%d utilisateur(s) désactivé(s) pour inactivité.', count($inactiveUsers)));
         
         return $this->redirectToRoute('admin_users');
+    }
+
+    #[Route('/admin/utilisateurs/bulk-action', name: 'admin_users_bulk_action', methods: ['POST'])]
+    public function bulkAction(Request $request): Response
+    {
+        // CSRF protection
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('bulk_action', $token)) {
+            return $this->json(['success' => false, 'message' => 'Token de sécurité invalide.'], 403);
+        }
+
+        $ids    = $request->request->all('ids');
+        $action = $request->request->get('action');
+
+        if (empty($ids) || !in_array($action, ['activate', 'deactivate', 'delete'], true)) {
+            return $this->json(['success' => false, 'message' => 'Paramètres invalides.'], 400);
+        }
+
+        $count = 0;
+        $currentUser = $this->getUser();
+
+        try {
+            if ($action === 'delete') {
+                foreach ($ids as $id) {
+                    $user = $this->userRepository->find((int) $id);
+                    if ($user && $user->getId() !== $currentUser->getId()) {
+                        $this->entityManager->remove($user);
+                        $count++;
+                    }
+                }
+            } else {
+                $newStatut = $action === 'activate' ? 'actif' : 'inactif';
+                foreach ($ids as $id) {
+                    $user = $this->userRepository->find((int) $id);
+                    if ($user && $user->getId() !== $currentUser->getId()) {
+                        $user->setStatut($newStatut);
+                        $count++;
+                    }
+                }
+            }
+
+            $this->entityManager->flush();
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur technique : ' . $e->getMessage()
+            ], 500);
+        }
+
+        $labels = [
+            'activate'   => 'activé(s)',
+            'deactivate' => 'désactivé(s)',
+            'delete'     => 'supprimé(s)',
+        ];
+        $label = $labels[$action];
+
+        return $this->json([
+            'success' => true,
+            'count'   => $count,
+            'message' => sprintf('%d utilisateur(s) %s avec succès.', $count, $label),
+        ]);
+    }
+
+    #[Route('/admin/utilisateurs/export/csv', name: 'admin_users_export_csv', methods: ['GET'])]
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        $ids   = $request->query->all('ids');
+        $users = $this->resolveExportUsers($ids);
+
+        $response = new StreamedResponse(function () use ($users) {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel compatibility
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['ID', 'Prénom', 'Nom', 'Email', 'Rôle', 'Statut', 'Pays', 'Téléphone', 'Date Inscription'], ';');
+
+            foreach ($users as $user) {
+                fputcsv($handle, [
+                    $user->getId(),
+                    $user->getPrenom(),
+                    $user->getNom(),
+                    $user->getEmail(),
+                    $user->getRole(),
+                    $user->getStatut(),
+                    $user->getPays() ?? '',
+                    $user->getTelephone() ?? '',
+                    $user->getDateInscription()?->format('Y-m-d H:i:s') ?? '',
+                ], ';');
+            }
+            fclose($handle);
+        });
+
+        $filename = 'utilisateurs_' . date('Ymd_His') . '.csv';
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+
+        return $response;
+    }
+
+    #[Route('/admin/utilisateurs/export/pdf', name: 'admin_users_export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request): Response
+    {
+        $ids   = $request->query->all('ids');
+        $users = $this->resolveExportUsers($ids);
+
+        $html = $this->renderView('bo/_export_pdf.html.twig', [
+            'users'      => $users,
+            'exportDate' => new \DateTimeImmutable(),
+        ]);
+
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', false);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        $filename = 'utilisateurs_' . date('Ymd_His') . '.pdf';
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
+    }
+
+    /**
+     * Returns users by IDs (or all non-admin users if no IDs given).
+     *
+     * @param int[]|string[] $ids
+     * @return \App\Entity\User[]
+     */
+    private function resolveExportUsers(array $ids): array
+    {
+        if (!empty($ids)) {
+            $intIds = array_map('intval', $ids);
+            return $this->userRepository->findBy(['id' => $intIds]);
+        }
+        // Export all non-admin users
+        return $this->userRepository->findBySearchQuery(null, null, null, 'dateInscription', 'DESC');
     }
 }

@@ -44,11 +44,13 @@ class RegistrationController extends AbstractController
                 $user->setRole('ROLE_STUDENT');
             } elseif ($dto->role === 'professor') {
                 $user = new Professor();
+                $user->setAge($dto->age);
+                $user->setSexe($dto->sexe);
                 $user->setSpecialite($dto->specialite);
                 $user->setNiveauEnseignement($dto->niveauEnseignement);
                 $user->setAnneesExperience($dto->anneesExperience);
-                $user->setPays($dto->pays ?? 'TN'); // Default to Tunisia if not provided
-                $user->setEtablissement($dto->etablissementProfesseur);
+                $user->setPays($dto->pays ?? 'TN');
+                $user->setEtablissement($dto->etablissement);
                 $user->setRole('ROLE_PROFESSOR');
             }
 
@@ -57,6 +59,7 @@ class RegistrationController extends AbstractController
                 $user->setNom($dto->nom);
                 $user->setPrenom($dto->prenom);
                 $user->setEmail($dto->email);
+                $user->setTelephone($dto->telephone);
                 
                 // Hash Password
                 $user->setMotDePasse(

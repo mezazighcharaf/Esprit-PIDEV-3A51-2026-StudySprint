@@ -78,7 +78,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function countUsersByCountry(): array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $sql = 'SELECT pays as label, COUNT(id) as value FROM user WHERE pays IS NOT NULL GROUP BY pays';
+        $sql = 'SELECT pays as label, COUNT(id) as value FROM user WHERE pays IS NOT NULL AND discr IN ("student", "professor") GROUP BY pays';
         return $conn->executeQuery($sql)->fetchAllAssociative();
     }
 
@@ -98,6 +98,34 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             FROM App\Entity\Professor p
             GROUP BY label'
         )->getResult();
+    }
+
+    /**
+     * Group professors by country AND establishment
+     */
+    public function countProfessorsByCountryAndEstablishment(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT pays, etablissement, COUNT(id) as count 
+                FROM user 
+                WHERE discr = "professor" AND pays IS NOT NULL AND etablissement IS NOT NULL 
+                GROUP BY pays, etablissement
+                ORDER BY pays ASC, count DESC';
+        return $conn->executeQuery($sql)->fetchAllAssociative();
+    }
+
+    /**
+     * Group students by country AND establishment
+     */
+    public function countStudentsByCountryAndEstablishment(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT pays, etablissement, COUNT(id) as count 
+                FROM user 
+                WHERE discr = "student" AND pays IS NOT NULL AND etablissement IS NOT NULL 
+                GROUP BY pays, etablissement
+                ORDER BY pays ASC, count DESC';
+        return $conn->executeQuery($sql)->fetchAllAssociative();
     }
 
     /**
@@ -136,6 +164,72 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Search, filter and paginate users.
+     *
+     * @return array{users: User[], total: int, pages: int, page: int, perPage: int}
+     */
+    public function findPaginated(
+        ?string $query = null,
+        ?string $role = null,
+        ?string $status = null,
+        ?string $sortBy = 'dateInscription',
+        ?string $sortDirection = 'DESC',
+        int $page = 1,
+        int $perPage = 25
+    ): array {
+        $allowedSortFields = [
+            'dateInscription' => 'u.dateInscription',
+            'experience'      => 'u.anneesExperience',
+        ];
+        $direction = strtoupper($sortDirection) === 'ASC' ? 'ASC' : 'DESC';
+        $orderField = isset($allowedSortFields[$sortBy]) ? $allowedSortFields[$sortBy] : 'u.dateInscription';
+
+        // ── COUNT query ──────────────────────────────────────────────
+        $countQb = $this->createQueryBuilder('u')->select('COUNT(u.id)');
+        if ($query) {
+            $countQb->andWhere('u.email LIKE :q OR u.nom LIKE :q OR u.prenom LIKE :q')
+                    ->setParameter('q', '%' . $query . '%');
+        }
+        if ($role) {
+            $countQb->andWhere('u.role = :role')->setParameter('role', $role);
+        }
+        if ($status) {
+            $countQb->andWhere('u.statut = :status')->setParameter('status', $status);
+        }
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
+
+        // ── DATA query ───────────────────────────────────────────────
+        $page    = max(1, $page);
+        $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
+        $pages   = max(1, (int) ceil($total / $perPage));
+        $page    = min($page, $pages);
+        $offset  = ($page - 1) * $perPage;
+
+        $dataQb = $this->createQueryBuilder('u');
+        if ($query) {
+            $dataQb->andWhere('u.email LIKE :q OR u.nom LIKE :q OR u.prenom LIKE :q')
+                   ->setParameter('q', '%' . $query . '%');
+        }
+        if ($role) {
+            $dataQb->andWhere('u.role = :role')->setParameter('role', $role);
+        }
+        if ($status) {
+            $dataQb->andWhere('u.statut = :status')->setParameter('status', $status);
+        }
+        $dataQb->orderBy($orderField, $direction)
+               ->setMaxResults($perPage)
+               ->setFirstResult($offset);
+
+        return [
+            'users'   => $dataQb->getQuery()->getResult(),
+            'total'   => $total,
+            'pages'   => $pages,
+            'page'    => $page,
+            'perPage' => $perPage,
+        ];
     }
 
     /**

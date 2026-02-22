@@ -40,6 +40,11 @@ class ProfileType extends AbstractType
                 'label' => 'Email',
                 'attr' => ['class' => 'form-control']
             ])
+            ->add('telephone', TextType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => '+216...']
+            ])
             ->add('pays', CountryType::class, [
                 'label' => 'Pays',
                 'placeholder' => 'Choisir un pays',
@@ -47,7 +52,7 @@ class ProfileType extends AbstractType
                 'attr' => ['class' => 'form-select']
             ]);
 
-        if ($user instanceof Student) {
+        if ($user instanceof Student || $user instanceof Professor) {
             $builder
                 ->add('age', IntegerType::class, [
                     'label' => 'Âge',
@@ -59,61 +64,58 @@ class ProfileType extends AbstractType
                     'attr' => ['class' => 'form-select']
                 ])
                 ->add('etablissement', ChoiceType::class, [
-                    'label' => 'Établissement',
+                    'label' => 'Établissement / Faculté',
                     'choices' => [], // Dynamic
                     'required' => false,
                     'attr' => ['class' => 'form-select']
-                ])
-                ->add('niveau', ChoiceType::class, [
+                ]);
+
+            if ($user instanceof Student) {
+                $builder->add('niveau', ChoiceType::class, [
                     'label' => 'Niveau d\'études',
                     'choices' => [], // Dynamic
                     'required' => false,
                     'attr' => ['class' => 'form-select']
                 ]);
-        } elseif ($user instanceof Professor) {
-            $builder
-                ->add('specialite', ChoiceType::class, [
-                    'label' => 'Spécialité',
-                    'choices' => $this->professorDataProvider->getSpecialites(),
-                    'placeholder' => 'Choisir une spécialité',
-                    'attr' => ['class' => 'form-select']
-                ])
-                ->add('niveauEnseignement', ChoiceType::class, [
-                    'label' => 'Niveau enseigné',
-                    'choices' => $this->professorDataProvider->getNiveauxEnseignement(),
-                    'placeholder' => 'Choisir un niveau',
-                    'attr' => ['class' => 'form-select']
-                ])
-                ->add('anneesExperience', IntegerType::class, [
-                    'label' => 'Années d\'expérience',
-                    'attr' => ['class' => 'form-control']
-                ])
-                ->add('etablissementProfesseur', TextType::class, [
-                    'label' => 'Établissement',
-                    'attr' => ['class' => 'form-control']
-                ]);
+            } else {
+                $builder
+                    ->add('specialite', ChoiceType::class, [
+                        'label' => 'Spécialité',
+                        'choices' => $this->professorDataProvider->getSpecialites(),
+                        'placeholder' => 'Choisir une spécialité',
+                        'attr' => ['class' => 'form-select']
+                    ])
+                    ->add('niveauEnseignement', ChoiceType::class, [
+                        'label' => 'Niveau enseigné',
+                        'choices' => $this->professorDataProvider->getNiveauxEnseignement(),
+                        'placeholder' => 'Choisir un niveau',
+                        'attr' => ['class' => 'form-select']
+                    ])
+                    ->add('anneesExperience', IntegerType::class, [
+                        'label' => 'Années d\'expérience',
+                        'attr' => ['class' => 'form-control']
+                    ]);
+            }
         }
 
         // Handle dynamic choices submission
-        $builder->addEventListener(\Symfony\Component\Form\FormEvents::PRE_SUBMIT, function (\Symfony\Component\Form\FormEvent $event) use ($user) {
+        $builder->addEventListener(\Symfony\Component\Form\FormEvents::PRE_SUBMIT, function (\Symfony\Component\Form\FormEvent $event) {
             $data = $event->getData();
             $form = $event->getForm();
 
-            if ($user instanceof Student) {
-                if (isset($data['etablissement']) && $data['etablissement']) {
-                    $form->add('etablissement', ChoiceType::class, [
-                        'choices' => [$data['etablissement'] => $data['etablissement']],
-                        'required' => false,
-                        'attr' => ['class' => 'form-select']
-                    ]);
-                }
-                if (isset($data['niveau']) && $data['niveau']) {
-                    $form->add('niveau', ChoiceType::class, [
-                        'choices' => [$data['niveau'] => $data['niveau']],
-                        'required' => false,
-                        'attr' => ['class' => 'form-select']
-                    ]);
-                }
+            if (isset($data['etablissement']) && $data['etablissement']) {
+                $form->add('etablissement', ChoiceType::class, [
+                    'choices' => [$data['etablissement'] => $data['etablissement']],
+                    'required' => false,
+                    'attr' => ['class' => 'form-select']
+                ]);
+            }
+            if (isset($data['niveau']) && $data['niveau']) {
+                $form->add('niveau', ChoiceType::class, [
+                    'choices' => [$data['niveau'] => $data['niveau']],
+                    'required' => false,
+                    'attr' => ['class' => 'form-select']
+                ]);
             }
         });
     }

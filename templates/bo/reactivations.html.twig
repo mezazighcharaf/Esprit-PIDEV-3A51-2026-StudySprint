@@ -1,0 +1,356 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Demandes de réactivation - StudySprint BO{% endblock %}
+{% block breadcrumb %}Utilisateurs / Demandes de réactivation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .table-container {
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            background: white;
+            margin-top: 20px;
+        }
+
+        .bo-table thead th {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 20px 24px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            font-weight: 800;
+            border: none;
+        }
+
+        .bo-table tbody td {
+            padding: 20px 24px;
+            font-weight: 500;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .bo-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+        .bo-table tbody tr:hover { background-color: #eff6ff !important; }
+
+        .cell-user-avatar {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 16px !important;
+            font-size: 1.1rem !important;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .btn-approve {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #dcfce7;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-approve:hover {
+            background: #16a34a;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject-light {
+            background: #fff1f2;
+            color: #e11d48;
+            border: 1px solid #fecdd3;
+            font-weight: 800;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-reject-light:hover {
+            background: #e11d48;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Refinement */
+        .modal-card {
+            border-radius: 24px !important;
+            border: none !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2) !important;
+            overflow: hidden;
+        }
+
+        /* Modern Confirmation Modal Styles */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .confirm-modal.show {
+            opacity: 1;
+        }
+
+        .confirm-modal-content {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 95%;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .confirm-modal.show .confirm-modal-content {
+            transform: scale(1);
+        }
+
+        .confirm-modal-header {
+            padding: 24px 28px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .confirm-modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .confirm-modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .confirm-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .confirm-modal-body {
+            padding: 28px;
+        }
+
+        .confirm-modal-message {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #475569;
+        }
+
+        .confirm-modal-footer {
+            padding: 20px 28px;
+            background: #f8fafc;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+
+        .modal-btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Demandes de réactivation</h1>
+    </div>
+
+    <div class="table-container">
+        <table class="bo-table">
+            <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Date de demande</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>
+                            <div class="cell-user" style="display: flex; align-items: center; gap: 16px;">
+                                <div class="cell-user-avatar" style="background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                    {{ request.user.prenom|first|upper }}{{ request.user.nom|first|upper }}
+                                </div>
+                                <div class="cell-user-info">
+                                    <div class="cell-user-name" style="font-weight: 800; color: #1e293b;">{{ request.user.prenom }} {{ request.user.nom }}</div>
+                                    <div class="cell-user-email" style="font-size: 0.85rem; color: #64748b;">{{ request.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-weight: 600; color: #475569;">{{ request.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <div style="display: flex; gap: 12px;">
+                                <form id="approve-form-{{ request.id }}" action="{{ path('admin_reactivation_approve', {id: request.id}) }}" method="post" style="display: none;">
+                                </form>
+                                <button type="button" class="btn-approve" onclick="showApproveModal({{ request.id }}, '{{ request.user.prenom }} {{ request.user.nom }}')">Approuver</button>
+                                <button type="button" class="btn-reject-light" onclick="showRejectModal({{ request.id }}, '{{ request.user.prenom }} {{ request.user.nom }}')">Rejeter</button>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center p-8" style="color: #94a3b8; font-weight: 600;">Aucune demande en attente.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Modern Approve Modal #}
+    <div id="approveModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header">
+                <h3 class="confirm-modal-title">Confirmer la réactivation</h3>
+                <button type="button" class="confirm-modal-close" onclick="closeModal('approveModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="confirm-modal-body text-center">
+                <div style="width: 64px; height: 64px; background: #f0fdf4; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="32" height="32"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <p class="confirm-modal-message">Êtes-vous sûr de vouloir réactiver le compte de <strong id="approveUserName"></strong> ?</p>
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('approveModal')">Annuler</button>
+                <button type="button" id="confirmApproveBtn" class="modal-btn modal-btn-primary">Réactiver le compte</button>
+            </div>
+        </div>
+    </div>
+
+    {# Modern Reject Modal #}
+    <div id="rejectModal" class="confirm-modal">
+        <div class="confirm-modal-content">
+            <div class="confirm-modal-header" style="background: #be123c;">
+                <h3 class="confirm-modal-title">Rejeter la demande</h3>
+                <button type="button" class="confirm-modal-close" onclick="closeModal('rejectModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="rejectForm" method="post">
+                <div class="confirm-modal-body">
+                    <p class="confirm-modal-message" style="margin-bottom: 20px;">Voulez-vous rejeter la demande de <strong id="rejectUserName"></strong> ?</p>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 700; color: #334155; font-size: 0.9rem;">Motif du rejet (optionnel)</label>
+                        <textarea name="comment" class="form-control" rows="4" placeholder="Indiquez la raison pour laquelle le compte n'est pas réactivé..." style="border-radius: 12px; border: 2px solid #f1f5f9; padding: 12px; font-size: 0.95rem; width: 100%; box-sizing: border-box;"></textarea>
+                    </div>
+                </div>
+                <div class="confirm-modal-footer">
+                    <button type="button" class="modal-btn modal-btn-secondary" onclick="closeModal('rejectModal')">Annuler</button>
+                    <button type="submit" class="modal-btn modal-btn-danger">Confirmer le rejet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showApproveModal(id, userName) {
+            const modal = document.getElementById('approveModal');
+            document.getElementById('approveUserName').textContent = userName;
+            const confirmBtn = document.getElementById('confirmApproveBtn');
+            
+            confirmBtn.onclick = () => {
+                document.getElementById(`approve-form-${id}`).submit();
+            };
+
+            openModal('approveModal');
+        }
+
+        function showRejectModal(id, userName) {
+            const modal = document.getElementById('rejectModal');
+            document.getElementById('rejectUserName').textContent = userName;
+            const form = document.getElementById('rejectForm');
+            form.action = `/admin/reactivations/${id}/reject`;
+            
+            openModal('rejectModal');
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // Close on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('confirm-modal')) {
+                closeModal(event.target.id);
+            }
+        }
+    </script>
+{% endblock %}

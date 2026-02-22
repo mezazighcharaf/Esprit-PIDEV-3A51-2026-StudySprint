@@ -18,7 +18,7 @@ class PostRating
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: GroupPost::class)]
+    #[ORM\ManyToOne(targetEntity: GroupPost::class, inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?GroupPost $post = null;
 

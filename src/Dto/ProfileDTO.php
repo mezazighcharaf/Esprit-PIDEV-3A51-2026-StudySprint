@@ -16,16 +16,22 @@ class ProfileDTO
     #[Assert\Email(message: "L'email n'est pas valide")]
     public ?string $email = null;
 
+    #[Assert\Regex(
+        pattern: "/^(\+?\d{1,4})?\d{8,15}$/",
+        message: "Format de numéro de téléphone invalide"
+    )]
+    public ?string $telephone = null;
+
     // Student specific
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
-    #[Assert\Range(min: 16, groups: ['student'], minMessage: "age > 15")]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Range(min: 16, groups: ['student', 'professor'], minMessage: "age > 15")]
     public ?int $age = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
-    #[Assert\Choice(choices: ['H', 'F'], groups: ['student'])]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Choice(choices: ['H', 'F'], groups: ['student', 'professor'])]
     public ?string $sexe = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
     public ?string $etablissement = null;
 
     #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
@@ -42,7 +48,6 @@ class ProfileDTO
     #[Assert\PositiveOrZero(groups: ['professor'])]
     public ?int $anneesExperience = null;
 
-    public ?string $etablissementProfesseur = null;
 
     // Common
     #[Assert\NotBlank(message: "obligatoire")]

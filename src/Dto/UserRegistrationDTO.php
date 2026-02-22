@@ -16,10 +16,16 @@ class UserRegistrationDTO
     #[Assert\Email(message: "L'email n'est pas valide")]
     public ?string $email = null;
 
+    #[Assert\Regex(
+        pattern: "/^(\+?\d{1,4})?\d{8,15}$/",
+        message: "Format de numéro de téléphone invalide"
+    )]
+    public ?string $telephone = null;
+
     #[Assert\NotBlank(message: "obligatoire")]
     #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères")]
     #[Assert\Regex(
-        pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/",
+        pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\/\.\-_])[A-Za-z\d@$!%*?&\/\.\-_]{8,}$/",
         message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial"
     )]
     public ?string $motDePasse = null;
@@ -29,19 +35,19 @@ class UserRegistrationDTO
     public ?string $role = null;
 
     // Student fields
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
-    #[Assert\Range(min: 16, groups: ['student'], minMessage: "age > 15")]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Range(min: 16, groups: ['student', 'professor'], minMessage: "age > 15")]
     public ?int $age = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
-    #[Assert\Choice(choices: ['H', 'F'], groups: ['student'])]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
+    #[Assert\Choice(choices: ['H', 'F'], groups: ['student', 'professor'])]
     public ?string $sexe = null;
 
     #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
     #[Assert\Country(groups: ['student', 'professor'])]
     public ?string $pays = null;
 
-    #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
+    #[Assert\NotBlank(groups: ['student', 'professor'], message: "obligatoire")]
     public ?string $etablissement = null;
 
     #[Assert\NotBlank(groups: ['student'], message: "obligatoire")]
@@ -58,5 +64,4 @@ class UserRegistrationDTO
     #[Assert\PositiveOrZero(groups: ['professor'])]
     public ?int $anneesExperience = null;
 
-    public ?string $etablissementProfesseur = null;
 }

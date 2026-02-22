@@ -26,15 +26,20 @@ class PasswordResetController extends AbstractController
     ) {}
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function request(Request $request): Response
+    public function request(Request $request, \Symfony\Component\Notifier\TexterInterface $texter): Response
     {
         $dto = new PasswordResetRequestDTO();
         $form = $this->createForm(PasswordResetRequestType::class, $dto);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $dto->email = strtolower($dto->email);
-            $user = $this->userRepository->findOneBy(['email' => $dto->email]);
+            $user = null;
+            if ($dto->method === 'telephone') {
+                $user = $this->userRepository->findOneBy(['telephone' => $dto->telephone]);
+            } else {
+                $dto->email = strtolower($dto->email);
+                $user = $this->userRepository->findOneBy(['email' => $dto->email]);
+            }
 
             if ($user) {
                 // Generate a 6-digit verification code
@@ -46,32 +51,69 @@ class PasswordResetController extends AbstractController
                 
                 $this->entityManager->flush();
 
-                // Send email with verification code
-                try {
-                    $email = (new TemplatedEmail())
-                        ->from('noreply@studysprint.com')
-                        ->to($user->getEmail())
-                        ->subject('Réinitialisation de votre mot de passe - StudySprint')
-                        ->htmlTemplate('emails/password_reset.html.twig')
-                        ->context([
-                            'user' => $user,
-                            'verificationCode' => $verificationCode,
-                        ]);
+                if ($dto->method === 'telephone') {
+                    try {
+                        // Ensure phone number is E.164 format (assume +216 if missing)
+                        $phoneNumber = $user->getTelephone();
+                        if (!str_starts_with($phoneNumber, '+')) {
+                            $phoneNumber = '+216' . ltrim($phoneNumber, '0');
+                        }
 
-                    $this->mailer->send($email);
-                    
-                    $this->addFlash('success', 'Un code de vérification a été envoyé à votre adresse email.');
-                } catch (\Exception $e) {
-                    // If email fails, show a generic error to the user
-                    $this->addFlash('danger', "Une erreur est survenue lors de l'envoi de l'email. Veuillez réessayer plus tard.");
+                        $sms = new \Symfony\Component\Notifier\Message\SmsMessage(
+                            $phoneNumber,
+                            "StudySprint: Votre code de vérification est " . $verificationCode
+                        );
+                        $texter->send($sms);
+                        $this->addFlash('success', 'Un code de vérification a été envoyé par SMS à votre numéro.');
+                    } catch (\Exception $e) {
+                         // En cas d'erreur (ex: numéro non vérifié en mode trial), on affiche l'erreur.
+                         $this->addFlash('error', "Erreur d'envoi SMS : " . $e->getMessage());
+                    }
+                } else {
+                    // Send email with verification code
+                    try {
+                        $email = (new TemplatedEmail())
+                            ->from('noreply@studysprint.com')
+                            ->to($user->getEmail())
+                            ->subject('Réinitialisation de votre mot de passe - StudySprint')
+                            ->htmlTemplate('emails/password_reset.html.twig')
+                            ->context([
+                                'user' => $user,
+                                'verificationCode' => $verificationCode,
+                            ]);
+
+                        $this->mailer->send($email);
+                        
+                        $this->addFlash('success', 'Un code de vérification a été envoyé à votre adresse email.');
+                    } catch (\Exception $e) {
+                        $this->addFlash('error', "Une erreur est survenue lors de l'envoi de l'email. Veuillez réessayer plus tard.");
+                    }
                 }
 
-                return $this->redirectToRoute('app_reset_password', ['email' => $user->getEmail()]);
+                $redirectParams = ['method' => $dto->method];
+                if ($dto->method === 'telephone') {
+                    $redirectParams['telephone'] = $user->getTelephone();
+                } else {
+                    $redirectParams['email'] = $user->getEmail();
+                }
+
+                return $this->redirectToRoute('app_reset_password', $redirectParams);
             }
 
             // Don't reveal if user exists or not for security
-            $this->addFlash('success', 'Si cet email existe, un code de vérification a été envoyé.');
-            return $this->redirectToRoute('app_reset_password', ['email' => $dto->email]);
+            $this->addFlash('success', 'Si ces coordonnées existent, un code de vérification a été envoyé.');
+            
+            $redirectParams = ['method' => $dto->method];
+            if ($dto->method === 'telephone') {
+                $redirectParams['telephone'] = $dto->telephone;
+            } else {
+                $redirectParams['email'] = $dto->email;
+            }
+            return $this->redirectToRoute('app_reset_password', $redirectParams);
+        } elseif ($form->isSubmitted()) {
+            foreach ($form->getErrors(true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
         }
 
         return $this->render('security/password_reset_request.html.twig', [
@@ -82,9 +124,14 @@ class PasswordResetController extends AbstractController
     #[Route('/reset-password', name: 'app_reset_password')]
     public function reset(Request $request): Response
     {
+        $method = $request->query->get('method', 'email');
         $email = strtolower($request->query->get('email', ''));
+        $telephone = $request->query->get('telephone', '');
         
-        if (!$email) {
+        if ($method === 'email' && !$email) {
+            return $this->redirectToRoute('app_forgot_password');
+        }
+        if ($method === 'telephone' && !$telephone) {
             return $this->redirectToRoute('app_forgot_password');
         }
 
@@ -93,19 +140,26 @@ class PasswordResetController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->userRepository->findOneBy(['email' => $email]);
+            $user = null;
+            if ($method === 'telephone') {
+                $user = $this->userRepository->findOneBy(['telephone' => $telephone]);
+            } else {
+                $user = $this->userRepository->findOneBy(['email' => $email]);
+            }
 
             if (!$user) {
-                $this->addFlash('danger', 'Utilisateur introuvable.');
+                $this->addFlash('error', 'Utilisateur introuvable.');
                 return $this->redirectToRoute('app_forgot_password');
             }
 
             // Verify token
             if ($user->getResetToken() !== $dto->verificationCode) {
-                $this->addFlash('danger', 'Code de vérification invalide.');
+                $this->addFlash('error', 'Code de vérification invalide.');
                 return $this->render('security/password_reset.html.twig', [
                     'form' => $form->createView(),
                     'email' => $email,
+                    'telephone' => $telephone,
+                    'method' => $method,
                 ]);
             }
 
@@ -130,6 +184,8 @@ class PasswordResetController extends AbstractController
         return $this->render('security/password_reset.html.twig', [
             'form' => $form->createView(),
             'email' => $email,
+            'telephone' => $telephone,
+            'method' => $method,
         ]);
     }
 }

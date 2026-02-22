@@ -27,8 +27,14 @@ class UserCreateType extends AbstractType
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Prénom'],
-                'row_attr' => ['class' => 'form-group'],
+                'row_attr' => ['class' => 'form-group common-field'],
                 'label_attr' => ['class' => 'form-label required'],
+            ])
+            ->add('telephone', TextType::class, [
+                'label' => 'Téléphone',
+                'required' => false,
+                'attr' => ['placeholder' => '+216...', 'class' => 'form-control'],
+                'row_attr' => ['class' => 'form-group common-field'],
             ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
@@ -125,18 +131,24 @@ class UserCreateType extends AbstractType
                 'row_attr' => ['class' => 'form-group professor-field'],
                 'label_attr' => ['class' => 'form-label'],
             ])
-            ->add('etablissementProfesseur', TextType::class, [
+            ->add('etablissementProfesseur', ChoiceType::class, [
                 'label' => 'Établissement professionnel',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'choices' => [], // Dynamic
+                'placeholder' => 'Choisir un pays d\'abord',
+                'attr' => ['class' => 'form-select school-selector-field'],
                 'row_attr' => ['class' => 'form-group professor-field'],
                 'label_attr' => ['class' => 'form-label'],
             ])
 
             ->add('motDePasse', PasswordType::class, [
                 'label' => 'Mot de passe',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Laisser vide pour ne pas modifier'],
-                'required' => false,
+                'attr' => [
+                    'class' => 'form-control', 
+                    'placeholder' => 'Au moins 8 car., 1 maj., 1 min., 1 chiffre, 1 spéc.',
+                    'title' => 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial'
+                ],
+                'required' => false, // Set to false here because it's shared with Edit, but controller handles mandatory check on create
                 'row_attr' => ['class' => 'form-group'],
                 'label_attr' => ['class' => 'form-label'],
             ])
@@ -163,6 +175,14 @@ class UserCreateType extends AbstractType
                     'row_attr' => ['class' => 'form-group student-field'],
                 ]);
             }
+            if (isset($data['etablissementProfesseur']) && $data['etablissementProfesseur']) {
+                $form->add('etablissementProfesseur', ChoiceType::class, [
+                    'choices' => [$data['etablissementProfesseur'] => $data['etablissementProfesseur']],
+                    'required' => false,
+                    'attr' => ['class' => 'form-select school-selector-field'],
+                    'row_attr' => ['class' => 'form-group professor-field'],
+                ]);
+            }
         });
 
         $builder->addEventListener(\Symfony\Component\Form\FormEvents::POST_SET_DATA, function (\Symfony\Component\Form\FormEvent $event) {
@@ -185,6 +205,15 @@ class UserCreateType extends AbstractType
                     'attr' => ['class' => 'form-select level-selector-field'],
                     'row_attr' => ['class' => 'form-group student-field'],
                     'data' => $data->niveau,
+                ]);
+            }
+            if ($data && property_exists($data, 'etablissementProfesseur') && $data->etablissementProfesseur) {
+                $form->add('etablissementProfesseur', ChoiceType::class, [
+                    'choices' => [$data->etablissementProfesseur => $data->etablissementProfesseur],
+                    'required' => false,
+                    'attr' => ['class' => 'form-select school-selector-field'],
+                    'row_attr' => ['class' => 'form-group professor-field'],
+                    'data' => $data->etablissementProfesseur,
                 ]);
             }
         });

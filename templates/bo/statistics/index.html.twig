@@ -93,6 +93,30 @@
                 </div>
             </div>
 
+            {# Professor Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Professeurs (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="profHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Student Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Étudiants (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="studentHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem;">
                 {# Professor Experience Chart (BAR) #}
                 <div class="bo-chart-card">
@@ -106,6 +130,7 @@
             </div>
         </div>
     </div>
+
 {% endblock %}
 
 {% block javascripts %}
@@ -117,6 +142,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const orangeColor = '#FDB499';
     const successColor = '#2DCA73';
     const warningColor = '#FFB800';
+
+    // Helper to wrap long labels into arrays for multiline display
+    const wrapLabel = (label, maxLength = 12) => {
+        if (!label) return label;
+        if (label.length <= maxLength) return label;
+        const words = label.split(' ');
+        const lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxLength) {
+                if (currentLine) lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + ' ';
+            }
+        });
+        if (currentLine) lines.push(currentLine.trim());
+        return lines;
+    };
     
     // 1. Registration Line Chart
     const regCtx = document.getElementById('registrationChart');
@@ -242,6 +286,141 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     x: { beginAtZero: true, grid: { borderDash: [5, 5] } },
                     y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Professor Hierarchy Chart
+    const profHierCtx = document.getElementById('profHierarchyChart');
+    if (profHierCtx) {
+        const rawData = {{ stats.professor_hierarchy|json_encode|raw }};
+        
+        // Group data by country for multi-dataset approach (for legend)
+        const countries = [...new Set(rawData.map(d => d.pays))];
+        const establishments = rawData.map(d => wrapLabel(d.etablissement, 15));
+        
+        const palette = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasets = countries.map((country, index) => {
+            return {
+                label: country, // Country Code (TN, FR, etc.)
+                data: rawData.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: palette[index % palette.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(profHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishments, // Only establishments on X axis
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawData[index].pays + ' - ' + rawData[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Student Hierarchy Chart
+    const studHierCtx = document.getElementById('studentHierarchyChart');
+    if (studHierCtx) {
+        const rawDataStud = {{ stats.student_hierarchy|json_encode|raw }};
+        
+        const countriesStud = [...new Set(rawDataStud.map(d => d.pays))];
+        const establishmentsStud = rawDataStud.map(d => wrapLabel(d.etablissement, 15));
+        
+        const paletteStud = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasetsStud = countriesStud.map((country, index) => {
+            return {
+                label: country,
+                data: rawDataStud.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: paletteStud[index % paletteStud.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(studHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishmentsStud,
+                datasets: datasetsStud
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawDataStud[index].pays + ' - ' + rawDataStud[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
                 }
             }
         });

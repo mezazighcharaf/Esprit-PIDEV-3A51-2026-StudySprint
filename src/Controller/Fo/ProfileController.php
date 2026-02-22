@@ -30,7 +30,11 @@ class ProfileController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        return $this->render('fo/profile/index.html.twig', [
+        $template = $this->isGranted('ROLE_ADMIN') 
+            ? 'bo/profile/index.html.twig' 
+            : 'fo/profile/index.html.twig';
+
+        return $this->render($template, [
             'user' => $user,
         ]);
     }
@@ -58,7 +62,11 @@ class ProfileController extends AbstractController
             $this->addFlash('error', 'Veuillez corriger les erreurs dans le formulaire.');
         }
 
-        return $this->render('fo/profile/edit.html.twig', [
+        $template = $this->isGranted('ROLE_ADMIN') 
+            ? 'bo/profile/edit.html.twig' 
+            : 'fo/profile/edit.html.twig';
+
+        return $this->render($template, [
             'form' => $form->createView(),
             'user' => $user,
         ]);
@@ -102,11 +110,20 @@ class ProfileController extends AbstractController
         return $this->redirectToRoute('app_reset_password', ['email' => $user->getEmail()]);
     }
 
+    #[Route('/face-enroll', name: 'app_profile_face_enroll')]
+    public function faceEnroll(): Response
+    {
+        return $this->render('fo/profile/face_enroll.html.twig', [
+            'user' => $this->getUser(),
+        ]);
+    }
+
     private function mapEntityToDto($user, ProfileDTO $dto): void
     {
         $dto->nom = $user->getNom();
         $dto->prenom = $user->getPrenom();
         $dto->email = $user->getEmail();
+        $dto->telephone = $user->getTelephone();
         
         // Handle pays (defined in subclasses)
         if (method_exists($user, 'getPays')) {
@@ -117,16 +134,18 @@ class ProfileController extends AbstractController
         $isStudent = ($user instanceof Student || str_contains($rawRole, 'STUDENT'));
         $isProfessor = ($user instanceof Professor || str_contains($rawRole, 'PROFESSOR'));
 
-        if ($isStudent) {
+        if ($isStudent || $isProfessor) {
             $dto->age = method_exists($user, 'getAge') ? $user->getAge() : null;
             $dto->sexe = method_exists($user, 'getSexe') ? $user->getSexe() : null;
             $dto->etablissement = method_exists($user, 'getEtablissement') ? $user->getEtablissement() : null;
-            $dto->niveau = method_exists($user, 'getNiveau') ? $user->getNiveau() : null; 
-        } elseif ($isProfessor) {
-            $dto->specialite = method_exists($user, 'getSpecialite') ? $user->getSpecialite() : null;
-            $dto->niveauEnseignement = method_exists($user, 'getNiveauEnseignement') ? $user->getNiveauEnseignement() : null;
-            $dto->anneesExperience = method_exists($user, 'getAnneesExperience') ? $user->getAnneesExperience() : null;
-            $dto->etablissementProfesseur = method_exists($user, 'getEtablissement') ? $user->getEtablissement() : null;
+            
+            if ($isStudent) {
+                $dto->niveau = method_exists($user, 'getNiveau') ? $user->getNiveau() : null; 
+            } else {
+                $dto->specialite = method_exists($user, 'getSpecialite') ? $user->getSpecialite() : null;
+                $dto->niveauEnseignement = method_exists($user, 'getNiveauEnseignement') ? $user->getNiveauEnseignement() : null;
+                $dto->anneesExperience = method_exists($user, 'getAnneesExperience') ? $user->getAnneesExperience() : null;
+            }
         }
     }
 
@@ -135,6 +154,7 @@ class ProfileController extends AbstractController
         $user->setNom($dto->nom);
         $user->setPrenom($dto->prenom);
         $user->setEmail($dto->email);
+        $user->setTelephone($dto->telephone);
         
         if (method_exists($user, 'setPays')) {
             $user->setPays($dto->pays);
@@ -144,16 +164,18 @@ class ProfileController extends AbstractController
         $isStudent = ($user instanceof Student || str_contains($rawRole, 'STUDENT'));
         $isProfessor = ($user instanceof Professor || str_contains($rawRole, 'PROFESSOR'));
 
-        if ($isStudent) {
+        if ($isStudent || $isProfessor) {
             if (method_exists($user, 'setAge')) $user->setAge($dto->age);
             if (method_exists($user, 'setSexe')) $user->setSexe($dto->sexe);
             if (method_exists($user, 'setEtablissement')) $user->setEtablissement($dto->etablissement);
-            if (method_exists($user, 'setNiveau')) $user->setNiveau($dto->niveau);
-        } elseif ($isProfessor) {
-            if (method_exists($user, 'setSpecialite')) $user->setSpecialite($dto->specialite);
-            if (method_exists($user, 'setNiveauEnseignement')) $user->setNiveauEnseignement($dto->niveauEnseignement);
-            if (method_exists($user, 'setAnneesExperience')) $user->setAnneesExperience($dto->anneesExperience);
-            if (method_exists($user, 'setEtablissement')) $user->setEtablissement($dto->etablissementProfesseur);
+
+            if ($isStudent) {
+                if (method_exists($user, 'setNiveau')) $user->setNiveau($dto->niveau);
+            } else {
+                if (method_exists($user, 'setSpecialite')) $user->setSpecialite($dto->specialite);
+                if (method_exists($user, 'setNiveauEnseignement')) $user->setNiveauEnseignement($dto->niveauEnseignement);
+                if (method_exists($user, 'setAnneesExperience')) $user->setAnneesExperience($dto->anneesExperience);
+            }
         }
     }
 }

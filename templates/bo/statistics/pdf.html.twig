@@ -192,6 +192,54 @@
         </tbody>
     </table>
 
+    <div class="section-title">Répartition Hiérarchique des Professeurs</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Pays</th>
+                <th>Établissement</th>
+                <th>Nombre de professeurs</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stats.professor_hierarchy %}
+            <tr>
+                <td>{{ item.pays|country_name }}</td>
+                <td>{{ item.etablissement }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Répartition Hiérarchique des Étudiants</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Pays</th>
+                <th>Établissement</th>
+                <th>Nombre d'étudiants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stats.student_hierarchy %}
+            <tr>
+                <td>{{ item.pays|country_name }}</td>
+                <td>{{ item.etablissement }}</td>
+                <td>{{ item.count }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Aucune donnée disponible.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <div class="footer">
         © {{ 'now'|date('Y') }} StudySprint - Document généré automatiquement depuis l'interface d'administration.
     </div>

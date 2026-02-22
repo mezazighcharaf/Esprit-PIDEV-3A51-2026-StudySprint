@@ -53,32 +53,40 @@
                     </div>
 
                     <div class="form-group">
+                        {{ form_label(form.telephone) }}
+                        {{ form_widget(form.telephone) }}
+                        {{ form_errors(form.telephone) }}
+                    </div>
+
+                    <div class="form-group">
                         {{ form_label(form.role) }}
                         {{ form_widget(form.role) }}
                         {{ form_errors(form.role) }}
                     </div>
 
-                    <div id="common-meta-fields" class="drawer-subsection">
-                        <h4 class="drawer-subsection-title">Informations Géographiques</h4>
+                    <div id="common-profile-fields" class="drawer-subsection" style="display: none;">
+                        <h4 class="drawer-subsection-title">👤 Profil & Origine</h4>
                         <div class="form-group">
                             {{ form_label(form.pays) }}
                             {{ form_widget(form.pays) }}
                             {{ form_errors(form.pays) }}
                         </div>
-                    </div>
-
-                    <div id="student-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-primary);">
-                        <h4 class="drawer-subsection-title" style="color: var(--color-primary);">📚 Informations Étudiant</h4>
                         <div class="form-row">
                             <div class="form-group">
                                 {{ form_label(form.age) }}
                                 {{ form_widget(form.age) }}
+                                {{ form_errors(form.age) }}
                             </div>
                             <div class="form-group">
                                 {{ form_label(form.sexe) }}
                                 {{ form_widget(form.sexe) }}
+                                {{ form_errors(form.sexe) }}
                             </div>
                         </div>
+                    </div>
+
+                    <div id="student-only-fields" class="drawer-subsection" style="display: none; border-left: 4px solid var(--color-primary);">
+                        <h4 class="drawer-subsection-title" style="color: var(--color-primary);">📚 Informations Étudiant</h4>
                         <div class="form-group">
                             {{ form_label(form.etablissement) }}
                             {{ form_widget(form.etablissement) }}
@@ -199,18 +207,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const roleSelect = document.querySelector('.role-selector-field');
     const studentFields = document.getElementById('student-only-fields');
     const professorFields = document.getElementById('professor-only-fields');
+    const commonProfileFields = document.getElementById('common-profile-fields');
 
     function toggleFields() {
         if (!roleSelect) return;
         const role = roleSelect.value;
         
         if (role === 'ROLE_STUDENT') {
+            commonProfileFields.style.display = 'block';
             studentFields.style.display = 'block';
             professorFields.style.display = 'none';
         } else if (role === 'ROLE_PROFESSOR') {
+            commonProfileFields.style.display = 'block';
             studentFields.style.display = 'none';
             professorFields.style.display = 'block';
+        } else if (role === 'ROLE_ADMIN') {
+            commonProfileFields.style.display = 'block';
+            studentFields.style.display = 'none';
+            professorFields.style.display = 'none';
         } else {
+            commonProfileFields.style.display = 'none';
             studentFields.style.display = 'none';
             professorFields.style.display = 'none';
         }
@@ -223,16 +239,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Dynamic Country -> School/Level Logic
     const countrySelect = document.querySelector('select[name*="[pays]"]');
-    const schoolSelect = document.querySelector('.school-selector-field');
-    const levelSelect = document.querySelector('.level-selector-field');
+    const schoolSelects = document.querySelectorAll('.school-selector-field');
+    const levelSelects = document.querySelectorAll('.level-selector-field');
 
-    if (countrySelect && schoolSelect && levelSelect) {
+    if (countrySelect && schoolSelects.length > 0) {
         countrySelect.addEventListener('change', function() {
             const countryCode = this.value;
             
             if (!countryCode) {
-                resetSelect(schoolSelect);
-                resetSelect(levelSelect);
+                schoolSelects.forEach(resetSelect);
+                levelSelects.forEach(resetSelect);
                 return;
             }
 
@@ -240,14 +256,14 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`/api/location/schools/${countryCode}`)
                 .then(response => response.json())
                 .then(data => {
-                    updateSelect(schoolSelect, data);
+                    schoolSelects.forEach(select => updateSelect(select, data));
                 });
 
             // Fetch Levels
             fetch(`/api/location/levels/${countryCode}`)
                 .then(response => response.json())
                 .then(data => {
-                    updateSelect(levelSelect, data);
+                    levelSelects.forEach(select => updateSelect(select, data));
                 });
         });
 

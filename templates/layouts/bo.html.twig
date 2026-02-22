@@ -1,6 +1,11 @@
 {% extends 'layouts/base.html.twig' %}
 
 {% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/bo.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/forms.css') }}">
 {% endblock %}
@@ -26,7 +31,7 @@
                                 <rect x="14" y="12" width="7" height="9"/>
                                 <rect x="3" y="16" width="7" height="5"/>
                             </svg>
-                            <span>Dashboard</span>
+                            <span>Tableau de Bord</span>
                         </a>
                     </li>
                     <li>
@@ -36,7 +41,7 @@
                                 <line x1="12" y1="20" x2="12" y2="4"/>
                                 <line x1="6" y1="20" x2="6" y2="14"/>
                             </svg>
-                            <span>Analytics</span>
+                            <span>Analyses</span>
                         </a>
                     </li>
                     <li>
@@ -48,6 +53,21 @@
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                             <span>Utilisateurs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('admin_reactivations') }}" class="sidebar-link {{ app.request.get('_route') == 'admin_reactivations' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <span>Réactivations</span>
+                            {% set pendingCount = render(controller('App\\Controller\\ReactivationController::countPending'))|trim %}
+                            {% if pendingCount %}
+                                <span class="badge badge-error badge-pulse" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-left: auto; font-weight: 700;">
+                                    {{ pendingCount }}
+                                </span>
+                            {% endif %}
                         </a>
                     </li>
                     <li>
@@ -90,7 +110,7 @@
                     <line x1="3" y1="9" x2="21" y2="9"/>
                     <line x1="9" y1="21" x2="9" y2="9"/>
                 </svg>
-                <span>BO Components</span>
+                <span>Composants Administration</span>
             </a>
         </div>
     </aside>
@@ -99,19 +119,12 @@
     <main class="app-main">
         <header class="app-topbar">
             <nav class="topbar-breadcrumb">
-                <a href="{{ path('admin_dashboard') }}">Back-Office</a>
+                <span><a href="{{ path('admin_dashboard') }}">Administration</a></span>
                 <span>/</span>
-                <span>{% block breadcrumb %}Dashboard{% endblock %}</span>
+                <span>{% block breadcrumb %}Tableau de Bord{% endblock %}</span>
             </nav>
             <div class="topbar-spacer"></div>
             <div class="topbar-actions">
-                <div class="topbar-search">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input type="text" placeholder="Rechercher un utilisateur, une matiere...">
-                </div>
                 {% block topbar_actions %}
                 <button class="btn btn-secondary btn-sm">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -125,6 +138,9 @@
                 <div class="user-menu-container" style="position: relative;">
                     <div class="topbar-avatar" title="Admin" onclick="document.getElementById('user-dropdown').classList.toggle('active')" style="cursor: pointer; user-select: none;">AD</div>
                     <div id="user-dropdown" class="user-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); width: 150px; z-index: 100; margin-top: 0.5rem; overflow: hidden;">
+                        <a href="{{ path('app_profile') }}" style="display: block; padding: 0.8rem 1rem; color: #1e293b; text-decoration: none; font-size: 0.9rem; font-weight: 500; background: white; transition: background 0.2s; border-bottom: 1px solid #f1f5f9;">
+                            Mon Profil
+                        </a>
                         <a href="{{ path('app_logout') }}" style="display: block; padding: 0.8rem 1rem; color: #ef4444; text-decoration: none; font-size: 0.9rem; font-weight: 500; background: white; transition: background 0.2s;">
                             Se déconnecter
                         </a>
@@ -134,6 +150,15 @@
                 <style>
                     #user-dropdown.active { display: block !important; }
                     #user-dropdown a:hover { background: #fef2f2 !important; }
+                    
+                    @keyframes badge-pulse {
+                        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+                        70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+                        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+                    }
+                    .badge-pulse {
+                        animation: badge-pulse 2s infinite;
+                    }
                 </style>
             </div>
         </header>
@@ -146,30 +171,6 @@
 
 {# ─── DRAWER BACKDROP ─── #}
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
-
-{# ─── CONFIRMATION DIALOG ─── #}
-<div class="modal" id="confirm-dialog">
-    <div class="modal-dialog" style="max-width: 400px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Confirmation</h2>
-                <button class="modal-close" data-modal-close aria-label="Fermer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p id="confirm-message" style="margin: 0; color: var(--color-gray-700);">Etes-vous sur de vouloir continuer?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-modal-close>Annuler</button>
-                <button class="btn btn-danger" id="confirm-action-btn">Confirmer</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 {% block drawers %}{% endblock %}
 {% endblock %}
