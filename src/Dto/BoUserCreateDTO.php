@@ -16,8 +16,8 @@ class BoUserCreateDTO
     #[Assert\Email(message: "L'email n'est pas valide")]
     public ?string $email = null;
 
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire", groups: ['create'])]
-    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères", groups: ['password_strength', 'create'])]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire", groups: ["create"])]
+    #[Assert\Length(min: 8, minMessage: "Le mot de passe doit faire au moins 8 caractères", groups: ["password_strength", "create"])]
     #[Assert\Regex(
         pattern: "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/",
         message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",

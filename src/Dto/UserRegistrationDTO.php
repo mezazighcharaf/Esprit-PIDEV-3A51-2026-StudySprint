@@ -64,4 +64,7 @@ class UserRegistrationDTO
     #[Assert\PositiveOrZero(groups: ['professor'])]
     public ?int $anneesExperience = null;
 
+    #[Assert\NotBlank(groups: ['professor'], message: "obligatoire")]
+    public ?string $etablissementProfesseur = null;
+
 }
