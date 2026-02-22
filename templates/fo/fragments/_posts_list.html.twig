@@ -119,6 +119,19 @@
 
     <div class="fo-comments-section" data-comments-section="{{ post.id }}" style="display: none;">
         <div class="fo-comment-list" data-comments-list="{{ post.id }}"></div>
+
+        {# ─── Ask Bot (if chatbot enabled) ─── #}
+        {% if chatbot is defined and chatbot and chatbot.enabled %}
+        <div class="fo-ask-bot" style="display: flex; gap: 8px; align-items: center; padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid var(--color-gray-100, #f3f4f6);">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">AI</div>
+            <input type="text" class="form-input" data-bot-question-input placeholder="Poser une question à {{ chatbot.botName }}..." style="flex: 1; font-size: 0.85rem; padding: 6px 10px; border-radius: 8px;">
+            <button type="button" class="btn btn-sm" data-ask-bot="{{ post.id }}" style="background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>
+                Demander
+            </button>
+        </div>
+        {% endif %}
+
         <form class="fo-comment-form" data-comment-form="{{ post.id }}">
             <textarea class="form-input" name="body" placeholder="Ajouter un commentaire..." rows="1" required></textarea>
             <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>

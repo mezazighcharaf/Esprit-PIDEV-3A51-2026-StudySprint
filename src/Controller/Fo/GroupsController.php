@@ -28,6 +28,8 @@ use App\Service\InvitationMailer;
 use App\Service\PostInteractionService;
 use App\Service\PostService;
 use App\Service\TranslationService;
+use App\Service\AI\GeminiChatbotService;
+use App\Repository\ChatbotConfigRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,6 +68,8 @@ class GroupsController extends AbstractController
         private ContentSanitizer $contentSanitizer,
         private AvatarService $avatarService,
         private TranslationService $translationService,
+        private GeminiChatbotService $chatbotService,
+        private ChatbotConfigRepository $chatbotConfigRepository,
     ) {}
 
     // ==================== HELPER METHODS ====================
@@ -845,6 +849,9 @@ class GroupsController extends AbstractController
 
         $isMember = $currentUserRole !== null;
 
+        // Chatbot config
+        $chatbotConfig = $this->chatbotConfigRepository->findByGroup($group);
+
         $viewModel = [
             'group' => $groupData,
             'posts' => $posts,
@@ -854,6 +861,17 @@ class GroupsController extends AbstractController
             'can_invite' => $this->isGranted(GroupVoter::INVITE, $group),
             'is_member' => $isMember,
             'current_sort' => $sort,
+            'chatbot' => $chatbotConfig ? [
+                'enabled' => $chatbotConfig->isEnabled(),
+                'botName' => $chatbotConfig->getBotName(),
+                'personality' => $chatbotConfig->getPersonality(),
+                'triggerMode' => $chatbotConfig->getTriggerMode(),
+                'triggerKeywords' => $chatbotConfig->getTriggerKeywords(),
+                'subjectContext' => $chatbotConfig->getSubjectContext(),
+                'language' => $chatbotConfig->getLanguage(),
+                'maxResponseLength' => $chatbotConfig->getMaxResponseLength(),
+            ] : null,
+            'is_admin' => $currentUserRole === 'admin',
         ];
 
         return $this->render('fo/group-detail.html.twig', $viewModel);
@@ -1103,7 +1121,7 @@ class GroupsController extends AbstractController
                 }
             }
 
-            return $this->successResponse([
+            $responseData = [
                 'csrf_tokens' => $tokens,
                 'post' => [
                     'id' => $post->getId(),
@@ -1118,7 +1136,31 @@ class GroupsController extends AbstractController
                     'stats' => $stats,
                     'canDelete' => true,
                 ]
-            ], 'Post créé avec succès');
+            ];
+
+            // Trigger chatbot auto-comment on new post
+            try {
+                $botComment = $this->chatbotService->processNewPost($post, $group, $user);
+                if ($botComment) {
+                    $responseData['botReply'] = [
+                        'id' => $botComment->getId(),
+                        'body' => $botComment->getBody(),
+                        'isBot' => true,
+                        'botName' => $botComment->getBotName(),
+                        'author' => [
+                            'name' => $botComment->getBotName() ?? 'StudyBot',
+                            'initials' => 'AI',
+                        ],
+                        'createdAt' => $botComment->getCreatedAt()->format('c'),
+                        'timeAgo' => 'à l\'instant',
+                        'canDelete' => false,
+                    ];
+                }
+            } catch (\Exception $e) {
+                // Bot reply is not critical - silently fail
+            }
+
+            return $this->successResponse($responseData, 'Post créé avec succès');
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
@@ -1261,11 +1303,20 @@ class GroupsController extends AbstractController
             $data = [
                 'id' => $comment->getId(),
                 'body' => $comment->getBody(),
-                'author' => $this->formattingService->formatUserForView($author),
+                'author' => $comment->isBot()
+                    ? ['name' => $comment->getBotName() ?? 'StudyBot', 'initials' => 'AI']
+                    : $this->formattingService->formatUserForView($author),
                 'parentId' => $comment->getParentComment()?->getId(),
+                'parentAuthor' => $comment->getParentComment()
+                    ? ($comment->getParentComment()->isBot()
+                        ? ($comment->getParentComment()->getBotName() ?? 'StudyBot')
+                        : $comment->getParentComment()->getAuthor()->getFullName())
+                    : null,
                 'createdAt' => $comment->getCreatedAt()->format('c'),
                 'timeAgo' => $this->formattingService->formatTimeAgo($comment->getCreatedAt()),
                 'canDelete' => $canDelete,
+                'isBot' => $comment->isBot(),
+                'botName' => $comment->getBotName(),
             ];
             
             // Include delete token only if user can delete
@@ -1332,19 +1383,60 @@ class GroupsController extends AbstractController
 
         try {
             $comment = $this->postInteractionService->addComment($post, $user, $body, $parent);
-            
-            return $this->successResponse([
+
+            $responseData = [
                 'comment' => [
                     'id' => $comment->getId(),
                     'body' => $comment->getBody(),
                     'author' => $this->formattingService->formatUserForView($user),
                     'parentId' => $parent?->getId(),
+                    'parentAuthor' => $parent
+                        ? ($parent->isBot()
+                            ? ($parent->getBotName() ?? 'StudyBot')
+                            : $parent->getAuthor()->getFullName())
+                        : null,
                     'createdAt' => $comment->getCreatedAt()->format('c'),
                     'timeAgo' => $this->formattingService->formatTimeAgo($comment->getCreatedAt()),
                     'canDelete' => true,
+                    'isBot' => false,
+                    'botName' => null,
                     'deleteToken' => $this->csrfTokenManager->getToken('delete-comment-' . $comment->getId())->getValue(),
                 ]
-            ], 'Commentaire ajouté');
+            ];
+
+            // Trigger chatbot auto-reply if applicable
+            try {
+                // Determine if replying to a bot comment - always trigger bot reply in that case
+                $isReplyToBot = $parent && $parent->isBot();
+                $botComment = $this->chatbotService->processComment(
+                    $body,
+                    $post,
+                    $post->getGroup(),
+                    $user,
+                    $isReplyToBot ? $comment : null // Pass the member's comment as parent for threading
+                );
+                if ($botComment) {
+                    $responseData['botReply'] = [
+                        'id' => $botComment->getId(),
+                        'body' => $botComment->getBody(),
+                        'isBot' => true,
+                        'botName' => $botComment->getBotName(),
+                        'parentId' => $botComment->getParentComment()?->getId(),
+                        'parentAuthor' => $user->getFullName(),
+                        'author' => [
+                            'name' => $botComment->getBotName() ?? 'StudyBot',
+                            'initials' => 'AI',
+                        ],
+                        'createdAt' => $botComment->getCreatedAt()->format('c'),
+                        'timeAgo' => 'à l\'instant',
+                        'canDelete' => false,
+                    ];
+                }
+            } catch (\Exception $e) {
+                // Silently fail - bot reply is not critical
+            }
+
+            return $this->successResponse($responseData, 'Commentaire ajouté');
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

@@ -973,6 +973,19 @@
           }
 
           this.prependPost(data.post);
+
+          // Show bot auto-comment if present
+          if (data.botReply) {
+            setTimeout(() => {
+              Toast.success(data.botReply.botName || 'StudyBot', 'A commenté votre publication');
+              // Reload comments for the post to display the bot comment
+              this.loadComments(data.post.id);
+              // Update comment counter
+              const countBadge = document.querySelector(`[data-comments-count="${data.post.id}"]`);
+              if (countBadge) countBadge.textContent = parseInt(countBadge.textContent || '0') + 1;
+            }, 500);
+          }
+
           form.reset();
 
           // Reset file input if exists
@@ -1196,6 +1209,22 @@
           if (postId) this.handleCommentDelete(commentId, postId, deleteToken);
           return;
         }
+
+        // Bot feedback
+        const feedbackBtn = e.target.closest('[data-bot-feedback]');
+        if (feedbackBtn) {
+          e.preventDefault();
+          this.handleBotFeedback(feedbackBtn);
+          return;
+        }
+
+        // Ask Bot button
+        const askBotBtn = e.target.closest('[data-ask-bot]');
+        if (askBotBtn) {
+          e.preventDefault();
+          this.handleAskBot(askBotBtn);
+          return;
+        }
       });
 
       // Delegate comment form submissions
@@ -1211,15 +1240,46 @@
     handleReplyClick(replyBtn) {
       const commentId = replyBtn.dataset.replyTo;
       const postCard = replyBtn.closest('.fo-post-card');
-      if (postCard) {
-        const form = postCard.querySelector('.fo-comment-form');
-        if (form) {
-          form.dataset.parentId = commentId;
-          const textarea = form.querySelector('textarea');
-          textarea.placeholder = 'Répondre au commentaire...';
-          textarea.focus();
-        }
+      if (!postCard) return;
+
+      const form = postCard.querySelector('.fo-comment-form');
+      if (!form) return;
+
+      form.dataset.parentId = commentId;
+
+      // Find the comment being replied to for context
+      const commentEl = replyBtn.closest('[data-comment-id]');
+      const isBot = commentEl && commentEl.classList.contains('fo-comment-bot');
+      const authorEl = commentEl ? commentEl.querySelector('.fo-comment-author') : null;
+      const authorName = authorEl ? authorEl.textContent.trim() : '';
+
+      // Show reply indicator above the textarea
+      let indicator = form.querySelector('.fo-reply-indicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'fo-reply-indicator';
+        indicator.style.cssText = 'display:flex; align-items:center; gap:6px; padding:6px 10px; margin-bottom:6px; background:' + (isBot ? 'rgba(99,102,241,0.06)' : 'var(--color-gray-50, #f9fafb)') + '; border-left:3px solid ' + (isBot ? '#6366F1' : 'var(--color-gray-300)') + '; border-radius:0 6px 6px 0; font-size:12px; color:var(--color-gray-600); animation: slideDown 0.2s ease;';
+        form.insertBefore(indicator, form.firstChild);
       }
+      indicator.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+        <span>Répondre à <strong style="${isBot ? 'color:#6366F1' : ''}">${this.escapeHtml(authorName)}</strong></span>
+        <button type="button" class="fo-reply-cancel" style="margin-left:auto; background:none; border:none; cursor:pointer; color:var(--color-gray-400); padding:0; font-size:14px; line-height:1;">✕</button>
+      `;
+      indicator.style.display = 'flex';
+      indicator.style.background = isBot ? 'rgba(99,102,241,0.06)' : 'var(--color-gray-50, #f9fafb)';
+      indicator.style.borderLeftColor = isBot ? '#6366F1' : 'var(--color-gray-300)';
+
+      // Cancel reply
+      indicator.querySelector('.fo-reply-cancel').addEventListener('click', () => {
+        delete form.dataset.parentId;
+        indicator.style.display = 'none';
+        textarea.placeholder = 'Ajouter un commentaire...';
+      });
+
+      const textarea = form.querySelector('textarea');
+      textarea.placeholder = `Répondre à ${authorName}...`;
+      textarea.focus();
     },
 
     async handleLikeToggle(postId) {
@@ -1315,27 +1375,105 @@
       const list = document.querySelector(`[data-comments-list="${postId}"]`);
       if (!list) return;
 
-      const topLevel = comments.filter(c => !c.parentId);
-      const replies = comments.filter(c => c.parentId);
+      // Build a map of parentId -> children for recursive rendering
+      const childrenMap = {};
+      comments.forEach(c => {
+        const pid = c.parentId || 0;
+        if (!childrenMap[pid]) childrenMap[pid] = [];
+        childrenMap[pid].push(c);
+      });
+
+      const renderThread = (parentId, depth) => {
+        const children = childrenMap[parentId] || [];
+        if (children.length === 0) return '';
+        let out = depth > 0 ? '<div class="fo-comment-reply-list">' : '';
+        children.forEach(c => {
+          out += this.createCommentHtml(c, depth > 0);
+          // Recurse into sub-replies (limit visual depth to 3)
+          out += renderThread(c.id, Math.min(depth + 1, 3));
+        });
+        out += depth > 0 ? '</div>' : '';
+        return out;
+      };
 
       let html = '<div class="fo-comments-wrapper">';
-      topLevel.forEach(c => {
-        html += this.createCommentHtml(c);
-        const myReplies = replies.filter(r => r.parentId === c.id);
-        if (myReplies.length > 0) {
-          html += '<div class="fo-comment-reply-list">';
-          myReplies.forEach(r => {
-            html += this.createCommentHtml(r, true);
-          });
-          html += '</div>';
-        }
-      });
+      html += renderThread(0, 0);
       html += '</div>';
       list.innerHTML = html;
       // Logic for binding reply buttons is handled by delegation in bindCommentActions
     },
 
     createCommentHtml(comment, isReply = false) {
+      // Bot comment styling
+      if (comment.isBot) {
+        // Build reply-to reference if this bot comment is a reply
+        let botReplyRef = '';
+        if (comment.parentId && comment.parentAuthor) {
+          botReplyRef = `<div class="fo-reply-ref" style="font-size: 11px; color: var(--color-gray-500); margin-bottom: 6px; padding: 4px 8px; background: rgba(99,102,241,0.04); border-left: 2px solid #6366F1; border-radius: 0 4px 4px 0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align: -1px; margin-right: 2px;"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+            En réponse à <strong>${this.escapeHtml(comment.parentAuthor)}</strong>
+          </div>`;
+        }
+        return `
+            <div class="fo-comment-item fo-comment-bot" data-comment-id="${comment.id}" style="background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.06) 100%); border: 1px solid rgba(99,102,241,0.15); border-radius: 12px; padding: 12px; margin: 6px 0;">
+                <div class="fo-comment-avatar" style="background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; font-size: 11px; font-weight: 700;">AI</div>
+                <div class="fo-comment-content">
+                    <div class="fo-comment-header">
+                        <span class="fo-comment-author" style="color: #6366F1; font-weight: 600;">${comment.botName || 'StudyBot'}</span>
+                        <span style="background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; margin-left: 4px;">IA</span>
+                        <span class="fo-comment-date">${comment.timeAgo}</span>
+                    </div>
+                    ${botReplyRef}
+                    <div class="fo-comment-text" data-comment-content="${comment.id}" style="white-space: pre-wrap;">${this.escapeHtml(comment.body)}</div>
+
+                    <div class="fo-comment-translation" data-comment-translation-result="${comment.id}" style="display: none; margin-top: 6px; padding: 8px 10px; background: rgba(99,102,241,0.06); border-left: 3px solid #6366F1; border-radius: 0 6px 6px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                            <span style="font-size: 10px; color: #6366F1; font-weight: 600;">🌐 Traduction</span>
+                            <button type="button" data-comment-translation-close="${comment.id}" style="background: none; border: none; cursor: pointer; color: var(--color-gray-400, #9CA3AF); font-size: 12px; padding: 0; line-height: 1;">✕</button>
+                        </div>
+                        <p data-comment-translation-text="${comment.id}" style="margin: 0; font-size: 0.85rem; color: var(--color-gray-800, #1e293b);"></p>
+                    </div>
+
+                    <div class="fo-comment-actions" style="margin-top: 6px;">
+                        <button class="fo-comment-action" data-reply-to="${comment.id}" style="color: #6366F1;">↩ Répondre</button>
+                        ${comment.canDelete ? `<button class="fo-comment-action delete" data-delete-comment="${comment.id}" data-delete-token="${comment.deleteToken || ''}">Supprimer</button>` : ''}
+                        <div class="fo-comment-translate-wrapper" style="position: relative; display: inline-block; margin-left: 4px;">
+                            <button type="button" class="fo-comment-action" data-translate-comment-toggle="${comment.id}" title="Traduire" style="color: #6366F1;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" style="vertical-align: middle; margin-right: 2px;">
+                                    <path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+                                </svg>
+                                Traduire
+                            </button>
+                            <div class="fo-translate-dropdown" data-translate-comment-dropdown="${comment.id}" style="display: none; position: absolute; left: 0; bottom: 100%; margin-bottom: 4px; background: var(--color-white, #fff); border: 1px solid var(--color-gray-200, #e5e7eb); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px; z-index: 20; min-width: 140px;">
+                                <div style="font-size: 11px; color: var(--color-gray-500, #6B7280); font-weight: 600; padding: 4px 8px; margin-bottom: 4px;">Traduire en :</div>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="fr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-fr" style="flex-shrink: 0;"></span> Français</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="en" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-gb" style="flex-shrink: 0;"></span> English</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="es" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-es" style="flex-shrink: 0;"></span> Español</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="de" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-de" style="flex-shrink: 0;"></span> Deutsch</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="ar" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-sa" style="flex-shrink: 0;"></span> العربية</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="it" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-it" style="flex-shrink: 0;"></span> Italiano</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="pt" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-pt" style="flex-shrink: 0;"></span> Português</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="tr" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-tr" style="flex-shrink: 0;"></span> Türkçe</button>
+                                <button type="button" class="fo-translate-lang-btn" data-translate-comment="${comment.id}" data-lang="zh" style="display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 5px 8px; border: none; background: none; cursor: pointer; border-radius: 4px; font-size: 12px; color: var(--color-gray-700, #374151);"><span class="fi fi-cn" style="flex-shrink: 0;"></span> 中文</button>
+                            </div>
+                        </div>
+                        ${comment.interactionId ? `
+                        <span style="color: var(--color-gray-300);">·</span>
+                        <span style="font-size: 11px; color: var(--color-gray-500);">Utile ?</span>
+                        <button class="fo-bot-feedback-btn" data-bot-feedback="${comment.interactionId}" data-feedback="helpful" style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 11px; color: #6b7280; display: flex; align-items: center; gap: 3px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                            Oui
+                        </button>
+                        <button class="fo-bot-feedback-btn" data-bot-feedback="${comment.interactionId}" data-feedback="not-helpful" style="background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-size: 11px; color: #6b7280; display: flex; align-items: center; gap: 3px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+                            Non
+                        </button>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+      }
+
       return `
             <div class="fo-comment-item" data-comment-id="${comment.id}">
                 <div class="fo-comment-avatar">${comment.author.initials}</div>
@@ -1353,6 +1491,12 @@
                         </div>
                         <p data-comment-translation-text="${comment.id}" style="margin: 0; font-size: 0.85rem; color: var(--color-gray-800, #1e293b);"></p>
                     </div>
+
+                    ${comment.parentId && comment.parentAuthor ? `
+                    <div class="fo-reply-ref" style="font-size: 11px; color: var(--color-gray-500); margin-bottom: 4px; padding: 3px 8px; background: var(--color-gray-50, #f9fafb); border-left: 2px solid var(--color-gray-300); border-radius: 0 4px 4px 0;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align: -1px; margin-right: 2px;"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                        En réponse à <strong>${this.escapeHtml(comment.parentAuthor)}</strong>
+                    </div>` : ''}
 
                     <div class="fo-comment-actions">
                         <button class="fo-comment-action" data-reply-to="${comment.id}">Répondre</button>
@@ -1410,11 +1554,26 @@
           textarea.value = '';
           delete form.dataset.parentId;
           textarea.placeholder = 'Ajouter un commentaire...';
+          // Hide reply indicator
+          const indicator = form.querySelector('.fo-reply-indicator');
+          if (indicator) indicator.style.display = 'none';
           await this.loadComments(postId);
 
           // Update counter
           const countBadge = document.querySelector(`[data-comments-count="${postId}"]`);
-          if (countBadge) countBadge.textContent = parseInt(countBadge.textContent) + 1;
+          if (countBadge) {
+            let newCount = parseInt(countBadge.textContent) + 1;
+            // If bot replied, add one more
+            if (data.botReply) {
+              newCount++;
+            }
+            countBadge.textContent = newCount;
+          }
+
+          // Show bot reply notification
+          if (data.botReply) {
+            Toast.success(data.botReply.botName || 'StudyBot', 'Le chatbot a répondu à votre commentaire');
+          }
         } else {
           Toast.error('Erreur', data.error);
         }
@@ -1450,6 +1609,92 @@
           Toast.error('Erreur', 'Erreur de connexion');
         }
       });
+    },
+
+    async handleBotFeedback(btn) {
+      const interactionId = btn.dataset.botFeedback;
+      const feedback = btn.dataset.feedback;
+
+      try {
+        const response = await fetch(`/app/api/chatbot/interactions/${interactionId}/feedback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ feedback }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          // Highlight selected button
+          const feedbackContainer = btn.closest('.fo-bot-feedback');
+          if (feedbackContainer) {
+            feedbackContainer.querySelectorAll('.fo-bot-feedback-btn').forEach(b => {
+              b.disabled = true;
+              b.style.opacity = '0.5';
+            });
+            btn.style.opacity = '1';
+            btn.style.borderColor = feedback === 'helpful' ? '#22c55e' : '#ef4444';
+            btn.style.color = feedback === 'helpful' ? '#22c55e' : '#ef4444';
+          }
+          Toast.success('Merci', 'Votre feedback a été enregistré');
+        }
+      } catch (e) {
+        Toast.error('Erreur', 'Impossible d\'envoyer le feedback');
+      }
+    },
+
+    async handleAskBot(btn) {
+      const postId = btn.dataset.askBot;
+      const groupId = this.groupId;
+      const postCard = btn.closest('.fo-post-card');
+      if (!postCard) return;
+
+      const input = postCard.querySelector('[data-bot-question-input]');
+      if (!input) return;
+
+      const question = input.value.trim();
+      if (!question) {
+        Toast.error('Erreur', 'Veuillez saisir une question');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-sm"></span> Réflexion...';
+
+      try {
+        const response = await fetch(`/app/api/chatbot/groups/${groupId}/posts/${postId}/ask`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ question }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          input.value = '';
+          await this.loadComments(postId);
+
+          // Ensure comments section is visible
+          const section = postCard.querySelector(`[data-comments-section="${postId}"]`);
+          if (section) section.style.display = 'block';
+
+          // Update counter
+          const countBadge = document.querySelector(`[data-comments-count="${postId}"]`);
+          if (countBadge) countBadge.textContent = parseInt(countBadge.textContent) + 1;
+
+          Toast.success(data.comment.botName || 'StudyBot', 'A répondu à votre question');
+        } else {
+          Toast.error('Erreur', data.error);
+        }
+      } catch (e) {
+        Toast.error('Erreur', 'Impossible de contacter le chatbot');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg> Demander`;
+      }
     },
 
     async handlePostDelete(postId) {
@@ -1653,6 +1898,328 @@
     }
   };
 
+  // ─── CHATBOT CONFIG MANAGEMENT ───
+  const ChatbotConfig = {
+    groupId: null,
+    modal: null,
+    backdrop: null,
+
+    init() {
+      const widget = document.getElementById('chatbot-config-widget');
+      if (!widget) return;
+
+      this.groupId = widget.dataset.groupId;
+
+      // Open config modal
+      document.querySelectorAll('#chatbot-open-config').forEach(btn => {
+        btn.addEventListener('click', () => this.openModal());
+      });
+
+      // Save config
+      const saveBtn = document.getElementById('chatbot-config-save');
+      if (saveBtn) saveBtn.addEventListener('click', () => this.saveConfig());
+
+      // Toggle bot on/off from sidebar
+      const toggle = document.getElementById('chatbot-toggle');
+      if (toggle) {
+        toggle.addEventListener('change', () => this.toggleBot());
+      }
+
+      // Trigger mode shows/hides keywords
+      const triggerMode = document.getElementById('cfg-triggerMode');
+      if (triggerMode) {
+        triggerMode.addEventListener('change', (e) => {
+          const kwGroup = document.getElementById('cfg-keywords-group');
+          if (kwGroup) {
+            kwGroup.style.display = ['mention', 'keyword'].includes(e.target.value) ? 'block' : 'none';
+          }
+        });
+      }
+
+      // Max response length slider label
+      const slider = document.getElementById('cfg-maxResponseLength');
+      if (slider) {
+        slider.addEventListener('input', (e) => {
+          const display = document.getElementById('cfg-maxLen-display');
+          if (display) display.textContent = e.target.value + ' car.';
+        });
+      }
+
+      // Personality highlight
+      document.querySelectorAll('.chatbot-personality-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          document.querySelectorAll('.chatbot-personality-option').forEach(opt => {
+            opt.style.borderColor = 'var(--border-color)';
+            opt.style.background = 'transparent';
+          });
+          const selected = document.querySelector('.chatbot-personality-option input[type="radio"]:checked');
+          if (selected) {
+            const parent = selected.closest('.chatbot-personality-option');
+            parent.style.borderColor = '#6366F1';
+            parent.style.background = 'rgba(99, 102, 241, 0.04)';
+          }
+        });
+      });
+
+      // Highlight initial selection
+      const checkedPersonality = document.querySelector('.chatbot-personality-option input[type="radio"]:checked');
+      if (checkedPersonality) {
+        const parent = checkedPersonality.closest('.chatbot-personality-option');
+        if (parent) {
+          parent.style.borderColor = '#6366F1';
+          parent.style.background = 'rgba(99, 102, 241, 0.04)';
+        }
+      }
+
+      // Language radio grid
+      document.querySelectorAll('.cfg-lang-option input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          document.querySelectorAll('.cfg-lang-option').forEach(opt => {
+            opt.style.borderColor = 'var(--border-color, #e5e7eb)';
+            opt.style.background = 'transparent';
+          });
+          const selected = radio.closest('.cfg-lang-option');
+          if (selected) {
+            selected.style.borderColor = '#6366F1';
+            selected.style.background = 'rgba(99, 102, 241, 0.06)';
+          }
+          // Sync hidden input
+          const hidden = document.getElementById('cfg-language');
+          if (hidden) hidden.value = radio.value;
+        });
+      });
+
+      // Toggle switch styling for modal
+      this.initToggleSwitchStyle();
+    },
+
+    initToggleSwitchStyle() {
+      document.querySelectorAll('#chatbot-toggle').forEach(cb => {
+        const label = cb.closest('label');
+        const slider = cb.nextElementSibling;
+        if (!slider) return;
+        const dot = slider.querySelector('.toggle-dot') || slider.querySelector('span');
+
+        const updateStyle = () => {
+          slider.style.backgroundColor = cb.checked ? '#6366F1' : '#cbd5e1';
+          if (dot) {
+            dot.style.left = cb.checked ? '21px' : '3px';
+          }
+        };
+
+        updateStyle();
+        cb.addEventListener('change', updateStyle);
+
+        // If not inside a label, add explicit click handler
+        if (!label) {
+          slider.addEventListener('click', (e) => {
+            e.preventDefault();
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event('change'));
+          });
+        }
+      });
+    },
+
+    async openModal() {
+      // Close any open drawer or other modal first
+      Drawer.closeAll();
+      Modal.closeAll();
+      // Load current config from API BEFORE showing modal
+      await this.loadConfig();
+      Modal.open('chatbot-config-modal');
+    },
+
+    closeModal() {
+      Modal.close('chatbot-config-modal');
+    },
+
+    async loadConfig() {
+      try {
+        const response = await fetch(`/app/api/chatbot/groups/${this.groupId}/config`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.success && data.isConfigured) {
+          const c = data.config;
+          const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+          setVal('cfg-botName', c.botName);
+          setVal('cfg-subjectContext', c.subjectContext);
+          setVal('cfg-triggerMode', c.triggerMode);
+          setVal('cfg-triggerKeywords', (c.triggerKeywords || []).join(', '));
+
+          // Select the correct language radio
+          const langRadio = document.querySelector(`input[name="language"][value="${c.language || 'fr'}"]`);
+          if (langRadio) {
+            langRadio.checked = true;
+            langRadio.dispatchEvent(new Event('change'));
+          }
+          setVal('cfg-language', c.language);
+          setVal('cfg-maxResponseLength', c.maxResponseLength);
+
+          const maxDisplay = document.getElementById('cfg-maxLen-display');
+          if (maxDisplay) maxDisplay.textContent = (c.maxResponseLength || 800) + ' car.';
+
+          const personality = document.querySelector(`input[name="personality"][value="${c.personality}"]`);
+          if (personality) {
+            personality.checked = true;
+            personality.dispatchEvent(new Event('change'));
+          }
+
+          // Show/hide keywords
+          const kwGroup = document.getElementById('cfg-keywords-group');
+          if (kwGroup) kwGroup.style.display = ['mention', 'keyword'].includes(c.triggerMode) ? 'block' : 'none';
+        }
+      } catch (e) {
+        console.error('Failed to load chatbot config', e);
+      }
+    },
+
+    async saveConfig() {
+      const saveBtn = document.getElementById('chatbot-config-save');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-sm"></span> Sauvegarde...';
+      }
+
+      try {
+        const form = document.getElementById('chatbot-config-form');
+        const personality = form.querySelector('input[name="personality"]:checked');
+        const keywordsStr = document.getElementById('cfg-triggerKeywords')?.value || '';
+        const keywords = keywordsStr.split(',').map(k => k.trim()).filter(k => k.length > 0);
+
+        const configData = {
+          botName: document.getElementById('cfg-botName')?.value || 'StudyBot',
+          personality: personality?.value || 'tutor',
+          subjectContext: document.getElementById('cfg-subjectContext')?.value || '',
+          triggerMode: document.getElementById('cfg-triggerMode')?.value || 'auto-detect',
+          triggerKeywords: keywords,
+          language: (form.querySelector('input[name="language"]:checked') || document.getElementById('cfg-language'))?.value || 'fr',
+          maxResponseLength: parseInt(document.getElementById('cfg-maxResponseLength')?.value || '800'),
+        };
+
+        const response = await fetch(`/app/api/chatbot/groups/${this.groupId}/config`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify(configData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Toast.success('Chatbot', 'Configuration sauvegardée avec succès');
+          this.closeModal();
+          this.updateSidebarWidget(data.config);
+        } else {
+          Toast.error('Erreur', data.error || 'Impossible de sauvegarder la configuration');
+        }
+      } catch (e) {
+        Toast.error('Erreur', 'Impossible de sauvegarder la configuration');
+        console.error(e);
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20 6L9 17l-5-5"/></svg> Sauvegarder';
+        }
+      }
+    },
+
+    async toggleBot() {
+      try {
+        const response = await fetch(`/app/api/chatbot/groups/${this.groupId}/toggle`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          const dot = document.getElementById('chatbot-status-dot');
+          const text = document.getElementById('chatbot-status-text');
+          if (dot) dot.style.background = data.isEnabled ? '#22c55e' : '#9ca3af';
+          if (text) text.textContent = data.isEnabled ? 'Activé' : 'Désactivé';
+          Toast.success('Chatbot', data.message);
+        } else {
+          Toast.error('Erreur', data.error || 'Impossible de changer le statut');
+          // Revert toggle visually without triggering toggleBot() again
+          const toggle = document.getElementById('chatbot-toggle');
+          if (toggle) {
+            toggle.checked = !toggle.checked;
+            const slider = toggle.nextElementSibling;
+            if (slider) {
+              slider.style.backgroundColor = toggle.checked ? '#6366F1' : '#cbd5e1';
+              const dot = slider.querySelector('.toggle-dot') || slider.querySelector('span');
+              if (dot) dot.style.left = toggle.checked ? '21px' : '3px';
+            }
+          }
+        }
+      } catch (e) {
+        Toast.error('Erreur', 'Impossible de changer le statut');
+        const toggle = document.getElementById('chatbot-toggle');
+        if (toggle) {
+          toggle.checked = !toggle.checked;
+          const slider = toggle.nextElementSibling;
+          if (slider) {
+            slider.style.backgroundColor = toggle.checked ? '#6366F1' : '#cbd5e1';
+            const dot = slider.querySelector('.toggle-dot') || slider.querySelector('span');
+            if (dot) dot.style.left = toggle.checked ? '21px' : '3px';
+          }
+        }
+      }
+    },
+
+    updateSidebarWidget(config) {
+      // Update sidebar display values
+      const nameEl = document.getElementById('chatbot-display-name');
+      if (nameEl) nameEl.textContent = config.botName || 'StudyBot';
+
+      const personalityMap = { tutor: 'Tuteur', assistant: 'Assistant', mentor: 'Mentor', 'quiz-master': 'Quiz Master' };
+      const personalityEl = document.getElementById('chatbot-display-personality');
+      if (personalityEl) personalityEl.textContent = personalityMap[config.personality] || config.personality;
+
+      const triggerMap = { 'auto-detect': 'Auto (questions)', mention: 'Par mention', keyword: 'Par mot-clé' };
+      const triggerEl = document.getElementById('chatbot-display-trigger');
+      if (triggerEl) triggerEl.textContent = triggerMap[config.triggerMode] || config.triggerMode;
+
+      const langFlagMap = { fr: 'fr', en: 'gb', es: 'es', de: 'de', ar: 'sa', it: 'it', pt: 'pt', tr: 'tr', zh: 'cn' };
+      const langLabelMap = { fr: 'Français', en: 'English', es: 'Español', de: 'Deutsch', ar: 'العربية', it: 'Italiano', pt: 'Português', tr: 'Türkçe', zh: '中文' };
+      const langEl = document.getElementById('chatbot-display-language');
+      if (langEl) {
+        const flag = langFlagMap[config.language] || 'fr';
+        const label = langLabelMap[config.language] || 'Français';
+        langEl.innerHTML = `<span class="fi fi-${flag}" style="font-size: 14px;"></span> ${label}`;
+      }
+
+      const dot = document.getElementById('chatbot-status-dot');
+      const text = document.getElementById('chatbot-status-text');
+      if (dot) dot.style.background = config.isEnabled ? '#22c55e' : '#9ca3af';
+      if (text) text.textContent = config.isEnabled ? 'Activé' : 'Désactivé';
+
+      const toggle = document.getElementById('chatbot-toggle');
+      if (toggle) {
+        // Update visually without triggering the toggleBot() handler
+        toggle.checked = config.isEnabled;
+        const slider = toggle.nextElementSibling;
+        if (slider) {
+          slider.style.backgroundColor = config.isEnabled ? '#6366F1' : '#cbd5e1';
+          const dot = slider.querySelector('.toggle-dot') || slider.querySelector('span');
+          if (dot) dot.style.left = config.isEnabled ? '21px' : '3px';
+        }
+      }
+
+      // If page needs refresh for first-time config, reload
+      if (!document.getElementById('chatbot-status-dot')) {
+        window.location.reload();
+      }
+    }
+  };
+
   // ─── INIT ALL ───
   document.addEventListener('DOMContentLoaded', () => {
     Drawer.init();
@@ -1667,6 +2234,7 @@
     TodoCheckbox.init();
     ShareManagement.init();
     GroupDashboard.init();
+    ChatbotConfig.init();
 
     // Init PostManagement if we are on a group detail page
     const groupContainer = document.querySelector('[data-group-id]');

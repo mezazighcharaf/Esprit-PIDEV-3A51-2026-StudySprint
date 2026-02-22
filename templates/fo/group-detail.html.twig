@@ -213,6 +213,147 @@
 {% endblock %}
 
 {% block modals %}
+{# ─── CHATBOT CONFIG MODAL ─── #}
+{% if is_admin is defined and is_admin %}
+<div class="modal" id="chatbot-config-modal">
+    <div class="modal-dialog" style="width: 90%; max-width: 520px;">
+    <div class="modal-content">
+    <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 16px 20px;">
+        <h3 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+            <span style="background: linear-gradient(135deg, #6366F1, #8B5CF6); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="16" height="16">
+                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 7.27 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                    <circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/>
+                    <path d="M9 17h6"/>
+                </svg>
+            </span>
+            Configuration du Chatbot
+        </h3>
+        <button class="btn btn-ghost btn-icon" data-modal-close type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="modal-body" style="padding: 20px; max-height: 65vh; overflow-y: auto;">
+        <form id="chatbot-config-form">
+            {# Bot Name #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Nom du bot</label>
+                <input type="text" name="botName" class="form-input" id="cfg-botName" value="{{ chatbot.botName|default('StudyBot') }}" placeholder="StudyBot" style="font-size: 0.85rem;">
+                <div class="form-hint" style="font-size: 0.72rem; color: var(--color-gray-500); margin-top: 4px;">Le nom affiché quand le bot répond</div>
+            </div>
+
+            {# Personality #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Personnalité</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <label class="chatbot-personality-option" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <input type="radio" name="personality" value="tutor" {{ (chatbot.personality|default('tutor')) == 'tutor' ? 'checked' : '' }} style="margin-top: 2px;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600;">🎓 Tuteur</div>
+                            <div style="font-size: 0.7rem; color: var(--color-gray-500);">Explique avec pédagogie</div>
+                        </div>
+                    </label>
+                    <label class="chatbot-personality-option" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <input type="radio" name="personality" value="assistant" {{ (chatbot.personality|default('')) == 'assistant' ? 'checked' : '' }} style="margin-top: 2px;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600;">⚡ Assistant</div>
+                            <div style="font-size: 0.7rem; color: var(--color-gray-500);">Réponses directes et concises</div>
+                        </div>
+                    </label>
+                    <label class="chatbot-personality-option" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <input type="radio" name="personality" value="mentor" {{ (chatbot.personality|default('')) == 'mentor' ? 'checked' : '' }} style="margin-top: 2px;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600;">🧭 Mentor</div>
+                            <div style="font-size: 0.7rem; color: var(--color-gray-500);">Guide et encourage</div>
+                        </div>
+                    </label>
+                    <label class="chatbot-personality-option" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                        <input type="radio" name="personality" value="quiz-master" {{ (chatbot.personality|default('')) == 'quiz-master' ? 'checked' : '' }} style="margin-top: 2px;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 600;">🧩 Quiz Master</div>
+                            <div style="font-size: 0.7rem; color: var(--color-gray-500);">Teste les connaissances</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            {# Subject Context #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Contexte / Matière</label>
+                <input type="text" name="subjectContext" class="form-input" id="cfg-subjectContext" value="{{ chatbot.subjectContext|default(group.subject)|default('') }}" placeholder="ex: Mathématiques L2, Programmation Python..." style="font-size: 0.85rem;">
+                <div class="form-hint" style="font-size: 0.72rem; color: var(--color-gray-500); margin-top: 4px;">Aide le bot à mieux contextualiser ses réponses</div>
+            </div>
+
+            {# Trigger Mode #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Mode de déclenchement</label>
+                <select name="triggerMode" class="form-select" id="cfg-triggerMode" style="font-size: 0.85rem;">
+                    <option value="auto-detect" {{ (chatbot.triggerMode|default('auto-detect')) == 'auto-detect' ? 'selected' : '' }}>Automatique (détecte les questions)</option>
+                    <option value="mention" {{ (chatbot.triggerMode|default('')) == 'mention' ? 'selected' : '' }}>Par mention (mots-clés)</option>
+                    <option value="keyword" {{ (chatbot.triggerMode|default('')) == 'keyword' ? 'selected' : '' }}>Par mot-clé uniquement</option>
+                </select>
+                <div class="form-hint" style="font-size: 0.72rem; color: var(--color-gray-500); margin-top: 4px;">
+                    <strong>Auto</strong> : répond aux questions détectées &bull; <strong>Mention/Mot-clé</strong> : répond quand un mot-clé est utilisé
+                </div>
+            </div>
+
+            {# Trigger Keywords (shown when mention or keyword mode) #}
+            <div class="form-group" id="cfg-keywords-group" style="margin-bottom: 16px; display: {{ (chatbot.triggerMode|default('auto-detect')) in ['mention', 'keyword'] ? 'block' : 'none' }};">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Mots-clés de déclenchement</label>
+                <input type="text" name="triggerKeywords" class="form-input" id="cfg-triggerKeywords" value="{{ chatbot.triggerKeywords|default(['@bot', '@studybot'])|join(', ') }}" placeholder="@bot, @studybot, aide-moi" style="font-size: 0.85rem;">
+                <div class="form-hint" style="font-size: 0.72rem; color: var(--color-gray-500); margin-top: 4px;">Séparez les mots-clés par des virgules</div>
+            </div>
+
+            {# Language #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: block;">Langue des réponses</label>
+                <div class="cfg-language-grid" id="cfg-language-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                    {% set languages = [
+                        {code: 'fr', flag: 'fr', label: 'Français'},
+                        {code: 'en', flag: 'gb', label: 'English'},
+                        {code: 'es', flag: 'es', label: 'Español'},
+                        {code: 'de', flag: 'de', label: 'Deutsch'},
+                        {code: 'ar', flag: 'sa', label: 'العربية'},
+                        {code: 'it', flag: 'it', label: 'Italiano'},
+                        {code: 'pt', flag: 'pt', label: 'Português'},
+                        {code: 'tr', flag: 'tr', label: 'Türkçe'},
+                        {code: 'zh', flag: 'cn', label: '中文'},
+                    ] %}
+                    {% for lang in languages %}
+                        <label class="cfg-lang-option" style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1.5px solid {{ (chatbot.language|default('fr')) == lang.code ? '#6366F1' : 'var(--border-color, #e5e7eb)' }}; border-radius: 8px; cursor: pointer; font-size: 0.8rem; background: {{ (chatbot.language|default('fr')) == lang.code ? 'rgba(99,102,241,0.06)' : 'transparent' }}; transition: all 0.15s ease;">
+                            <input type="radio" name="language" value="{{ lang.code }}" {{ (chatbot.language|default('fr')) == lang.code ? 'checked' : '' }} style="display: none;">
+                            <span class="fi fi-{{ lang.flag }}" style="font-size: 16px; flex-shrink: 0;"></span>
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ lang.label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <input type="hidden" id="cfg-language" value="{{ chatbot.language|default('fr') }}">
+            </div>
+
+            {# Max Response Length #}
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+                    Longueur max des réponses
+                    <span style="font-weight: 400; color: var(--color-gray-500);" id="cfg-maxLen-display">{{ chatbot.maxResponseLength|default(800) }} car.</span>
+                </label>
+                <input type="range" name="maxResponseLength" id="cfg-maxResponseLength" min="200" max="2000" step="100" value="{{ chatbot.maxResponseLength|default(800) }}" style="width: 100%; accent-color: #6366F1;">
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" data-modal-close type="button">Annuler</button>
+        <button class="btn btn-sm" id="chatbot-config-save" type="button" style="background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20 6L9 17l-5-5"/></svg>
+            Sauvegarder
+        </button>
+    </div>
+    </div>{# /modal-content #}
+    </div>{# /modal-dialog #}
+</div>{# /modal #}
+{% endif %}
+
 <div class="modal" id="invite-members-modal">
     <div class="modal-dialog" style="width: 90%; max-width: 500px;">
         <div class="modal-content">

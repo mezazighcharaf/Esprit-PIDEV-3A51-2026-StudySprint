@@ -42,6 +42,12 @@ class PostComment
     )]
     private ?string $body = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isBot = false;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $botName = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -115,6 +121,28 @@ class PostComment
     public function setBody(string $body): static
     {
         $this->body = $body;
+        return $this;
+    }
+
+    public function isBot(): bool
+    {
+        return $this->isBot;
+    }
+
+    public function setIsBot(bool $isBot): static
+    {
+        $this->isBot = $isBot;
+        return $this;
+    }
+
+    public function getBotName(): ?string
+    {
+        return $this->botName;
+    }
+
+    public function setBotName(?string $botName): static
+    {
+        $this->botName = $botName;
         return $this;
     }
 

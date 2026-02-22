@@ -159,4 +159,88 @@
             <li>Aidez les autres membres quand vous pouvez</li>
         </ul>
     </div>
+
+    {# ─── CHATBOT WIDGET (Admin only) ─── #}
+    {% if is_admin is defined and is_admin %}
+    <div class="sidebar-widget" id="chatbot-config-widget" data-group-id="{{ group.id }}">
+        <h3 class="sidebar-widget-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color: #6366F1;">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 7.27 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                <circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/>
+                <path d="M9 17h6"/>
+            </svg>
+            Chatbot IA
+        </h3>
+
+        {% if chatbot is defined and chatbot %}
+            {# Bot is configured #}
+            <div class="chatbot-status" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ chatbot.enabled ? '#22c55e' : '#9ca3af' }}; display: inline-block;" id="chatbot-status-dot"></span>
+                    <span style="font-size: 0.8rem; font-weight: 500; color: var(--color-gray-700);" id="chatbot-status-text">{{ chatbot.enabled ? 'Activé' : 'Désactivé' }}</span>
+                </div>
+                <label class="toggle-switch" style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                    <input type="checkbox" id="chatbot-toggle" {{ chatbot.enabled ? 'checked' : '' }} style="opacity: 0; width: 0; height: 0;">
+                    <span class="toggle-slider" style="position: absolute; cursor: pointer; inset: 0; background-color: {{ chatbot.enabled ? '#6366F1' : '#cbd5e1' }}; border-radius: 22px; transition: 0.3s;">
+                        <span style="position: absolute; content: ''; height: 16px; width: 16px; left: {{ chatbot.enabled ? '21px' : '3px' }}; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s;"></span>
+                    </span>
+                </label>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--color-gray-500); margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Nom:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-name">{{ chatbot.botName }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Personnalité:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-personality">
+                        {% if chatbot.personality == 'tutor' %}Tuteur
+                        {% elseif chatbot.personality == 'assistant' %}Assistant
+                        {% elseif chatbot.personality == 'mentor' %}Mentor
+                        {% elseif chatbot.personality == 'quiz-master' %}Quiz Master
+                        {% else %}{{ chatbot.personality }}{% endif %}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Déclenchement:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-trigger">
+                        {% if chatbot.triggerMode == 'auto-detect' %}Auto (questions)
+                        {% elseif chatbot.triggerMode == 'mention' %}Par mention
+                        {% elseif chatbot.triggerMode == 'keyword' %}Par mot-clé
+                        {% else %}{{ chatbot.triggerMode }}{% endif %}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <span>Langue:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700); display: flex; align-items: center; gap: 4px;" id="chatbot-display-language">
+                        {% set langFlags = {fr: 'fr', en: 'gb', es: 'es', de: 'de', ar: 'sa', it: 'it', pt: 'pt', tr: 'tr', zh: 'cn'} %}
+                        {% set langLabels = {fr: 'Français', en: 'English', es: 'Español', de: 'Deutsch', ar: 'العربية', it: 'Italiano', pt: 'Português', tr: 'Türkçe', zh: '中文'} %}
+                        <span class="fi fi-{{ langFlags[chatbot.language] ?? 'fr' }}" style="font-size: 14px;"></span>
+                        {{ langLabels[chatbot.language] ?? 'Français' }}
+                    </span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm" id="chatbot-open-config" style="width: 100%; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Configurer
+            </button>
+        {% else %}
+            {# Bot not configured yet #}
+            <div style="text-align: center; padding: 12px 0;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🤖</div>
+                <p style="font-size: 0.8rem; color: var(--color-gray-500); margin-bottom: 12px;">
+                    Activez le chatbot IA pour aider les membres de votre groupe avec leurs questions.
+                </p>
+                <button type="button" class="btn btn-sm" id="chatbot-open-config" style="width: 100%; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Activer le chatbot
+                </button>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
 </aside>
