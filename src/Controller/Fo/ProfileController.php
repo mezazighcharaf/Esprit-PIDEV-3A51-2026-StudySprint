@@ -50,6 +50,7 @@ class ProfileController extends AbstractController
             $profile = new UserProfile();
             $profile->setUser($user);
             $user->setProfile($profile);
+            $em->persist($profile);
         }
 
         $form = $this->createForm(ProfileType::class, $user);

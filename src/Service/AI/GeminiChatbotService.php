@@ -324,8 +324,9 @@ class GeminiChatbotService
         }
 
         // Truncate if too long
-        if (mb_strlen($text) > $config->getMaxResponseLength()) {
-            $text = mb_substr($text, 0, $config->getMaxResponseLength()) . '...';
+        $maxLen = $config->getMaxResponseLength();
+        if (mb_strlen($text) > $maxLen) {
+            $text = mb_substr($text, 0, max(0, $maxLen - 3)) . '...';
         }
 
         return [

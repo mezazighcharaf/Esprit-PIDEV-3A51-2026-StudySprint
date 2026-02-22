@@ -148,10 +148,9 @@ class PlanningController extends AbstractController
         $tasks = $qb->getQuery()->getResult();
 
         $colors = [
-            PlanTask::STATUS_TODO => '#667eea',
-            PlanTask::STATUS_IN_PROGRESS => '#f59e0b',
-            PlanTask::STATUS_DONE => '#10b981',
-            PlanTask::STATUS_SKIPPED => '#9ca3af',
+            PlanTask::STATUS_TODO  => '#667eea',
+            PlanTask::STATUS_DOING => '#f59e0b',
+            PlanTask::STATUS_DONE  => '#10b981',
         ];
 
         $events = array_map(fn(PlanTask $t) => [

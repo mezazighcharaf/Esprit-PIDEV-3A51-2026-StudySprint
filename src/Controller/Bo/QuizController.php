@@ -53,7 +53,7 @@ class QuizController extends AbstractController
             $qz->getId(),
             $qz->getTitle(),
             $qz->getDifficulty(),
-            $qz->getQuestions()->count(),
+            count($qz->getQuestions() ?? []),
             $qz->isPublished() ? 'Oui' : 'Non',
             $qz->getSubject()?->getName() ?? '-',
             $qz->getCreatedAt()?->format('d/m/Y H:i'),
@@ -73,6 +73,13 @@ class QuizController extends AbstractController
         $form = $this->createForm(QuizType::class, $item);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $questionsJson = $form->get('questionsJson')->getData();
+            if ($questionsJson) {
+                $decoded = json_decode($questionsJson, true);
+                if (is_array($decoded)) {
+                    $item->setQuestions($decoded);
+                }
+            }
             $em->persist($item);
             $em->flush();
             $this->addFlash('success', 'Quiz créé.');
@@ -112,6 +119,13 @@ class QuizController extends AbstractController
         $form = $this->createForm(QuizType::class, $item);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $questionsJson = $form->get('questionsJson')->getData();
+            if ($questionsJson) {
+                $decoded = json_decode($questionsJson, true);
+                if (is_array($decoded)) {
+                    $item->setQuestions($decoded);
+                }
+            }
             $em->flush();
             $this->addFlash('success', 'Quiz modifié.');
             return $this->redirectToRoute('bo_quizzes_index');

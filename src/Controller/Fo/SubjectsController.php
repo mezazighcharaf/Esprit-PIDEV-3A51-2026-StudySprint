@@ -80,9 +80,13 @@ class SubjectsController extends AbstractController
     public function edit(int $id, Request $request, SubjectRepository $repository, EntityManagerInterface $em): Response
     {
         $subject = $repository->find($id);
-        
+
         if (!$subject) {
             throw $this->createNotFoundException('Matière introuvable');
+        }
+
+        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette matière.');
         }
 
         $form = $this->createForm(SubjectType::class, $subject);
@@ -104,9 +108,13 @@ class SubjectsController extends AbstractController
     public function delete(int $id, Request $request, SubjectRepository $repository, EntityManagerInterface $em): Response
     {
         $subject = $repository->find($id);
-        
+
         if (!$subject) {
             throw $this->createNotFoundException('Matière introuvable');
+        }
+
+        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette matière.');
         }
 
         if ($this->isCsrfTokenValid('delete_subject_' . $subject->getId(), $request->request->get('_token'))) {
@@ -166,6 +174,10 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Chapitre ou matière introuvable');
         }
 
+        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier ce chapitre.');
+        }
+
         $form = $this->createForm(ChapterType::class, $chapter);
         $form->handleRequest($request);
 
@@ -189,6 +201,10 @@ class SubjectsController extends AbstractController
         
         if (!$chapter || $chapter->getSubject()->getId() !== $subjectId) {
             throw $this->createNotFoundException('Chapitre introuvable');
+        }
+
+        if ($chapter->getSubject()->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer ce chapitre.');
         }
 
         if ($this->isCsrfTokenValid('delete_chapter_' . $chapter->getId(), $request->request->get('_token'))) {

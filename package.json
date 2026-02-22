@@ -1,0 +1,32 @@
+{
+  "name": "studysprint",
+  "version": "1.0.0",
+  "description": "Plateforme web de gestion d'apprentissage collaboratif — Symfony 6.4 LTS.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:auth": "playwright test tests/e2e/01-auth.spec.js",
+    "test:groups": "playwright test tests/e2e/03-groups.spec.js",
+    "test:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mezazighcharaf/StudySprint.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mezazighcharaf/StudySprint/issues"
+  },
+  "homepage": "https://github.com/mezazighcharaf/StudySprint#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

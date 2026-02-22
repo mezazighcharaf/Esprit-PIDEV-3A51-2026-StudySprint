@@ -155,6 +155,14 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
         return trim($this->prenom . ' ' . $this->nom);
     }
 
+    public function setFullName(string $fullName): static
+    {
+        $parts = explode(' ', trim($fullName), 2);
+        $this->prenom = $parts[0] ?? '';
+        $this->nom    = $parts[1] ?? $parts[0] ?? '';
+        return $this;
+    }
+
     public function getInitials(): string
     {
         $prenom = $this->prenom ? strtoupper(substr($this->prenom, 0, 1)) : '';

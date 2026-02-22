@@ -24,7 +24,7 @@ class GroupUpdateDTO
     public ?string $description = null;
 
     #[Assert\NotBlank(message: "Le type de confidentialité est obligatoire")]
-    #[Assert\Choice(choices: ['public', 'private', 'by_invitation'], message: "Type de confidentialité invalide")]
+    #[Assert\Choice(choices: ['public', 'private'], message: "Type de confidentialité invalide")]
     public ?string $privacy = 'public';
 
     #[Assert\Length(

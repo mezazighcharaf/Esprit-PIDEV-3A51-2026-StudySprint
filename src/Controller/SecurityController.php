@@ -56,7 +56,7 @@ class SecurityController extends AbstractController
             return $this->redirectToRoute('fo_subjects_index');
         }
 
-        $user = new User();
+        $user = new \App\Entity\Student();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 

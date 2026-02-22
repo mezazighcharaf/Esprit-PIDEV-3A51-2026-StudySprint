@@ -16,8 +16,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_group_activity', columns: ['last_activity'])]
 class StudyGroup
 {
-    public const PRIVACY_PUBLIC = 'PUBLIC';
-    public const PRIVACY_PRIVATE = 'PRIVATE';
+    public const PRIVACY_PUBLIC = 'public';
+    public const PRIVACY_PRIVATE = 'private';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,7 +42,7 @@ class StudyGroup
     private ?string $description = null;
 
     #[ORM\Column(type: Types::STRING, length: 50)]
-    #[Assert\Choice(choices: ['PUBLIC', 'PRIVATE', 'public', 'private'])]
+    #[Assert\Choice(choices: ['public', 'private'])]
     private string $privacy = self::PRIVACY_PUBLIC;
 
     #[ORM\Column(length: 100, nullable: true)]

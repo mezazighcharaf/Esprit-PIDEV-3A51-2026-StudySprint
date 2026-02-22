@@ -64,7 +64,7 @@
                         <div class="fo-group-info">
                             <div class="fo-group-name">{{ group.name }}</div>
                             <div class="fo-group-meta">
-                                <span class="badge badge-{{ group.role == 'Admin' ? 'primary' : 'neutral' }}">{{ group.role }}</span>
+                                <span class="badge badge-{{ group.role == 'admin' ? 'primary' : 'neutral' }}">{{ group.role }}</span>
                             </div>
                         </div>
                     </div>
@@ -96,7 +96,7 @@
                             <div class="dropdown-menu">
                                 <button class="dropdown-item">Inviter des membres</button>
                                 <button class="dropdown-item">Parametres</button>
-                                {% if group.role == 'Admin' %}
+                                {% if group.role == 'admin' %}
                                 <div class="dropdown-divider"></div>
                                 <button class="dropdown-item danger">Supprimer le groupe</button>
                                 {% else %}

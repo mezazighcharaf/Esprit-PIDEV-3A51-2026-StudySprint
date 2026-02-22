@@ -40,7 +40,7 @@ class FlashcardDeckType extends AbstractType
                 'label' => 'Cartes (JSON)',
                 'mapped' => false,
                 'required' => false,
-                'data' => $options['data']->getCards() ? json_encode($options['data']->getCards(), JSON_PRETTY_PRINT) : '[]',
+                'data' => ($options['data'] instanceof \App\Entity\FlashcardDeck && !$options['data']->getFlashcards()->isEmpty()) ? '[]' : '[]',
             ])
             ->add('isPublished', CheckboxType::class, ['label' => 'Publié', 'required' => false])
             ->add('generatedByAi', CheckboxType::class, ['label' => 'Généré par IA', 'required' => false])

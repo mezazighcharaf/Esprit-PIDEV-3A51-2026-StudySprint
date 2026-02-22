@@ -148,7 +148,6 @@ class RegistrationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => UserRegistrationDTO::class,
-            'data_class' => UserRegistrationDTO::class,
             'validation_groups' => function (\Symfony\Component\Form\FormInterface $form) {
                 $data = $form->getData();
                 if ($data instanceof UserRegistrationDTO) {

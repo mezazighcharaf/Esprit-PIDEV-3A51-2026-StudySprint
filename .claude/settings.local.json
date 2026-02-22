@@ -39,7 +39,22 @@
       "Bash(find:*)",
       "Bash(cd /c/Users/charaf/Desktop/StudySprint && git checkout -b merge/groups-integration 2>&1)",
       "Bash(cp:*)",
-      "Bash(echo done:*)"
+      "Bash(echo done:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git push origin integration 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git rm *.md *.txt 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git commit -m \"$\\(cat <<'EOF'\nClean root: remove temp docs and audit markdown files\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push origin integration 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git rm --cached mercure.exe 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git add README.md .gitignore && git commit -m \"$\\(cat <<'EOF'\nAdd complete README, remove mercure.exe from repo \\(add to gitignore\\)\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push origin integration 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git add src/Controller/PasswordResetController.php src/Controller/Security/FaceAuthController.php templates/fo/groups/ templates/bo/mentoring.html.twig templates/layouts/fo.html.twig && git commit -m \"$\\(cat <<'EOF'\nFix 3 critical audit issues: setPassword, app_post_login route, fo_groups routes\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\" && git push origin integration 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && node --version && npm --version 2>&1)",
+      "Bash(tail:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright install chromium 2>&1)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright --version 2>&1)",
+      "Bash(find C:\\\\Users\\\\charaf\\\\Desktop\\\\StudySprint\\\\src\\\\Form:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test tests/e2e/01-auth.spec.js --reporter=list 2>&1)",
+      "Bash(grep Error::*)",
+      "Bash(taskkill:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test --reporter=list 2>&1)"
     ]
   }
 }

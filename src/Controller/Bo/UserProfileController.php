@@ -21,7 +21,7 @@ class UserProfileController extends AbstractController
 
         $q = $request->query->get('q', '');
         $sort = $request->query->get('sort', 'id');
-        $dir = $request->query->get('dir', 'asc');
+        $dir = $request->query->get('dir', 'desc');
         $page = max(1, $request->query->getInt('page', 1));
         $perPage = 20;
 

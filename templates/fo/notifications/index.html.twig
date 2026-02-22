@@ -9,6 +9,7 @@
     </div>
     {% if notifications|length > 0 %}
     <form action="{{ path('fo_notifications_mark_all_read') }}" method="post">
+        <input type="hidden" name="_token" value="{{ csrf_token('mark_all_read') }}">
         <button type="submit" class="btn btn-ghost btn-sm">Tout marquer comme lu</button>
     </form>
     {% endif %}

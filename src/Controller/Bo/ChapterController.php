@@ -159,7 +159,7 @@ class ChapterController extends AbstractController
 
         // Call FastAPI AI Gateway
         try {
-            $data = $aiGateway->summarizeChapter(1, $item->getId());
+            $data = $aiGateway->summarizeChapter($this->getUser()->getId(), $item->getId());
 
             // Update chapter with AI data
             $item->setAiSummary($data['summary'] ?? null);

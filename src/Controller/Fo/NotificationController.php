@@ -5,6 +5,7 @@ namespace App\Controller\Fo;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -24,9 +25,13 @@ class NotificationController extends AbstractController
     }
 
     #[Route('/mark-all-read', name: 'mark_all_read', methods: ['POST'])]
-    public function markAllRead(NotificationRepository $repo): Response
+    public function markAllRead(Request $request, NotificationRepository $repo): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
+        if (!$this->isCsrfTokenValid('mark_all_read', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('fo_notifications_index');
+        }
         $repo->markAllAsRead($this->getUser());
         $this->addFlash('success', 'Toutes les notifications ont été marquées comme lues.');
         return $this->redirectToRoute('fo_notifications_index');

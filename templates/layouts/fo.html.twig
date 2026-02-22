@@ -188,7 +188,7 @@
     try {
         var userId = {{ app.user.id|json_encode|raw }};
         var topic = 'studysprint/notifications/user/' + userId;
-        var hubUrl = {{ mercure(topic)|json_encode|raw }};
+        var hubUrl = {{ mercure('studysprint/notifications/user/' ~ app.user.id)|json_encode|raw }};
 
         if (!window.EventSource) return;
 

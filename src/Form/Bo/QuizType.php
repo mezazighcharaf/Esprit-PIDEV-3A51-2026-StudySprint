@@ -49,7 +49,7 @@ class QuizType extends AbstractType
                 'label' => 'Questions (JSON)',
                 'mapped' => false,
                 'required' => false,
-                'data' => $options['data']->getQuestions() ? json_encode($options['data']->getQuestions(), JSON_PRETTY_PRINT) : '[]',
+                'data' => ($options['data'] instanceof \App\Entity\Quiz && $options['data']->getQuestions()) ? json_encode($options['data']->getQuestions(), JSON_PRETTY_PRINT) : '[]',
             ])
             ->add('isPublished', CheckboxType::class, ['label' => 'Publié', 'required' => false])
             ->add('generatedByAi', CheckboxType::class, ['label' => 'Généré par IA', 'required' => false])

@@ -13,6 +13,7 @@ class DictionaryController extends AbstractController
     #[Route('/{word}', name: 'lookup', methods: ['GET'])]
     public function lookup(string $word, DictionaryService $dictionaryService): JsonResponse
     {
+        $word = trim($word);
         if (strlen($word) < 1 || strlen($word) > 100) {
             return $this->json(['error' => 'Mot invalide.'], 400);
         }

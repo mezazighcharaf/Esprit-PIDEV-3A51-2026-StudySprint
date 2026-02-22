@@ -15,6 +15,9 @@ class TranslationController extends AbstractController
     public function translate(Request $request, TranslationService $translationService): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return $this->json(['error' => 'JSON invalide.'], 400);
+        }
 
         $text       = trim($data['text'] ?? '');
         $sourceLang = $data['source'] ?? 'auto';
