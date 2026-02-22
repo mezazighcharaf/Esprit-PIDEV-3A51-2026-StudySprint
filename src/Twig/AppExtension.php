@@ -13,7 +13,24 @@ class AppExtension extends AbstractExtension
             new TwigFilter('timeAgo', [$this, 'timeAgo']),
             new TwigFilter('difficultyLabel', [$this, 'difficultyLabel']),
             new TwigFilter('starRating', [$this, 'starRating'], ['is_safe' => ['html']]),
+            new TwigFilter('avatar_color', [$this, 'avatarColor']),
+            new TwigFilter('initials', [$this, 'initials']),
         ];
+    }
+
+    public function avatarColor(string $name): string
+    {
+        $colors = ['blue', 'green', 'purple', 'orange', 'red', 'teal', 'pink', 'indigo'];
+        return $colors[abs(crc32($name)) % count($colors)];
+    }
+
+    public function initials(string $name): string
+    {
+        $parts = explode(' ', trim($name));
+        if (count($parts) >= 2) {
+            return strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+        }
+        return strtoupper(substr($name, 0, 2));
     }
 
     public function timeAgo(\DateTimeInterface $date): string

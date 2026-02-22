@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation à rejoindre un groupe - StudySprint</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1D4ED8 0%, #0891B2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header .group-avatar {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            line-height: 64px;
+        }
+        .header .group-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+        .header .group-meta {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+        .content {
+            padding: 32px 30px;
+        }
+        .content p {
+            margin: 0 0 16px;
+            font-size: 15px;
+            color: #374151;
+        }
+        .message-box {
+            background: #f8fafc;
+            border-left: 3px solid #1D4ED8;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 24px;
+        }
+        .message-box .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+            margin: 0 0 4px;
+        }
+        .message-box .text {
+            font-size: 14px;
+            color: #374151;
+            margin: 0;
+            font-style: italic;
+        }
+        .role-badge {
+            display: inline-block;
+            background: #EEF2FF;
+            color: #4338CA;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+        }
+
+        /* Method 1: Direct link button */
+        .cta-section {
+            text-align: center;
+            margin: 28px 0;
+        }
+        .btn-primary {
+            display: inline-block;
+            background: #1D4ED8;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .link-fallback {
+            font-size: 11px;
+            color: #9CA3AF;
+            margin: 12px 0 0;
+            word-break: break-all;
+        }
+        .link-fallback a {
+            color: #1D4ED8;
+        }
+
+        /* Separator */
+        .separator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 28px 0;
+        }
+        .separator .line {
+            flex: 1;
+            height: 1px;
+            background: #E5E7EB;
+        }
+        .separator .text {
+            font-size: 12px;
+            color: #9CA3AF;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Methods 2 & 3 */
+        .methods-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .method-card {
+            flex: 1;
+            min-width: 200px;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .method-card .method-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin: 0 0 12px;
+        }
+        .code-box {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 8px;
+        }
+        .code-value {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1D4ED8;
+            letter-spacing: 3px;
+        }
+        .method-hint {
+            font-size: 11px;
+            color: #9CA3AF;
+            margin: 0;
+        }
+        .qr-wrapper {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #f8fafc;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .footer p {
+            margin: 0 0 4px;
+        }
+        .footer .copyright {
+            margin-top: 12px;
+            color: #D1D5DB;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {# ─── Header with group info ─── #}
+        <div class="header">
+            <div class="group-avatar">
+                {{ groupName|slice(0, 2)|upper }}
+            </div>
+            <p class="group-name">{{ groupName }}</p>
+            <p class="group-meta">
+                {% if invitation.group.subject %}
+                    {{ invitation.group.subject }}
+                {% endif %}
+            </p>
+        </div>
+
+        {# ─── Main content ─── #}
+        <div class="content">
+            <p>Bonjour,</p>
+            <p>
+                <strong>{{ inviterName }}</strong> vous invite à rejoindre le groupe d'étude
+                <strong>« {{ groupName }} »</strong> sur StudySprint.
+            </p>
+
+            {# Optional personal message #}
+            {% if invitation.message %}
+            <div class="message-box">
+                <p class="label">Message :</p>
+                <p class="text">« {{ invitation.message }} »</p>
+            </div>
+            {% endif %}
+
+            {# Role badge #}
+            <div>
+                <span class="role-badge">
+                    Rôle : {{ invitation.role == 'moderator' ? 'Modérateur' : (invitation.role == 'admin' ? 'Administrateur' : 'Membre') }}
+                </span>
+            </div>
+
+            {# ══════════════════════════════════════════ #}
+            {# METHOD 1: Direct link (main CTA button)   #}
+            {# ══════════════════════════════════════════ #}
+            <div class="cta-section">
+                <a href="{{ acceptUrl }}" class="btn-primary">
+                    ✅ Accepter l'invitation
+                </a>
+                <p class="link-fallback">
+                    Ou copiez ce lien dans votre navigateur :<br>
+                    <a href="{{ acceptUrl }}">{{ acceptUrl }}</a>
+                </p>
+            </div>
+
+            {# Separator #}
+            <div class="separator">
+                <div class="line"></div>
+                <span class="text">AUTRES MÉTHODES</span>
+                <div class="line"></div>
+            </div>
+
+            <div class="methods-row">
+                {# ══════════════════════════════════════════ #}
+                {# METHOD 2: Invitation code                  #}
+                {# ══════════════════════════════════════════ #}
+                <div class="method-card">
+                    <p class="method-title">📋 Code d'invitation</p>
+                    <div class="code-box">
+                        <span class="code-value">{{ invitation.code }}</span>
+                    </div>
+                    <p class="method-hint">
+                        Saisissez ce code dans « Rejoindre un groupe » sur StudySprint
+                    </p>
+                </div>
+
+                {# ══════════════════════════════════════════ #}
+                {# METHOD 3: QR Code                          #}
+                {# ══════════════════════════════════════════ #}
+                <div class="method-card">
+                    <p class="method-title">📱 Scanner le QR Code</p>
+                    <div class="qr-wrapper">
+                        <img src="cid:qr-code" alt="QR Code d'invitation" width="160" height="160" style="display: block;">
+                    </div>
+                    <p class="method-hint">
+                        Scannez avec votre téléphone pour rejoindre le groupe
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {# ─── Footer ─── #}
+        <div class="footer">
+            {% if invitation.expiresAt %}
+            <p>Cette invitation expire le <strong>{{ invitation.expiresAt|date('d/m/Y') }}</strong>.</p>
+            {% endif %}
+            <p>Si vous n'avez pas demandé cette invitation, ignorez simplement cet email.</p>
+            <p class="copyright">© {{ "now"|date("Y") }} StudySprint — Apprendre ensemble, réussir ensemble.</p>
+        </div>
+    </div>
+</body>
+</html>

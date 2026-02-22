@@ -47,22 +47,20 @@ class BoDataProvider
         $startOfMonth = new \DateTimeImmutable('first day of this month 00:00:00');
         $newUsersThisMonth = (int) $this->userRepo->createQueryBuilder('u')
             ->select('COUNT(u.id)')
-            ->where('u.createdAt >= :start')
+            ->where('u.dateInscription >= :start')
             ->setParameter('start', $startOfMonth)
             ->getQuery()->getSingleScalarResult();
 
         // Recent users (real data)
         $recentUsers = $this->userRepo->findBy([], ['id' => 'DESC'], 5);
         $recentUsersData = array_map(function ($u) {
-            $parts    = explode(' ', trim($u->getFullName()));
-            $initials = strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ''));
             return [
                 'id'            => $u->getId(),
                 'name'          => $u->getFullName(),
                 'email'         => $u->getEmail(),
-                'initials'      => $initials,
-                'role'          => ucfirst(strtolower($u->getUserType())),
-                'created_at'    => $u->getCreatedAt()->format('d/m/Y'),
+                'initials'      => $u->getInitials(),
+                'role'          => ucfirst(strtolower($u->getRole() ?? 'user')),
+                'created_at'    => $u->getDateInscription() ? $u->getDateInscription()->format('d/m/Y') : '—',
             ];
         }, $recentUsers);
 
@@ -186,35 +184,38 @@ class BoDataProvider
 
     public function getUsersOverviewReal(int $page = 1, int $perPage = 20, string $q = '', string $sort = 'id', string $dir = 'DESC'): array
     {
-        $allowedSort = ['id', 'fullName', 'email', 'userType', 'createdAt'];
+        $allowedSort = ['id', 'email', 'role', 'dateInscription'];
         if (!in_array($sort, $allowedSort)) $sort = 'id';
         $dir = strtoupper($dir) === 'ASC' ? 'ASC' : 'DESC';
 
         $qb = $this->userRepo->createQueryBuilder('u');
         if ($q) {
-            $qb->where('u.email LIKE :q OR u.fullName LIKE :q')->setParameter('q', "%$q%");
+            $qb->where('u.email LIKE :q OR u.nom LIKE :q OR u.prenom LIKE :q')->setParameter('q', "%$q%");
         }
         $qb->orderBy("u.$sort", $dir);
 
         $total = (int) (clone $qb)->select('COUNT(u.id)')->getQuery()->getSingleScalarResult();
         $users = $qb->setFirstResult(($page - 1) * $perPage)->setMaxResults($perPage)->getQuery()->getResult();
 
-        // Count by type
-        $byType = $this->em->createQueryBuilder()
-            ->select('u.userType, COUNT(u.id) as cnt')
+        // Count by role
+        $byRole = $this->em->createQueryBuilder()
+            ->select('u.role, COUNT(u.id) as cnt')
             ->from('App\Entity\User', 'u')
-            ->groupBy('u.userType')
+            ->groupBy('u.role')
             ->getQuery()->getResult();
 
-        $typeCounts = [];
-        foreach ($byType as $row) {
-            $typeCounts[strtolower($row['userType'])] = (int) $row['cnt'];
+        $typeCounts = ['student' => 0, 'teacher' => 0, 'admin' => 0];
+        foreach ($byRole as $row) {
+            $r = strtolower($row['role'] ?? '');
+            if (str_contains($r, 'student')) $typeCounts['student'] += (int)$row['cnt'];
+            elseif (str_contains($r, 'professor') || str_contains($r, 'teacher')) $typeCounts['teacher'] += (int)$row['cnt'];
+            elseif (str_contains($r, 'admin')) $typeCounts['admin'] += (int)$row['cnt'];
         }
 
         // New users this month
         $newThisMonth = (int) $this->userRepo->createQueryBuilder('u')
             ->select('COUNT(u.id)')
-            ->where('u.createdAt >= :start')
+            ->where('u.dateInscription >= :start')
             ->setParameter('start', new \DateTimeImmutable('first day of this month 00:00:00'))
             ->getQuery()->getSingleScalarResult();
 
@@ -225,23 +226,21 @@ class BoDataProvider
             $weekEnd   = (clone $weekStart)->modify('+6 days 23:59:59');
             $count = (int) $this->userRepo->createQueryBuilder('u')
                 ->select('COUNT(u.id)')
-                ->where('u.createdAt >= :s')->andWhere('u.createdAt <= :e')
+                ->where('u.dateInscription >= :s')->andWhere('u.dateInscription <= :e')
                 ->setParameter('s', $weekStart)->setParameter('e', $weekEnd)
                 ->getQuery()->getSingleScalarResult();
             $weeklyRegistrations[] = ['label' => $weekStart->format('d/m'), 'count' => $count];
         }
 
         $usersData = array_map(function ($u) {
-            $parts    = explode(' ', trim($u->getFullName()));
-            $initials = strtoupper(substr($parts[0], 0, 1) . (isset($parts[1]) ? substr($parts[1], 0, 1) : ''));
             return [
                 'id'         => $u->getId(),
                 'name'       => $u->getFullName(),
                 'email'      => $u->getEmail(),
-                'initials'   => $initials,
-                'type'       => $u->getUserType(),
-                'role'       => ucfirst(strtolower($u->getUserType())),
-                'created_at' => $u->getCreatedAt()->format('d/m/Y'),
+                'initials'   => $u->getInitials(),
+                'type'       => $u->getRole(),
+                'role'       => ucfirst(strtolower(str_replace('ROLE_', '', $u->getRole() ?? 'user'))),
+                'created_at' => $u->getDateInscription() ? $u->getDateInscription()->format('d/m/Y') : '—',
                 'is_admin'   => in_array('ROLE_ADMIN', $u->getRoles()),
             ];
         }, $users);
@@ -249,9 +248,9 @@ class BoDataProvider
         return [
             'stats' => [
                 'total'      => $total,
-                'students'   => $typeCounts['student'] ?? 0,
-                'teachers'   => $typeCounts['teacher'] ?? 0,
-                'admins'     => $typeCounts['admin'] ?? 0,
+                'students'   => $typeCounts['student'],
+                'teachers'   => $typeCounts['teacher'],
+                'admins'     => $typeCounts['admin'],
                 'new_month'  => $newThisMonth,
             ],
             'users'                 => $usersData,
@@ -467,7 +466,7 @@ class BoDataProvider
 
         // Recent posts
         $recentPosts = $this->em->createQueryBuilder()
-            ->select('p.id, p.body, p.createdAt, g.name as groupName, u.fullName as authorName')
+            ->select('p.id, p.body, p.createdAt, g.name as groupName, CONCAT(u.prenom, \' \', u.nom) as authorName')
             ->from('App\Entity\GroupPost', 'p')
             ->join('p.group', 'g')
             ->join('p.author', 'u')

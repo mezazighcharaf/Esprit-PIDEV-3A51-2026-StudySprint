@@ -11,6 +11,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StudyGroupRepository::class)]
 #[ORM\Table(name: 'study_groups')]
+#[ORM\Index(name: 'idx_group_privacy', columns: ['privacy'])]
+#[ORM\Index(name: 'idx_group_created', columns: ['created_at'])]
+#[ORM\Index(name: 'idx_group_activity', columns: ['last_activity'])]
 class StudyGroup
 {
     public const PRIVACY_PUBLIC = 'PUBLIC';
@@ -22,23 +25,42 @@ class StudyGroup
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 120)]
-    private string $name;
+    #[Assert\NotBlank(message: 'Le nom du groupe est requis')]
+    #[Assert\Length(
+        min: 3,
+        max: 120,
+        minMessage: 'Le nom du groupe doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom du groupe ne peut pas dépasser {{ limit }} caractères'
+    )]
+    private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::STRING, length: 50)]
-    #[Assert\Choice(choices: ['PUBLIC', 'PRIVATE'])]
+    #[Assert\Choice(choices: ['PUBLIC', 'PRIVATE', 'public', 'private'])]
     private string $privacy = self::PRIVACY_PUBLIC;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $subject = null;
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'studyGroups')]
-    #[ORM\JoinColumn(nullable: false)]
-    private User $createdBy;
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?User $createdBy = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $createdAt;
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $lastActivity = null;
 
     /** @var Collection<int, GroupMember> */
     #[ORM\OneToMany(targetEntity: GroupMember::class, mappedBy: 'group', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -50,9 +72,10 @@ class StudyGroup
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->members = new ArrayCollection();
-        $this->posts = new ArrayCollection();
+        $this->createdAt   = new \DateTimeImmutable();
+        $this->lastActivity = $this->createdAt;
+        $this->members     = new ArrayCollection();
+        $this->posts       = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -60,7 +83,7 @@ class StudyGroup
         return $this->id;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -93,7 +116,18 @@ class StudyGroup
         return $this;
     }
 
-    public function getCreatedBy(): User
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?string $subject): static
+    {
+        $this->subject = $subject;
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
     {
         return $this->createdBy;
     }
@@ -104,9 +138,31 @@ class StudyGroup
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getLastActivity(): ?\DateTimeImmutable
+    {
+        return $this->lastActivity;
+    }
+
+    public function setLastActivity(?\DateTimeImmutable $lastActivity): static
+    {
+        $this->lastActivity = $lastActivity;
+        return $this;
     }
 
     /** @return Collection<int, GroupMember> */

@@ -65,10 +65,25 @@ class GroupPost
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentPost', cascade: ['remove'])]
     private Collection $replies;
 
+    /** @var Collection<int, PostLike> */
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostLike::class, cascade: ['persist', 'remove'])]
+    private Collection $likes;
+
+    /** @var Collection<int, PostComment> */
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostComment::class, cascade: ['persist', 'remove'])]
+    private Collection $comments;
+
+    /** @var Collection<int, PostRating> */
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostRating::class, cascade: ['persist', 'remove'])]
+    private Collection $ratings;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->replies = new ArrayCollection();
+        $this->replies   = new ArrayCollection();
+        $this->likes     = new ArrayCollection();
+        $this->comments  = new ArrayCollection();
+        $this->ratings   = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -196,4 +211,23 @@ class GroupPost
         $this->aiTags = $aiTags;
         return $this;
     }
+
+    /** @return Collection<int, PostLike> */
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    /** @return Collection<int, PostComment> */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    /** @return Collection<int, PostRating> */
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
 }
+

@@ -27,13 +27,13 @@ class UserController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $perPage = 20;
 
-        $allowedSort = ['id', 'email', 'fullName', 'userType', 'createdAt'];
+        $allowedSort = ['id', 'email', 'nom', 'role', 'dateInscription'];
         if (!in_array($sort, $allowedSort)) $sort = 'id';
         $dir = strtolower($dir) === 'asc' ? 'ASC' : 'DESC';
 
         $qb = $repo->createQueryBuilder('u');
         if ($q) {
-            $qb->where('u.email LIKE :q OR u.fullName LIKE :q')->setParameter('q', "%$q%");
+            $qb->where('u.email LIKE :q OR u.nom LIKE :q OR u.prenom LIKE :q')->setParameter('q', "%$q%");
         }
         $qb->orderBy("u.$sort", $dir);
 
@@ -57,10 +57,10 @@ class UserController extends AbstractController
             $u->getId(),
             $u->getFullName(),
             $u->getEmail(),
-            $u->getUserType(),
+            $u->getRole(),
             implode(', ', $u->getRoles()),
-            in_array('ROLE_ADMIN', $u->getRoles()) ? 'Admin' : ucfirst(strtolower($u->getUserType())),
-            $u->getCreatedAt()?->format('d/m/Y H:i'),
+            in_array('ROLE_ADMIN', $u->getRoles()) ? 'Admin' : ucfirst(strtolower(str_replace('ROLE_', '', $u->getRole() ?? 'user'))),
+            $u->getDateInscription()?->format('d/m/Y H:i'),
         ], $users);
 
         return $csv->export(
@@ -73,7 +73,8 @@ class UserController extends AbstractController
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
     {
-        $user = new User();
+        // User is now abstract — instantiate a Student by default in BO
+        $user = new \App\Entity\Student();
         $form = $this->createForm(UserType::class, $user, ['is_new' => true]);
         $form->handleRequest($request);
 

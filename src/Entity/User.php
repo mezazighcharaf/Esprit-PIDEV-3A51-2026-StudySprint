@@ -14,40 +14,74 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
+#[ORM\InheritanceType("SINGLE_TABLE")]
+#[ORM\DiscriminatorColumn(name: "discr", type: "string")]
+#[ORM\DiscriminatorMap(["user" => User::class, "student" => Student::class, "professor" => Professor::class, "administrator" => Administrator::class])]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['email'], message: 'This email is already used.')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    private ?string $prenom = null;
+
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
-    private string $email;
+    private ?string $email = null;
 
-    #[ORM\Column(type: Types::STRING)]
-    private string $password;
+    #[ORM\Column(length: 255)]
+    private ?string $motDePasse = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    private array $roles = [];
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $role = null;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 120)]
-    private string $fullName;
+    #[ORM\Column(length: 50)]
+    private ?string $statut = 'actif';
 
-    #[ORM\Column(type: Types::STRING, length: 50)]
-    #[Assert\Choice(choices: ['STUDENT', 'TEACHER', 'ADMIN'])]
-    private string $userType = 'STUDENT';
-
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $createdAt;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $dateInscription = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resetToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastActivityAt = null;
+
+    #[ORM\Column(length: 2, nullable: true)]
+    #[Assert\Country]
+    private ?string $pays = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Regex(
+        pattern: "/^(\+?\d{1,4})?\d{8,15}$/",
+        message: "Format de numéro de téléphone invalide"
+    )]
+    private ?string $telephone = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?int $anneesExperience = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
+
+    // ──── Our relations ────────────────────────────────────────
 
     #[ORM\OneToOne(targetEntity: UserProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?UserProfile $profile = null;
@@ -78,21 +112,59 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->subjects = new ArrayCollection();
-        $this->chapters = new ArrayCollection();
-        $this->studyGroups = new ArrayCollection();
-        $this->quizzes = new ArrayCollection();
-        $this->flashcardDecks = new ArrayCollection();
-        $this->revisionPlans = new ArrayCollection();
+        $this->dateInscription = new \DateTimeImmutable();
+        $this->subjects        = new ArrayCollection();
+        $this->chapters        = new ArrayCollection();
+        $this->studyGroups     = new ArrayCollection();
+        $this->quizzes         = new ArrayCollection();
+        $this->flashcardDecks  = new ArrayCollection();
+        $this->revisionPlans   = new ArrayCollection();
     }
+
+    // ──── Identity ────────────────────────────────────────────
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getEmail(): string
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
+        return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return trim($this->prenom . ' ' . $this->nom);
+    }
+
+    public function getInitials(): string
+    {
+        $prenom = $this->prenom ? strtoupper(substr($this->prenom, 0, 1)) : '';
+        $nom    = $this->nom    ? strtoupper(substr($this->nom,    0, 1)) : '';
+        return $prenom . $nom;
+    }
+
+    // ──── Email ───────────────────────────────────────────────
+
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -105,58 +177,95 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return $this->email;
+        return (string) $this->email;
     }
+
+    // ──── Password (Symfony interface maps to motDePasse) ─────
 
     public function getPassword(): string
     {
-        return $this->password;
+        return (string) $this->motDePasse;
     }
 
-    public function setPassword(string $password): static
+    public function getMotDePasse(): ?string
     {
-        $this->password = $password;
+        return $this->motDePasse;
+    }
+
+    public function setMotDePasse(string $motDePasse): static
+    {
+        $this->motDePasse = $motDePasse;
         return $this;
     }
 
+    /**
+     * Alias kept for compatibility with Symfony's PasswordUpgraderInterface callers.
+     */
+    public function setPassword(string $password): static
+    {
+        $this->motDePasse = $password;
+        return $this;
+    }
+
+    // ──── Roles (Symfony interface — role string → array) ─────
+
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $roles = [$this->role ?? 'ROLE_USER'];
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
 
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): static
+    {
+        $this->role = $role;
+        return $this;
+    }
+
+    /** Alias kept for compatibility with code that calls setRoles(array). */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
+        $this->role = $roles[0] ?? 'ROLE_USER';
         return $this;
     }
 
-    public function getFullName(): string
+    public function eraseCredentials(): void {}
+
+    // ──── Status ──────────────────────────────────────────────
+
+    public function getStatut(): ?string
     {
-        return $this->fullName;
+        return $this->statut;
     }
 
-    public function setFullName(string $fullName): static
+    public function setStatut(string $statut): static
     {
-        $this->fullName = $fullName;
+        $this->statut = $statut;
         return $this;
     }
 
-    public function getUserType(): string
+    // ──── Dates ───────────────────────────────────────────────
+
+    public function getDateInscription(): ?\DateTimeImmutable
     {
-        return $this->userType;
+        return $this->dateInscription;
     }
 
-    public function setUserType(string $userType): static
+    public function setDateInscription(\DateTimeImmutable $dateInscription): static
     {
-        $this->userType = $userType;
+        $this->dateInscription = $dateInscription;
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    /** Alias for code that references createdAt. */
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->dateInscription;
     }
 
     public function getUpdatedAt(): ?\DateTimeImmutable
@@ -175,6 +284,114 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->updatedAt = new \DateTimeImmutable();
     }
+
+    // ──── Reset token ─────────────────────────────────────────
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    // ──── Activity ────────────────────────────────────────────
+
+    public function getLastActivityAt(): ?\DateTimeImmutable
+    {
+        return $this->lastActivityAt;
+    }
+
+    public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
+    {
+        $this->lastActivityAt = $lastActivityAt;
+        return $this;
+    }
+
+    // ──── Location / Contact ──────────────────────────────────
+
+    public function getPays(): ?string
+    {
+        return $this->pays;
+    }
+
+    public function setPays(?string $pays): static
+    {
+        $this->pays = $pays;
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
+    // ──── Experience ──────────────────────────────────────────
+
+    public function getAnneesExperience(): ?int
+    {
+        return $this->anneesExperience;
+    }
+
+    public function setAnneesExperience(?int $anneesExperience): static
+    {
+        $this->anneesExperience = $anneesExperience;
+        return $this;
+    }
+
+    // ──── Face recognition ────────────────────────────────────
+
+    public function getFaceDescriptor(): ?array
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?array $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    // ──── Helpers ─────────────────────────────────────────────
+
+    /**
+     * Returns true when the user holds the teacher role.
+     * Kept for backward-compatibility with our BO code.
+     */
+    public function isCertifiedTeacher(): bool
+    {
+        return $this->role === 'ROLE_TEACHER' || $this->role === 'ROLE_PROFESSOR';
+    }
+
+    /**
+     * Backward-compat alias: code that used getUserType() now maps to role.
+     */
+    public function getUserType(): ?string
+    {
+        return $this->role;
+    }
+
+    // ──── Relations ───────────────────────────────────────────
 
     public function getProfile(): ?UserProfile
     {
@@ -224,15 +441,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRevisionPlans(): Collection
     {
         return $this->revisionPlans;
-    }
-
-    public function isCertifiedTeacher(): bool
-    {
-        return $this->userType === 'TEACHER';
-    }
-
-    public function eraseCredentials(): void
-    {
-        // Clear temporary sensitive data if any
     }
 }

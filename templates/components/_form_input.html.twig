@@ -1,0 +1,581 @@
+{#
+  FORM INPUT COMPONENTS
+  Centralized form input macros with consistent styling and validation display
+  
+  Usage:
+  {{ _self.form_text_input(form.name) }}
+  {{ _self.form_textarea_input(form.description) }}
+  {{ _self.form_select_input(form.role) }}
+  {{ _self.form_checkbox_input(form.isPrivate) }}
+#}
+
+{% macro form_text_input(field, label = null, placeholder = '', required = false, helpText = '', icon = null) %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ field.vars.id }}" class="form-label">
+                {{ label }}
+                {% if required %}
+                    <span class="form-required" aria-label="Required field">*</span>
+                {% endif %}
+            </label>
+        {% endif %}
+        
+        <div class="form-input-wrapper{{ icon ? ' form-input-with-icon' : '' }}">
+            {% if icon %}
+                <span class="form-input-icon">{{ icon|raw }}</span>
+            {% endif %}
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-input' ~ (field.vars.errors|length > 0 ? ' form-input-error' : ''),
+                    'placeholder': placeholder,
+                    'aria-describedby': (helpText or field.vars.errors|length > 0) ? field.vars.id ~ '-help' : null
+                }
+            }) }}
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert" id="{{ field.vars.id }}-help">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help" id="{{ field.vars.id }}-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro form_email_input(field, label = 'Email', placeholder = 'example@example.com', required = true, helpText = '') %}
+    {{ _self.form_text_input(
+        field,
+        label,
+        placeholder,
+        required,
+        helpText,
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>'
+    ) }}
+{% endmacro %}
+
+{% macro form_password_input(field, label = 'Mot de passe', required = true, helpText = '') %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ field.vars.id }}" class="form-label">
+                {{ label }}
+                {% if required %}
+                    <span class="form-required" aria-label="Required field">*</span>
+                {% endif %}
+            </label>
+        {% endif %}
+        
+        <div class="form-input-wrapper form-password-wrapper">
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-input' ~ (field.vars.errors|length > 0 ? ' form-input-error' : ''),
+                    'aria-describedby': (helpText or field.vars.errors|length > 0) ? field.vars.id ~ '-help' : null
+                }
+            }) }}
+            <button type="button" class="form-password-toggle" data-target="{{ field.vars.id }}" aria-label="Show password">
+                <svg class="password-icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="password-icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+            </button>
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert" id="{{ field.vars.id }}-help">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help" id="{{ field.vars.id }}-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro form_textarea_input(field, label = null, placeholder = '', required = false, helpText = '', rows = 4, maxLength = null) %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ field.vars.id }}" class="form-label">
+                {{ label }}
+                {% if required %}
+                    <span class="form-required" aria-label="Required field">*</span>
+                {% endif %}
+            </label>
+        {% endif %}
+        
+        <div class="form-textarea-wrapper">
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-textarea' ~ (field.vars.errors|length > 0 ? ' form-input-error' : ''),
+                    'placeholder': placeholder,
+                    'rows': rows,
+                    'maxlength': maxLength,
+                    'aria-describedby': (helpText or field.vars.errors|length > 0) ? field.vars.id ~ '-help' : null
+                }
+            }) }}
+            {% if maxLength %}
+                <div class="form-textarea-counter">
+                    <span class="form-counter-current" data-target="{{ field.vars.id }}">0</span>
+                    <span class="form-counter-divider">/</span>
+                    <span class="form-counter-max">{{ maxLength }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert" id="{{ field.vars.id }}-help">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help" id="{{ field.vars.id }}-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro form_select_input(field, label = null, placeholder = '-- Sélectionner --', required = false, helpText = '') %}
+    <div class="form-group">
+        {% if label %}
+            <label for="{{ field.vars.id }}" class="form-label">
+                {{ label }}
+                {% if required %}
+                    <span class="form-required" aria-label="Required field">*</span>
+                {% endif %}
+            </label>
+        {% endif %}
+        
+        <div class="form-select-wrapper">
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-select' ~ (field.vars.errors|length > 0 ? ' form-input-error' : ''),
+                    'aria-describedby': (helpText or field.vars.errors|length > 0) ? field.vars.id ~ '-help' : null
+                }
+            }) }}
+            <svg class="form-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert" id="{{ field.vars.id }}-help">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help" id="{{ field.vars.id }}-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro form_checkbox_input(field, label = null, helpText = '') %}
+    <div class="form-group form-checkbox-group">
+        <div class="form-checkbox-wrapper">
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-checkbox' ~ (field.vars.errors|length > 0 ? ' form-input-error' : '')
+                }
+            }) }}
+            {% if label %}
+                <label for="{{ field.vars.id }}" class="form-checkbox-label">
+                    {{ label }}
+                </label>
+            {% endif %}
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro form_radio_input(field, label = null, helpText = '') %}
+    <div class="form-group form-radio-group">
+        <div class="form-radio-wrapper">
+            {{ form_widget(field, {
+                'attr': {
+                    'class': 'form-radio' ~ (field.vars.errors|length > 0 ? ' form-input-error' : '')
+                }
+            }) }}
+            {% if label %}
+                <label for="{{ field.vars.id }}" class="form-radio-label">
+                    {{ label }}
+                </label>
+            {% endif %}
+        </div>
+
+        {% if field.vars.errors|length > 0 %}
+            <div class="form-error" role="alert">
+                {% for error in field.vars.errors %}
+                    <div class="form-error-item">
+                        <svg class="form-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>{{ error.message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% elseif helpText %}
+            <div class="form-help">{{ helpText }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+<style>
+  /* Form Group */
+  .form-group {
+    margin-bottom: var(--space-5);
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Form Label */
+  .form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--color-text);
+  }
+
+  .form-required {
+    color: var(--color-error);
+    margin-left: 2px;
+  }
+
+  /* Text Input */
+  .form-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-input-with-icon .form-input {
+    padding-left: var(--space-9);
+  }
+
+  .form-input-icon {
+    position: absolute;
+    left: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-secondary);
+    pointer-events: none;
+  }
+
+  .form-input-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    font-family: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-input:disabled,
+  .form-select:disabled,
+  .form-textarea:disabled {
+    background: var(--bg-secondary);
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+  }
+
+  .form-input-error,
+  .form-select.form-input-error,
+  .form-textarea.form-input-error {
+    border-color: var(--color-error);
+  }
+
+  .form-input-error:focus,
+  .form-select.form-input-error:focus,
+  .form-textarea.form-input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  /* Password Input */
+  .form-password-wrapper {
+    position: relative;
+  }
+
+  .form-password-toggle {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .form-password-toggle:hover {
+    color: var(--color-text);
+    background: var(--bg-secondary);
+  }
+
+  .form-password-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .password-icon-hide {
+    display: none;
+  }
+
+  .form-password-toggle[data-type="text"] .password-icon-show {
+    display: none;
+  }
+
+  .form-password-toggle[data-type="text"] .password-icon-hide {
+    display: block;
+  }
+
+  input::-webkit-password-reveal-button {
+    display: none;
+  }
+
+  /* Textarea */
+  .form-textarea-wrapper {
+    position: relative;
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-textarea-counter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    margin-top: var(--space-2);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+
+  .form-counter-current {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  /* Select */
+  .form-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-select {
+    appearance: none;
+    padding-right: var(--space-9);
+    cursor: pointer;
+  }
+
+  .form-select-arrow {
+    position: absolute;
+    right: var(--space-3);
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    color: var(--color-text-secondary);
+  }
+
+  /* Checkbox & Radio */
+  .form-checkbox-group,
+  .form-radio-group {
+    margin-bottom: var(--space-4);
+  }
+
+  .form-checkbox-wrapper,
+  .form-radio-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .form-checkbox,
+  .form-radio {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--color-primary);
+  }
+
+  .form-checkbox-label,
+  .form-radio-label {
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .form-checkbox:disabled,
+  .form-radio:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Error & Help Text */
+  .form-error {
+    margin-top: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .form-error-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 4px;
+    color: var(--color-error);
+    font-size: 13px;
+  }
+
+  .form-error-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+  }
+
+  .form-help {
+    margin-top: var(--space-2);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .form-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      font-size: 16px;
+    }
+  }
+</style>
+
+<script>
+  // Password visibility toggle
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.form-password-toggle').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.dataset.target;
+        const input = document.getElementById(targetId);
+        
+        if (input) {
+          const isPassword = input.type === 'password';
+          input.type = isPassword ? 'text' : 'password';
+          this.dataset.type = input.type;
+        }
+      });
+    });
+
+    // Textarea character counter
+    document.querySelectorAll('.form-textarea[maxlength]').forEach(textarea => {
+      const wrapper = textarea.closest('.form-textarea-wrapper');
+      const counter = wrapper?.querySelector('.form-counter-current');
+      
+      if (counter) {
+        const updateCounter = () => {
+          counter.textContent = textarea.value.length;
+        };
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+      }
+    });
+  });
+</script>

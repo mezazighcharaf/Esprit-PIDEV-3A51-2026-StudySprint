@@ -1,0 +1,140 @@
+{#
+  REUSABLE MODAL COMPONENT
+  Unified modal dialog for confirmations, forms, and content
+  
+  Usage:
+  {% call components.modal('my-modal-id', 'Modal Title', 'md', true) %}
+    <p>Modal content here</p>
+  {% endcall %}
+#}
+
+{% macro modal(id, title = '', size = 'md', dismissible = true, content = '') %}
+    <div class="modal-backdrop" data-modal-backdrop="{{ id }}" aria-hidden="true" role="presentation"></div>
+    <div class="modal modal-{{ size }}" data-modal="{{ id }}" role="dialog" aria-labelledby="modal-title-{{ id }}" aria-hidden="true">
+        <div class="modal-header">
+            <h2 id="modal-title-{{ id }}" class="modal-title">{{ title }}</h2>
+            {% if dismissible %}
+                <button
+                    class="btn btn-ghost btn-icon"
+                    data-modal-close="{{ id }}"
+                    type="button"
+                    aria-label="Close dialog"
+                    title="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="modal-body">
+            {{ content|raw }}
+        </div>
+    </div>
+{% endmacro %}
+
+{#
+  MODAL WITH FOOTER ACTIONS
+  Modal with action buttons (useful for forms, confirmations)
+  
+  Usage:
+  {% call components.modal_with_footer('confirm-delete', 'Delete Group?', 'sm') %}
+    <p>Are you sure you want to delete this group?</p>
+    {% block modal_footer %}
+      <button class="btn btn-ghost" data-modal-close="confirm-delete">Cancel</button>
+      <button class="btn btn-danger" onclick="deleteGroup()">Delete</button>
+    {% endblock %}
+  {% endcall %}
+#}
+
+{% macro modal_with_footer(id, title = '', size = 'md', dismissible = true, content = '', footer = '') %}
+    <div class="modal-backdrop" data-modal-backdrop="{{ id }}" aria-hidden="true" role="presentation"></div>
+    <div class="modal modal-{{ size }}" data-modal="{{ id }}" role="dialog" aria-labelledby="modal-title-{{ id }}" aria-hidden="true">
+        <div class="modal-header">
+            <h2 id="modal-title-{{ id }}" class="modal-title">{{ title }}</h2>
+            {% if dismissible %}
+                <button
+                    class="btn btn-ghost btn-icon"
+                    data-modal-close="{{ id }}"
+                    type="button"
+                    aria-label="Close dialog">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="modal-body">
+            {{ content|raw }}
+        </div>
+
+        <div class="modal-footer">
+            {{ footer|raw }}
+        </div>
+    </div>
+{% endmacro %}
+
+{#
+  CONFIRMATION DIALOG
+  Specialized modal for delete/destructive confirmations
+  
+  Usage:
+  {% include 'components/_confirm_dialog.html.twig' with {
+    id: 'delete-group-confirm',
+    title: 'Delete Group?',
+    message: 'This action cannot be undone.',
+    details: ['All members will lose access', 'Posts will be deleted'],
+    danger_text: 'Delete',
+    cancel_text: 'Cancel',
+    on_confirm: 'deleteGroup()'
+  } %}
+#}
+
+{% macro confirm_dialog(id, title = '', message = '', details = [], danger_text = 'Confirm', cancel_text = 'Cancel') %}
+    <div class="modal-backdrop" data-confirm-backdrop="{{ id }}" aria-hidden="true" role="presentation"></div>
+    <div class="modal modal-sm" data-confirm-modal="{{ id }}" role="alertdialog" aria-labelledby="confirm-title-{{ id }}" aria-hidden="true">
+        <div class="modal-header">
+            <h2 id="confirm-title-{{ id }}" class="modal-title text-error">⚠️ {{ title }}</h2>
+            <button 
+                class="btn btn-ghost btn-icon" 
+                data-confirm-close="{{ id }}" 
+                type="button" 
+                aria-label="Close dialog">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p>{{ message }}</p>
+            
+            {% if details|length > 0 %}
+                <ul class="confirm-details">
+                    {% for detail in details %}
+                        <li>{{ detail }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="modal-footer">
+            <button 
+                class="btn btn-ghost btn-sm" 
+                data-confirm-cancel="{{ id }}" 
+                type="button">
+                {{ cancel_text }}
+            </button>
+            <button 
+                class="btn btn-danger btn-sm" 
+                data-confirm-submit="{{ id }}" 
+                type="button">
+                {{ danger_text }}
+            </button>
+        </div>
+    </div>
+{% endmacro %}

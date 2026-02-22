@@ -34,7 +34,12 @@
       "Bash(symfony server:start:*)",
       "Bash(netstat:*)",
       "Bash(tasklist:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git worktree add ../StudySprint-feature-groups origin/feature/groups 2>&1)",
+      "Bash(find:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && git checkout -b merge/groups-integration 2>&1)",
+      "Bash(cp:*)",
+      "Bash(echo done:*)"
     ]
   }
 }
