@@ -27,7 +27,14 @@
       "Bash(composer check-platform-reqs:*)",
       "Bash(composer audit:*)",
       "Bash(docker --version:*)",
-      "Bash(docker info:*)"
+      "Bash(docker info:*)",
+      "Bash(curl:*)",
+      "Bash(echo:*)",
+      "Bash(symfony server:status:*)",
+      "Bash(symfony server:start:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(cd:*)"
     ]
   }
 }
