@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Objectif;
+use App\Entity\Tache;
 use App\Form\ObjectifType;
+use App\Service\AIService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -114,5 +116,38 @@ class ObjectifController extends AbstractController
         }
 
         return $this->redirectToRoute('app_objectif_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/generate-tasks', name: 'app_objectif_generate_tasks', methods: ['POST'])]
+    public function generateTasks(int $id, EntityManagerInterface $entityManager, AIService $aiService): Response
+    {
+        $objectif = $entityManager->getRepository(Objectif::class)->find($id);
+
+        if (!$objectif) {
+            throw $this->createNotFoundException('L\'objectif n\'existe pas.');
+        }
+
+        if ($objectif->getEtudiant() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $generatedTasks = $aiService->generateTasksFromObjective($objectif);
+
+        foreach ($generatedTasks as $taskData) {
+            $tache = new Tache();
+            $tache->setTitre($taskData['titre']);
+            $tache->setDuree($taskData['duree']);
+            $tache->setPriorite($taskData['priorite']);
+            $tache->setStatut('A_FAIRE');
+            $tache->setDate(new \DateTime()); // Default to today
+            $tache->setObjectif($objectif);
+            $entityManager->persist($tache);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', '✨ Magie ! Votre objectif a été décomposé en ' . count($generatedTasks) . ' tâches.');
+
+        return $this->redirectToRoute('app_objectif_show', ['id' => $objectif->getId()]);
     }
 }

@@ -22,11 +22,15 @@
                 </div>
 
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-bold">Date</label>
+                        <div>{{ tache.date ? tache.date|date('Y-m-d') : 'Non définie' }}</div>
+                    </div>
+                    <div class="col-md-4">
                         <label class="text-muted small text-uppercase fw-bold">Durée estimée</label>
                         <div>{{ tache.duree }} minutes</div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="text-muted small text-uppercase fw-bold">Priorité</label>
                         <div>
                             <span class="badge {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-secondary{% endif %}">

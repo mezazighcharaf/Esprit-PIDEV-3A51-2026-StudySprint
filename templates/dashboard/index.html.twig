@@ -16,12 +16,15 @@
                     <span><i class="bi bi-clock"></i> Échéance : {{ priorityObjective.dateFin|date('d/m/Y') }}</span>
                 </div>
                 <div class="progress mt-3" style="height: 6px; background-color: rgba(255,255,255,0.2);">
-                    {% set total = priorityObjective.taches|length %}
-                    {% set completed = 0 %}
+                    {% set total_duration = 0 %}
+                    {% set completed_duration = 0 %}
                     {% for t in priorityObjective.taches %}
-                        {% if t.statut == 'TERMINE' %}{% set completed = completed + 1 %}{% endif %}
+                        {% set total_duration = total_duration + t.duree %}
+                        {% if t.statut == 'TERMINE' %}
+                            {% set completed_duration = completed_duration + t.duree %}
+                        {% endif %}
                     {% endfor %}
-                    {% set percent = total > 0 ? (completed / total * 100) : 0 %}
+                    {% set percent = total_duration > 0 ? (completed_duration / total_duration * 100) : 0 %}
                     <div class="progress-bar bg-white" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
@@ -37,6 +40,23 @@
         <a href="{{ path('app_objectif_new') }}" class="btn btn-light text-primary fw-bold">Créer un objectif</a>
     </div>
     {% endif %}
+    
+    <!-- AI Study Narrator -->
+    <div class="card mb-4 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
+        <div class="card-body p-4 d-flex align-items-center gap-4">
+            <div class="ai-avatar flex-shrink-0 animate-float" style="font-size: 2.5rem;">
+                ✨
+            </div>
+            <div>
+                <h6 class="text-primary fw-bold mb-1" style="letter-spacing: 0.05em; font-size: 0.8rem; text-transform: uppercase;">
+                    <i class="bi bi-robot"></i> Chroniques de StudySprint
+                </h6>
+                <p class="mb-0 fs-5 fw-medium italic text-dark opacity-90">
+                    "{{ narrative }}"
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Stats Row -->
     <div class="row mb-4 g-4">
@@ -63,9 +83,12 @@
         </div>
         <div class="col-md-3">
             <div class="card">
-                <div class="stat-label">Objectif hebdo</div>
+                <div class="stat-label">Objectif global</div>
                 <div class="stat-value">{{ weeklyGoal }}%</div>
-                <div class="text-muted small">15h / 20h</div>
+                <div class="progress mb-2" style="height: 4px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ weeklyGoal }}%;" aria-valuenow="{{ weeklyGoal }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="text-muted small">{{ weeklyGoalDescription }}</div>
             </div>
         </div>
     </div>

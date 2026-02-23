@@ -19,7 +19,8 @@
                 <tr>
                     <th>Titre</th>
                     <th>Objectif</th>
-                    <th>Durée</th>
+                    <th>Date</th>
+                    <th>Durée (min)</th>
                     <th>Priorité</th>
                     <th>Statut</th>
                     <th>Actions</th>
@@ -30,6 +31,7 @@
                 <tr>
                     <td><strong>{{ tache.titre }}</strong></td>
                     <td><span class="badge bg-info text-dark">{{ tache.objectif.titre }}</span></td>
+                    <td>{{ tache.date ? tache.date|date('Y-m-d') : '' }}</td>
                     <td>{{ tache.duree }} min</td>
                     <td>
                         <span class="badge {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-secondary{% endif %}">

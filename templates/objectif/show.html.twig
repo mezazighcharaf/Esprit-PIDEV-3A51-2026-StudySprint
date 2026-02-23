@@ -45,13 +45,21 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2>Tâches</h2>
-            <a href="{{ path('app_tache_new', {'id': objectif.id}) }}" class="btn btn-success">Ajouter une tâche</a>
+            <div class="d-flex gap-2">
+                <form method="post" action="{{ path('app_objectif_generate_tasks', {'id': objectif.id}) }}">
+                    <button class="btn btn-outline-primary fw-bold border-2">
+                        ✨ Magic Breakdown
+                    </button>
+                </form>
+                <a href="{{ path('app_tache_new', {'id': objectif.id}) }}" class="btn btn-success">Ajouter une tâche</a>
+            </div>
         </div>
 
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>Titre</th>
+                    <th>Date</th>
                     <th>Durée (min)</th>
                     <th>Priorité</th>
                     <th>Statut</th>
@@ -62,6 +70,7 @@
             {% for tache in objectif.taches %}
                 <tr>
                     <td>{{ tache.titre }}</td>
+                    <td>{{ tache.date ? tache.date|date('Y-m-d') : '' }}</td>
                     <td>{{ tache.duree }}</td>
                     <td>{{ tache.priorite }}</td>
                     <td>

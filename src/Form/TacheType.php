@@ -25,7 +25,14 @@ class TacheType extends AbstractType
                 },
             ])
             ->add('titre')
-            ->add('duree')
+            ->add('date', \Symfony\Component\Form\Extension\Core\Type\DateType::class, [
+                'widget' => 'single_text',
+                'label' => 'Date',
+            ])
+            ->add('duree', null, [
+                'attr' => ['min' => 1],
+                'help' => 'Durée en minutes (doit être positive)',
+            ])
             ->add('priorite', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
                 'choices' => [
                     'Basse' => 'BASSE',

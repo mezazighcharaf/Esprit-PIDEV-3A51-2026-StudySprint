@@ -21,7 +21,12 @@ class Tache
     #[ORM\Column]
     #[Assert\Positive(message: "La durée doit être supérieure à 0.")]
     #[Assert\NotNull]
+    #[Assert\Type(type: 'integer', message: "La durée doit être un nombre entier.")]
     private ?int $duree = null;
+
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: "La date est obligatoire.")]
+    private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(length: 20)]
     private ?string $priorite = null;
@@ -58,6 +63,18 @@ class Tache
     public function setDuree(int $duree): static
     {
         $this->duree = $duree;
+
+        return $this;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): static
+    {
+        $this->date = $date;
 
         return $this;
     }
