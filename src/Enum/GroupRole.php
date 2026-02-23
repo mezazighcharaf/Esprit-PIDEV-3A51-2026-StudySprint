@@ -3,145 +3,136 @@
 namespace App\Enum;
 
 /**
- * Enum representing member roles within a study group.
- * Provides role hierarchy and permission helpers.
+ * Class representing member roles within a study group.
+ * Refactored from Enum to Class for PHP 8.0 compatibility.
  */
-enum GroupRole: string
+class GroupRole
 {
-    case ADMIN = 'admin';
-    case MODERATOR = 'moderator';
-    case MEMBER = 'member';
+    public const ADMIN = 'admin';
+    public const MODERATOR = 'moderator';
+    public const MEMBER = 'member';
+
+    /**
+     * Create from string value, returning null if invalid
+     */
+    public static function tryFromString(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return in_array($value, [self::ADMIN, self::MODERATOR, self::MEMBER], true) ? $value : null;
+    }
 
     /**
      * Get the role hierarchy level (higher = more permissions)
      */
-    public function getLevel(): int
+    public static function getLevel(string $role): int
     {
-        return match($this) {
+        return match ($role) {
             self::ADMIN => 3,
             self::MODERATOR => 2,
             self::MEMBER => 1,
+            default => 0,
         };
     }
 
     /**
      * Check if this role can manage group settings
      */
-    public function canEditGroup(): bool
+    public static function canEditGroup(string $role): bool
     {
-        return in_array($this, [self::ADMIN, self::MODERATOR], true);
+        return in_array($role, [self::ADMIN, self::MODERATOR], true);
     }
 
     /**
      * Check if this role can delete the group
      */
-    public function canDeleteGroup(): bool
+    public static function canDeleteGroup(string $role): bool
     {
-        return $this === self::ADMIN;
+        return $role === self::ADMIN;
     }
 
     /**
      * Check if this role can invite members
      */
-    public function canInviteMembers(): bool
+    public static function canInviteMembers(string $role): bool
     {
-        return in_array($this, [self::ADMIN, self::MODERATOR], true);
+        return in_array($role, [self::ADMIN, self::MODERATOR], true);
     }
 
     /**
      * Check if this role can manage members (change roles, remove)
      */
-    public function canManageMembers(): bool
+    public static function canManageMembers(string $role): bool
     {
-        return $this === self::ADMIN;
+        return $role === self::ADMIN;
     }
 
     /**
      * Check if this role can remove regular members
      */
-    public function canRemoveMembers(): bool
+    public static function canRemoveMembers(string $role): bool
     {
-        return in_array($this, [self::ADMIN, self::MODERATOR], true);
+        return in_array($role, [self::ADMIN, self::MODERATOR], true);
     }
 
     /**
      * Check if this role can delete any post
      */
-    public function canDeleteAnyPost(): bool
+    public static function canDeleteAnyPost(string $role): bool
     {
-        return $this === self::ADMIN;
+        return $role === self::ADMIN;
     }
 
     /**
      * Check if this role can delete any comment
      */
-    public function canDeleteAnyComment(): bool
+    public static function canDeleteAnyComment(string $role): bool
     {
-        return $this === self::ADMIN;
+        return $role === self::ADMIN;
     }
 
     /**
-     * Check if this role is higher than another role
+     * Check if a role is higher than another role
      */
-    public function isHigherThan(self $other): bool
+    public static function isHigherThan(string $role, string $other): bool
     {
-        return $this->getLevel() > $other->getLevel();
+        return self::getLevel($role) > self::getLevel($other);
     }
 
     /**
-     * Check if this role is at least as high as another role
+     * Check if a role is at least as high as another role
      */
-    public function isAtLeast(self $other): bool
+    public static function isAtLeast(string $role, string $other): bool
     {
-        return $this->getLevel() >= $other->getLevel();
+        return self::getLevel($role) >= self::getLevel($other);
     }
 
     /**
      * Get the display label in French
      */
-    public function getLabel(): string
+    public static function getLabel(string $role): string
     {
-        return match($this) {
+        return match ($role) {
             self::ADMIN => 'Administrateur',
             self::MODERATOR => 'Modérateur',
             self::MEMBER => 'Membre',
-        };
-    }
-
-    /**
-     * Get the short label for badges
-     */
-    public function getShortLabel(): string
-    {
-        return match($this) {
-            self::ADMIN => 'Admin',
-            self::MODERATOR => 'Mod',
-            self::MEMBER => 'Membre',
+            default => $role,
         };
     }
 
     /**
      * Get CSS class for badge styling
      */
-    public function getBadgeClass(): string
+    public static function getBadgeClass(string $role): string
     {
-        return match($this) {
+        return match ($role) {
             self::ADMIN => 'badge-role-admin',
             self::MODERATOR => 'badge-role-moderator',
             self::MEMBER => 'badge-role-member',
+            default => 'badge-secondary',
         };
-    }
-
-    /**
-     * Create from string value, returning null if invalid
-     */
-    public static function tryFromString(?string $value): ?self
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return self::tryFrom($value);
     }
 
     /**
@@ -150,9 +141,9 @@ enum GroupRole: string
     public static function getChoices(): array
     {
         return [
-            'Membre' => self::MEMBER->value,
-            'Modérateur' => self::MODERATOR->value,
-            'Administrateur' => self::ADMIN->value,
+            'Membre' => self::MEMBER,
+            'Modérateur' => self::MODERATOR,
+            'Administrateur' => self::ADMIN,
         ];
     }
 
@@ -162,8 +153,8 @@ enum GroupRole: string
     public static function getInvitableRoles(): array
     {
         return [
-            'Membre' => self::MEMBER->value,
-            'Modérateur' => self::MODERATOR->value,
+            'Membre' => self::MEMBER,
+            'Modérateur' => self::MODERATOR,
         ];
     }
 }

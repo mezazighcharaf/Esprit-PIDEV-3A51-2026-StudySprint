@@ -1,0 +1,163 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block body %}
+    <!-- Hero Section: Priority of the Day -->
+    {% if priorityObjective %}
+    <div class="card hero-card mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-9">
+                <div class="text-uppercase mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em; opacity: 0.8;">Priorité du jour</div>
+                <h3 class="mb-2">{{ priorityObjective.titre }}</h3>
+                <div class="d-flex align-items-center gap-3" style="opacity: 0.9;">
+                    <span><i class="bi bi-clock"></i> Échéance : {{ priorityObjective.dateFin|date('d/m/Y') }}</span>
+                </div>
+                <div class="progress mt-3" style="height: 6px; background-color: rgba(255,255,255,0.2);">
+                    {% set total_duration = 0 %}
+                    {% set completed_duration = 0 %}
+                    {% for t in priorityObjective.taches %}
+                        {% set total_duration = total_duration + t.duree %}
+                        {% if t.statut == 'TERMINE' %}
+                            {% set completed_duration = completed_duration + t.duree %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set percent = total_duration > 0 ? (completed_duration / total_duration * 100) : 0 %}
+                    <div class="progress-bar bg-white" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <a href="{{ path('app_objectif_show', {'id': priorityObjective.id}) }}" class="btn btn-light text-primary fw-bold px-4 py-2">Continuer</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card hero-card mb-4 p-4 text-center">
+        <h3>Bienvenue sur StudySprint !</h3>
+        <p>Commencez par définir votre premier objectif.</p>
+        <a href="{{ path('app_objectif_new') }}" class="btn btn-light text-primary fw-bold">Créer un objectif</a>
+    </div>
+    {% endif %}
+    
+    <!-- AI Study Narrator -->
+    <div class="card mb-4 border-0 shadow-sm overflow-hidden" style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
+        <div class="card-body p-4 d-flex align-items-center gap-4">
+            <div class="ai-avatar flex-shrink-0 animate-float" style="font-size: 2.5rem;">
+                ✨
+            </div>
+            <div>
+                <h6 class="text-primary fw-bold mb-1" style="letter-spacing: 0.05em; font-size: 0.8rem; text-transform: uppercase;">
+                    <i class="bi bi-robot"></i> Chroniques de StudySprint
+                </h6>
+                <p class="mb-0 fs-5 fw-medium italic text-dark opacity-90">
+                    "{{ narrative }}"
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4 g-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="stat-label">Tâches terminées</div>
+                <div class="stat-value">{{ sessionsCount }}</div>
+                <div class="text-success small"><i class="bi bi-graph-up"></i> Total</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="stat-label">Temps total</div>
+                <div class="stat-value">{{ totalTime }}</div>
+                <div class="text-success small"><i class="bi bi-graph-up"></i> +1h20 vs semaine dernière</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="stat-label">Quiz réussis</div>
+                <div class="stat-value">{{ quizScore }}</div>
+                <div class="text-success small"><i class="bi bi-check-lg"></i> 86% taux de réussite</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="stat-label">Objectif global</div>
+                <div class="stat-value">{{ weeklyGoal }}%</div>
+                <div class="progress mb-2" style="height: 4px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ weeklyGoal }}%;" aria-valuenow="{{ weeklyGoal }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="text-muted small">{{ weeklyGoalDescription }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lists Row -->
+    <div class="row g-4">
+        <!-- Todo List -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 fw-bold">À faire aujourd'hui</h5>
+                    <a href="{{ path('app_objectif_index') }}" class="text-decoration-none text-muted small">Voir tout</a>
+                </div>
+                
+                {% for task in todoTasks %}
+                <div class="task-item">
+                    <div class="form-check">
+                         <!-- Simplified check for visual purposes, backend toggle via form in real app -->
+                         <input class="form-check-input" type="checkbox" disabled>
+                    </div>
+                    <div class="flex-1">
+                        <div class="fw-bold">{{ task.titre }}</div>
+                        <div class="small text-muted">
+                            <span class="badge bg-light text-dark border me-2">{{ task.objectif.titre }}</span>
+                            {{ task.duree }} min
+                        </div>
+                    </div>
+                    <div>
+                         <a href="{{ path('app_tache_edit', {'id': task.id}) }}" class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    Aucune tâche en attente. Bon travail !
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Activity (Static Placeholder from design) -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 fw-bold">Activité récente</h5>
+                    <a href="#" class="text-decoration-none text-muted small">Historique</a>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check-square"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Quiz Mathématiques</div>
+                        <div class="text-muted small">Score: 18/20</div>
+                        <div class="text-muted small" style="font-size: 0.7rem">Il y a 2 heures</div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <div class="bg-info bg-opacity-10 text-info rounded p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Session de révision</div>
+                        <div class="text-muted small">Physique - Cinématique</div>
+                        <div class="text-muted small" style="font-size: 0.7rem">Il y a 5 heures</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

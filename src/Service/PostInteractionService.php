@@ -16,6 +16,10 @@ use App\Repository\PostRatingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+/**
+ * Service for post interactions (likes, comments, ratings)
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
+ */
 class PostInteractionService
 {
     public function __construct(
@@ -24,10 +28,11 @@ class PostInteractionService
         private PostCommentRepository $commentRepository,
         private PostRatingRepository $ratingRepository,
         private GroupMemberRepository $memberRepository,
-    ) {}
+    ) {
+    }
 
     /**
-     * Toggle like on a post (like if not liked, unlike if already liked)
+     * Toggle like on a post
      */
     public function toggleLike(GroupPost $post, User $user): array
     {
@@ -39,7 +44,7 @@ class PostInteractionService
             // Unlike
             $this->entityManager->remove($existingLike);
             $this->entityManager->flush();
-            
+
             return [
                 'liked' => false,
                 'likesCount' => $this->likeRepository->countByPost($post)
@@ -49,10 +54,10 @@ class PostInteractionService
             $like = new PostLike();
             $like->setPost($post);
             $like->setUser($user);
-            
+
             $this->entityManager->persist($like);
             $this->entityManager->flush();
-            
+
             return [
                 'liked' => true,
                 'likesCount' => $this->likeRepository->countByPost($post)
@@ -75,7 +80,7 @@ class PostInteractionService
         $comment->setPost($post);
         $comment->setAuthor($author);
         $comment->setBody(trim($body));
-        
+
         if ($parent) {
             // Ensure parent belongs to same post
             if ($parent->getPost()->getId() !== $post->getId()) {
@@ -182,7 +187,7 @@ class PostInteractionService
         }
 
         $role = GroupRole::tryFromString($membership->getMemberRole());
-        return $role !== null && $role->canDeleteAnyComment();
+        return $role !== null && GroupRole::canDeleteAnyComment($role);
     }
 
     /**

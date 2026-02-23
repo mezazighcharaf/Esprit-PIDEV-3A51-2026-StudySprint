@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Tâche{% endblock %}
+
+{% block page_title %}Tâche : {{ tache.titre }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Informations générales</h5>
+                    <span class="badge {% if tache.statut == 'TERMINE' %}bg-success{% elseif tache.statut == 'EN_COURS' %}bg-primary{% else %}bg-secondary{% endif %} px-3 py-2">
+                        {{ tache.statut }}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-muted small text-uppercase fw-bold">Titre</label>
+                    <div class="fs-5">{{ tache.titre }}</div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-bold">Date</label>
+                        <div>{{ tache.date ? tache.date|date('Y-m-d') : 'Non définie' }}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-bold">Durée estimée</label>
+                        <div>{{ tache.duree }} minutes</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-bold">Priorité</label>
+                        <div>
+                            <span class="badge {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ tache.priorite }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <label class="text-muted small text-uppercase fw-bold">Objectif associé</label>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <i class="bi bi-flag text-primary"></i>
+                        <a href="{{ path('app_objectif_show', {'id': tache.objectif.id}) }}" class="text-decoration-none fw-bold">
+                            {{ tache.objectif.titre }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Modifier
+            </a>
+            <form method="post" action="{{ path('app_tache_toggle', {'id': tache.id}) }}">
+                <button class="btn {% if tache.statut == 'TERMINE' %}btn-secondary{% else %}btn-success{% endif %}">
+                    <i class="bi {% if tache.statut == 'TERMINE' %}bi-arrow-left-circle{% else %}bi-check-circle{% endif %}"></i>
+                    {% if tache.statut == 'TERMINE' %}Réouvrir{% else %}Terminer{% endif %}
+                </button>
+            </form>
+            {{ include('tache/_delete_form.html.twig') }}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Progression de l'objectif</h6>
+                {% set total = tache.objectif.taches|length %}
+                {% set completed = 0 %}
+                {% for t in tache.objectif.taches %}
+                    {% if t.statut == 'TERMINE' %}{% set completed = completed + 1 %}{% endif %}
+                {% endfor %}
+                {% set percent = total > 0 ? (completed / total * 100) : 0 %}
+                
+                <div class="d-flex justify-content-between mb-2 small">
+                    <span>{{ completed }}/{{ total }} tâches</span>
+                    <span class="fw-bold">{{ percent|round }}%</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ percent }}%;" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <a href="{{ path('app_tache_index') }}" class="btn btn-light btn-sm w-100">
+                        <i class="bi bi-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Voter for post-level permissions.
- * Determines if a user can perform actions on a group post.
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
  */
 class PostVoter extends Voter
 {
@@ -24,7 +24,8 @@ class PostVoter extends Voter
 
     public function __construct(
         private GroupMemberRepository $memberRepository
-    ) {}
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -41,7 +42,7 @@ class PostVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        
+
         /** @var GroupPost $post */
         $post = $subject;
         $group = $post->getGroup();
@@ -51,11 +52,11 @@ class PostVoter extends Voter
             if ($group->getPrivacy() === 'public') {
                 return true;
             }
-            
+
             if (!$user instanceof User) {
                 return false;
             }
-            
+
             return $this->memberRepository->isMember($group, $user);
         }
 
@@ -65,15 +66,14 @@ class PostVoter extends Voter
         }
 
         // Get user's role in the group
-        $roleString = $this->memberRepository->getUserRoleInGroup($group, $user);
-        $role = GroupRole::tryFromString($roleString);
-        
+        $role = $this->memberRepository->getUserRoleInGroup($group, $user);
+
         // Must be a member for any action
         if ($role === null) {
             return false;
         }
 
-        return match($attribute) {
+        return match ($attribute) {
             self::EDIT => $this->canEdit($post, $user, $role),
             self::DELETE => $this->canDelete($post, $user, $role),
             self::LIKE => true, // Any member can like
@@ -83,20 +83,20 @@ class PostVoter extends Voter
         };
     }
 
-    private function canEdit(GroupPost $post, User $user, GroupRole $role): bool
+    private function canEdit(GroupPost $post, User $user, string $role): bool
     {
         // Only author can edit their post
         return $post->getAuthor()->getId() === $user->getId();
     }
 
-    private function canDelete(GroupPost $post, User $user, GroupRole $role): bool
+    private function canDelete(GroupPost $post, User $user, string $role): bool
     {
         // Author can delete their own post
         if ($post->getAuthor()->getId() === $user->getId()) {
             return true;
         }
-        
+
         // Admin can delete any post
-        return $role->canDeleteAnyPost();
+        return GroupRole::canDeleteAnyPost($role);
     }
 }

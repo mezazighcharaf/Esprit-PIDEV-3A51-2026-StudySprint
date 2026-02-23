@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Objectif{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Modifier l'objectif</h1>
+
+        {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button class="btn btn-primary mt-3">{{ button_label|default('Mettre à jour') }}</button>
+        {{ form_end(form) }}
+
+        <div class="mt-3">
+             <a href="{{ path('app_objectif_index') }}" class="btn btn-link">Retour à la liste</a>
+             <div class="d-inline-block">
+                 {{ include('objectif/_delete_form.html.twig') }}
+             </div>
+        </div>
+    </div>
+{% endblock %}

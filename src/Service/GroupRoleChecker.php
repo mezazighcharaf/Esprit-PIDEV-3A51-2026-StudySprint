@@ -11,17 +11,20 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Centralized service for checking group member roles and permissions
  * Eliminates duplicate role checking logic across services and controllers
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
  */
 class GroupRoleChecker
 {
     public function __construct(
         private GroupMemberRepository $memberRepository
-    ) {}
+    ) {
+    }
 
     /**
      * Get user's role in a group
+     * @return string|null
      */
-    public function getUserRole(StudyGroup $group, User $user): ?GroupRole
+    public function getUserRole(StudyGroup $group, User $user): ?string
     {
         $roleString = $this->memberRepository->getUserRoleInGroup($group, $user);
         return GroupRole::tryFromString($roleString);
@@ -38,10 +41,10 @@ class GroupRoleChecker
     /**
      * Ensure user can edit group (with exception thrown if not)
      */
-    public function ensureCanEdit(StudyGroup $group, User $user): GroupRole
+    public function ensureCanEdit(StudyGroup $group, User $user): string
     {
         $role = $this->getUserRole($group, $user);
-        if (!$role?->canEditGroup()) {
+        if ($role === null || !GroupRole::canEditGroup($role)) {
             throw new AccessDeniedHttpException('Vous n\'avez pas les permissions pour modifier ce groupe');
         }
         return $role;
@@ -50,10 +53,10 @@ class GroupRoleChecker
     /**
      * Ensure user can delete group (with exception thrown if not)
      */
-    public function ensureCanDelete(StudyGroup $group, User $user): GroupRole
+    public function ensureCanDelete(StudyGroup $group, User $user): string
     {
         $role = $this->getUserRole($group, $user);
-        if (!$role?->canDeleteGroup()) {
+        if ($role === null || !GroupRole::canDeleteGroup($role)) {
             throw new AccessDeniedHttpException('Seuls les administrateurs du groupe peuvent le supprimer');
         }
         return $role;
@@ -62,10 +65,10 @@ class GroupRoleChecker
     /**
      * Ensure user can manage group members (with exception thrown if not)
      */
-    public function ensureCanManageMembers(StudyGroup $group, User $user): GroupRole
+    public function ensureCanManageMembers(StudyGroup $group, User $user): string
     {
         $role = $this->getUserRole($group, $user);
-        if (!$role?->canManageMembers()) {
+        if ($role === null || !GroupRole::canManageMembers($role)) {
             throw new AccessDeniedHttpException('Seuls les administrateurs peuvent modifier les rôles');
         }
         return $role;
@@ -74,10 +77,10 @@ class GroupRoleChecker
     /**
      * Ensure user can invite members (with exception thrown if not)
      */
-    public function ensureCanInvite(StudyGroup $group, User $user): GroupRole
+    public function ensureCanInvite(StudyGroup $group, User $user): string
     {
         $role = $this->getUserRole($group, $user);
-        if (!$role?->canInviteMembers()) {
+        if ($role === null || !GroupRole::canInviteMembers($role)) {
             throw new AccessDeniedHttpException('Vous n\'avez pas les permissions pour inviter des membres');
         }
         return $role;
@@ -86,10 +89,10 @@ class GroupRoleChecker
     /**
      * Ensure user can remove members (with exception thrown if not)
      */
-    public function ensureCanRemoveMembers(StudyGroup $group, User $user): GroupRole
+    public function ensureCanRemoveMembers(StudyGroup $group, User $user): string
     {
         $role = $this->getUserRole($group, $user);
-        if (!$role?->canRemoveMembers()) {
+        if ($role === null || !GroupRole::canRemoveMembers($role)) {
             throw new AccessDeniedHttpException('Vous n\'avez pas les permissions pour retirer des membres');
         }
         return $role;
@@ -126,7 +129,7 @@ class GroupRoleChecker
 
         // Admin can delete any post
         $role = $this->getUserRole($group, $user);
-        return $role?->canDeleteAnyPost() ?? false;
+        return $role !== null && GroupRole::canDeleteAnyPost($role);
     }
 
     /**
@@ -141,6 +144,6 @@ class GroupRoleChecker
 
         // Admin can delete any comment
         $role = $this->getUserRole($group, $user);
-        return $role?->canDeleteAnyComment() ?? false;
+        return $role !== null && GroupRole::canDeleteAnyComment($role);
     }
 }

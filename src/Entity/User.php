@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -73,10 +75,14 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $faceDescriptor = null;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Objectif::class, orphanRemoval: true)]
+    private Collection $objectifs;
+
 
     public function __construct()
     {
         $this->dateInscription = new \DateTimeImmutable();
+        $this->objectifs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -293,6 +299,36 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFaceDescriptor(?array $faceDescriptor): static
     {
         $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Objectif>
+     */
+    public function getObjectifs(): Collection
+    {
+        return $this->objectifs;
+    }
+
+    public function addObjectif(Objectif $objectif): static
+    {
+        if (!$this->objectifs->contains($objectif)) {
+            $this->objectifs->add($objectif);
+            $objectif->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeObjectif(Objectif $objectif): static
+    {
+        if ($this->objectifs->removeElement($objectif)) {
+            // set the owning side to null (unless already changed)
+            if ($objectif->getUser() === $this) {
+                $objectif->setUser(null);
+            }
+        }
+
         return $this;
     }
 }

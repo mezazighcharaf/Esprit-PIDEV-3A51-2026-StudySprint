@@ -3,14 +3,81 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        
         {% block stylesheets %}
         {% endblock %}
 
         {% block javascripts %}
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="bi bi-infinity"></i> StudySprint
+                </div>
+                
+                <nav class="flex-1">
+                    <div class="nav-section">
+                        <div class="nav-section-title">Navigation</div>
+                        <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">
+                            <i class="bi bi-grid"></i> Dashboard
+                        </a>
+                        <a href="{{ path('app_objectif_index') }}" class="nav-link {% if 'objectif' in app.request.get('_route') and 'tache' not in app.request.get('_route') %}active{% endif %}">
+                            <i class="bi bi-flag"></i> Objectifs
+                        </a>
+                        <a href="{{ path('app_tache_index') }}" class="nav-link {% if app.request.get('_route') == 'app_tache_index' %}active{% endif %}">
+                            <i class="bi bi-check2-square"></i> Tâches
+                        </a>
+                        <a href="#" class="nav-link"> <!-- Placeholder for Planning -->
+                            <i class="bi bi-calendar4"></i> Planning
+                        </a>
+                        <a href="#" class="nav-link"> <!-- Placeholder for Training -->
+                            <i class="bi bi-lightning"></i> Training
+                        </a>
+                    </div>
+                </nav>
+
+                <div class="user-profile">
+                    <div class="avatar">
+                        {{ app.user ? app.user.email|slice(0,2)|upper : 'Guest' }}
+                    </div>
+                    <div>
+                        <div class="font-weight-bold" style="font-size: 0.9rem;">
+                            {{ app.user ? app.user.email : 'Not logged in' }}
+                        </div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Étudiant</div>
+                    </div>
+                    {% if app.user %}
+                        <a href="{{ path('app_logout') }}" class="ms-auto text-danger" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Topbar (Optional search/actions) -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h4 mb-0">{% block page_title %}{% endblock %}</h2>
+                    <div class="d-flex gap-3">
+                        <a href="{{ path('app_objectif_new') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg"></i> Nouveau
+                        </a>
+                    </div>
+                </div>
+
+                {% block body %}{% endblock %}
+            </main>
+        </div>
     </body>
 </html>

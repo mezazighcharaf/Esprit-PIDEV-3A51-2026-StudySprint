@@ -11,6 +11,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * Service for managing group invitations
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
+ */
 class GroupInvitationService
 {
     public function __construct(
@@ -18,17 +22,17 @@ class GroupInvitationService
         private GroupInvitationRepository $invitationRepository,
         private GroupService $groupService,
         private InvitationMailer $invitationMailer,
-    ) {}
+    ) {
+    }
 
     /**
      * Send invitations to multiple users
      * @param string[] $emails
-     * @param GroupRole|string $role
+     * @param string $role
      * @return GroupInvitation[] Created invitations
      */
-    public function inviteUsers(StudyGroup $group, array $emails, User $inviter, GroupRole|string $role = GroupRole::MEMBER): array {
-        // Convert to string value for storage
-        $roleValue = $role instanceof GroupRole ? $role->value : $role;
+    public function inviteUsers(StudyGroup $group, array $emails, User $inviter, string $role = GroupRole::MEMBER): array
+    {
         if ($group->getPrivacy() !== 'private') {
             throw new AccessDeniedHttpException('Les invitations sont réservées aux groupes privés.');
         }
@@ -66,7 +70,7 @@ class GroupInvitationService
                         continue;
                     }
                 }
-                
+
                 // If declined or no longer a member, we "re-use" the invitation record
                 $invitation->setStatus('pending');
                 $invitation->setCode($this->generateInvitationCode());
@@ -75,9 +79,9 @@ class GroupInvitationService
                 $invitation->setInvitedBy($inviter);
                 $invitation->setInvitedAt(new \DateTimeImmutable());
                 $invitation->setRespondedAt(null);
-                $invitation->setRole($roleValue);
+                $invitation->setRole($role);
             } else {
-                // Check if user is already a member (even without invitation record)
+                // Check if user is already a member
                 $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
                 if ($user && $this->groupService->isMember($group, $user)) {
                     continue;
@@ -90,7 +94,7 @@ class GroupInvitationService
                 $invitation->setInvitedBy($inviter);
                 $invitation->setCode($this->generateInvitationCode());
                 $invitation->setStatus('pending');
-                $invitation->setRole($roleValue);
+                $invitation->setRole($role);
                 $this->entityManager->persist($invitation);
             }
 
@@ -99,7 +103,7 @@ class GroupInvitationService
 
         $this->entityManager->flush();
 
-        // Send invitation emails with the 3 methods (link, code, QR code)
+        // Send invitation emails
         foreach ($invitations as $invitation) {
             $this->invitationMailer->sendInvitation($invitation);
         }
@@ -108,7 +112,7 @@ class GroupInvitationService
     }
 
     /**
-     * Accept an invitation using its token (from email link or QR code)
+     * Accept an invitation using its token
      */
     public function acceptInvitationByToken(string $token, User $user): void
     {
@@ -187,7 +191,7 @@ class GroupInvitationService
     }
 
     /**
-     * Generate a short readable invitation code (e.g. INV-A3F8B2C1)
+     * Generate a short readable invitation code
      */
     private function generateInvitationCode(): string
     {
@@ -195,7 +199,7 @@ class GroupInvitationService
     }
 
     /**
-     * Cancel an invitation (by the inviter)
+     * Cancel an invitation
      */
     public function cancelInvitation(GroupInvitation $invitation, User $user): void
     {

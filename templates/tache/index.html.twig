@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Tâches{% endblock %}
+
+{% block page_title %}Mes Tâches{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0"></h5>
+    <a href="{{ path('app_tache_new_standalone') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Ajouter une tâche
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Titre</th>
+                    <th>Objectif</th>
+                    <th>Date</th>
+                    <th>Durée (min)</th>
+                    <th>Priorité</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for tache in taches %}
+                <tr>
+                    <td><strong>{{ tache.titre }}</strong></td>
+                    <td><span class="badge bg-info text-dark">{{ tache.objectif.titre }}</span></td>
+                    <td>{{ tache.date ? tache.date|date('Y-m-d') : '' }}</td>
+                    <td>{{ tache.duree }} min</td>
+                    <td>
+                        <span class="badge {% if tache.priorite == 'HAUTE' %}bg-danger{% elseif tache.priorite == 'MOYENNE' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            {{ tache.priorite }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if tache.statut == 'TERMINE' %}bg-success{% elseif tache.statut == 'EN_COURS' %}bg-primary{% else %}bg-secondary{% endif %}">
+                            {{ tache.statut }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_tache_show', {'id': tache.id}) }}" class="btn btn-sm btn-info text-white" title="Voir"><i class="bi bi-eye"></i></a>
+                            <form method="post" action="{{ path('app_tache_toggle', {'id': tache.id}) }}" class="d-inline">
+                                <button class="btn btn-sm {% if tache.statut == 'TERMINE' %}btn-secondary{% else %}btn-success{% endif %}" title="Toggle status">
+                                    <i class="bi {% if tache.statut == 'TERMINE' %}bi-arrow-left-circle{% else %}bi-check-circle{% endif %}"></i>
+                                </button>
+                            </form>
+                            <a href="{{ path('app_tache_edit', {'id': tache.id}) }}" class="btn btn-sm btn-warning" title="Modifier"><i class="bi bi-pencil"></i></a>
+                            {{ include('tache/_delete_form.html.twig') }}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Aucune tâche trouvée.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

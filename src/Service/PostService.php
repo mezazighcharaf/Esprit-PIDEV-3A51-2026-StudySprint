@@ -11,12 +11,17 @@ use App\Repository\GroupMemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+/**
+ * Service for managing group posts
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
+ */
 class PostService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private GroupMemberRepository $memberRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * Create a new post in a group
@@ -34,7 +39,7 @@ class PostService
         $post->setTitle($dto->title);
         $post->setBody($dto->body ?? '');
         $post->setPostType($dto->postType ?? 'text');
-        
+
         // Handle file upload
         if ($dto->file instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
             $uploadsDir = __DIR__ . '/../../public/uploads/groups/posts';
@@ -92,7 +97,7 @@ class PostService
         }
 
         $role = GroupRole::tryFromString($membership->getMemberRole());
-        return $role !== null && $role->canDeleteAnyPost();
+        return $role !== null && GroupRole::canDeleteAnyPost($role);
     }
 
     /**

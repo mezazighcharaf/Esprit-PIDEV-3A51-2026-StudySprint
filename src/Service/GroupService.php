@@ -15,6 +15,10 @@ use App\Repository\StudyGroupRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+/**
+ * Service for managing study groups
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
+ */
 class GroupService
 {
     public function __construct(
@@ -23,7 +27,8 @@ class GroupService
         private GroupMemberRepository $memberRepository,
         private GroupPostRepository $postRepository,
         private \App\Repository\GroupInvitationRepository $invitationRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * Create a new group
@@ -49,14 +54,13 @@ class GroupService
 
     /**
      * Update an existing group
-     * Only Admin or Moderator can update (based on role)
+     * Only Admin or Moderator can update
      */
     public function updateGroup(StudyGroup $group, GroupUpdateDTO $dto, User $currentUser): void
     {
-        // Check permissions using GroupRole enum
         $userRole = $this->getUserRole($group, $currentUser);
 
-        if (!$userRole || !$userRole->canEditGroup()) {
+        if (!$userRole || !GroupRole::canEditGroup($userRole)) {
             throw new AccessDeniedHttpException('Vous n\'avez pas la permission de modifier ce groupe');
         }
 
@@ -74,10 +78,9 @@ class GroupService
      */
     public function deleteGroup(StudyGroup $group, User $currentUser): void
     {
-        // Check permissions using GroupRole enum - only Admin can delete
         $userRole = $this->getUserRole($group, $currentUser);
 
-        if (!$userRole || !$userRole->canDeleteGroup()) {
+        if (!$userRole || !GroupRole::canDeleteGroup($userRole)) {
             throw new AccessDeniedHttpException('Seuls les administrateurs du groupe peuvent le supprimer');
         }
 
@@ -88,7 +91,7 @@ class GroupService
         }
         $this->entityManager->flush();
 
-        // Remove all group posts first (this handles comments via CASCADE in DB/Entity if configured, or manual delete)
+        // Remove all group posts first
         $posts = $this->postRepository->findBy(['group' => $group]);
         foreach ($posts as $post) {
             $this->entityManager->remove($post);
@@ -110,7 +113,7 @@ class GroupService
     /**
      * Add a member to a group
      */
-    public function addMember(StudyGroup $group, User $user, GroupRole|string $role = GroupRole::MEMBER): GroupMember
+    public function addMember(StudyGroup $group, User $user, string $role = GroupRole::MEMBER): GroupMember
     {
         // Check if already a member
         $existingMember = $this->memberRepository->findOneBy([
@@ -122,13 +125,10 @@ class GroupService
             return $existingMember;
         }
 
-        // Convert string to GroupRole if needed
-        $roleValue = $role instanceof GroupRole ? $role->value : $role;
-
         $member = new GroupMember();
         $member->setGroup($group);
         $member->setUser($user);
-        $member->setMemberRole($roleValue);
+        $member->setMemberRole($role);
 
         $this->entityManager->persist($member);
         $this->entityManager->flush();
@@ -138,10 +138,9 @@ class GroupService
 
     public function removeMember(StudyGroup $group, User $user, User $currentUser, bool $isAppAdmin = false): void
     {
-        // Check permission: must be group admin or app admin
         if (!$isAppAdmin) {
             $currentUserRole = $this->getUserRole($group, $currentUser);
-            if (!$currentUserRole || !$currentUserRole->canManageMembers()) {
+            if (!$currentUserRole || !GroupRole::canManageMembers($currentUserRole)) {
                 throw new AccessDeniedHttpException('Seuls les administrateurs peuvent retirer des membres');
             }
         }
@@ -152,13 +151,12 @@ class GroupService
         ]);
 
         if ($member) {
-            $memberRole = GroupRole::tryFromString($member->getMemberRole());
-            
-            // Check if we are trying to remove the last admin
+            $memberRole = $member->getMemberRole();
+
             if ($memberRole === GroupRole::ADMIN) {
-                $adminCount = $this->memberRepository->countByGroupAndRole($group, GroupRole::ADMIN->value);
+                $adminCount = $this->memberRepository->countByGroupAndRole($group, GroupRole::ADMIN);
                 if ($adminCount <= 1) {
-                    throw new \LogicException('Un groupe doit toujours avoir au moins un administrateur. Si vous voulez supprimer le groupe, utilisez l\'option de suppression.');
+                    throw new \LogicException('Un groupe doit toujours avoir au moins un administrateur.');
                 }
             }
 
@@ -167,12 +165,12 @@ class GroupService
         }
     }
 
-    public function changeMemberRole(StudyGroup $group, User $member, GroupRole|string $newRole, User $currentUser, bool $isAppAdmin = false): void
+    public function changeMemberRole(StudyGroup $group, User $member, string $newRole, User $currentUser, bool $isAppAdmin = false): void
     {
         if (!$isAppAdmin) {
             $currentUserRole = $this->getUserRole($group, $currentUser);
 
-            if (!$currentUserRole || !$currentUserRole->canManageMembers()) {
+            if (!$currentUserRole || !GroupRole::canManageMembers($currentUserRole)) {
                 throw new AccessDeniedHttpException('Seuls les administrateurs peuvent modifier les rôles');
             }
         }
@@ -183,25 +181,27 @@ class GroupService
         ]);
 
         if ($groupMember) {
-            $currentMemberRole = GroupRole::tryFromString($groupMember->getMemberRole());
-            $targetRole = $newRole instanceof GroupRole ? $newRole : GroupRole::tryFromString($newRole);
-            
-            // If demoting from admin, check if it's the last one
+            $currentMemberRole = $groupMember->getMemberRole();
+            $targetRole = GroupRole::tryFromString($newRole);
+
+            if (!$targetRole) {
+                throw new \InvalidArgumentException('Rôle invalide');
+            }
+
             if ($currentMemberRole === GroupRole::ADMIN && $targetRole !== GroupRole::ADMIN) {
-                $adminCount = $this->memberRepository->countByGroupAndRole($group, GroupRole::ADMIN->value);
+                $adminCount = $this->memberRepository->countByGroupAndRole($group, GroupRole::ADMIN);
                 if ($adminCount <= 1) {
-                    throw new \LogicException('Impossible de changer le rôle du seul administrateur. Le groupe doit toujours avoir au moins un admin.');
+                    throw new \LogicException('Impossible de changer le rôle du seul administrateur.');
                 }
             }
 
-            $roleValue = $targetRole?->value ?? ($newRole instanceof GroupRole ? $newRole->value : $newRole);
-            $groupMember->setMemberRole($roleValue);
+            $groupMember->setMemberRole($targetRole);
             $this->entityManager->flush();
         }
     }
 
     /**
-     * Search groups by name or description
+     * Search groups
      */
     public function searchGroups(string $query, ?string $privacy = null): array
     {
@@ -224,7 +224,7 @@ class GroupService
     }
 
     /**
-     * Get all groups where user is NOT a member
+     * Get available public groups
      */
     public function getAvailableGroupsForUser(User $user): array
     {
@@ -244,61 +244,47 @@ class GroupService
             ->getResult();
     }
 
-
     /**
-     * Get user's role in a group as GroupRole enum
+     * Get user's role in a group as string
      */
-    public function getUserRole(StudyGroup $group, User $user): ?GroupRole
+    public function getUserRole(StudyGroup $group, User $user): ?string
     {
         $roleString = $this->memberRepository->getUserRoleInGroup($group, $user);
-        return $roleString ? GroupRole::tryFromString($roleString) : null;
+        return $roleString ?: null;
     }
 
-    /**
-     * Check if user can edit group
-     */
     public function canEditGroup(StudyGroup $group, User $user): bool
     {
         $role = $this->getUserRole($group, $user);
-        return $role !== null && $role->canEditGroup();
+        return $role !== null && GroupRole::canEditGroup($role);
     }
 
-    /**
-     * Check if user can delete group
-     */
     public function canDeleteGroup(StudyGroup $group, User $user): bool
     {
         $role = $this->getUserRole($group, $user);
-        return $role !== null && $role->canDeleteGroup();
+        return $role !== null && GroupRole::canDeleteGroup($role);
     }
 
-    /**
-     * Check if user is group admin
-     */
     public function isGroupAdmin(StudyGroup $group, User $user): bool
     {
         $role = $this->getUserRole($group, $user);
         return $role === GroupRole::ADMIN;
     }
 
-    /**
-     * Join a public group
-     */
     public function joinPublicGroup(StudyGroup $group, User $user): GroupMember
     {
         if ($group->getPrivacy() !== 'public') {
             throw new AccessDeniedHttpException('This group is private');
         }
 
-        return $this->addMember($group, $user, 'member');
+        return $this->addMember($group, $user, GroupRole::MEMBER);
     }
 
     public function isMember(StudyGroup $group, User $user): bool
     {
         return (bool) $this->memberRepository->findOneBy([
             'group' => $group,
-            'user'  => $user,
+            'user' => $user,
         ]);
     }
-
 }

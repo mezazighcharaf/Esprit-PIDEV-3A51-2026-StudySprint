@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel Objectif{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Créer un nouvel objectif</h1>
+
+        {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button class="btn btn-primary mt-3">{{ button_label|default('Enregistrer') }}</button>
+        {{ form_end(form) }}
+
+        <a href="{{ path('app_objectif_index') }}" class="btn btn-link mt-2">Retour à la liste</a>
+    </div>
+{% endblock %}

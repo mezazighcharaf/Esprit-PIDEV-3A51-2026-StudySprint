@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Tâche{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        {% if objectif is defined %}
+            <h1>Ajouter une tâche à : {{ objectif.titre }}</h1>
+        {% else %}
+            <h1>Ajouter une nouvelle tâche</h1>
+        {% endif %}
+
+        <div class="card p-4 shadow-sm border-0">
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <div class="mt-4">
+                    <button class="btn btn-primary px-4">Ajouter</button>
+                    {% if objectif is defined %}
+                        <a href="{{ path('app_objectif_show', {'id': objectif.id}) }}" class="btn btn-link">Annuler</a>
+                    {% else %}
+                        <a href="{{ path('app_tache_index') }}" class="btn btn-link">Annuler</a>
+                    {% endif %}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

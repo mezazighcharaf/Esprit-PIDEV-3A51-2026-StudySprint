@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Voter for group-level permissions.
- * Determines if a user can perform actions on a study group.
+ * Refactored for PHP 8.0 compatibility (using string roles instead of Enums)
  */
 class GroupVoter extends Voter
 {
@@ -25,7 +25,8 @@ class GroupVoter extends Voter
 
     public function __construct(
         private GroupMemberRepository $memberRepository
-    ) {}
+    ) {
+    }
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -43,7 +44,7 @@ class GroupVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        
+
         // Must be logged in for most actions
         if (!$user instanceof User) {
             // Allow viewing public groups without login
@@ -60,12 +61,11 @@ class GroupVoter extends Voter
 
         /** @var StudyGroup $group */
         $group = $subject;
-        
-        // Get user's role in this group
-        $roleString = $this->memberRepository->getUserRoleInGroup($group, $user);
-        $role = GroupRole::tryFromString($roleString);
 
-        return match($attribute) {
+        // Get user's role in this group
+        $role = $this->memberRepository->getUserRoleInGroup($group, $user);
+
+        return match ($attribute) {
             self::VIEW => $this->canView($group, $role),
             self::EDIT => $this->canEdit($role),
             self::DELETE => $this->canDelete($role),
@@ -77,70 +77,70 @@ class GroupVoter extends Voter
         };
     }
 
-    private function canView(StudyGroup $group, ?GroupRole $role): bool
+    private function canView(StudyGroup $group, ?string $role): bool
     {
         // Public groups are viewable by everyone
         if ($group->getPrivacy() === 'public') {
             return true;
         }
-        
+
         // Private groups require membership
         return $role !== null;
     }
 
-    private function canEdit(?GroupRole $role): bool
+    private function canEdit(?string $role): bool
     {
         if ($role === null) {
             return false;
         }
-        
-        return $role->canEditGroup();
+
+        return GroupRole::canEditGroup($role);
     }
 
-    private function canDelete(?GroupRole $role): bool
+    private function canDelete(?string $role): bool
     {
         if ($role === null) {
             return false;
         }
-        
-        return $role->canDeleteGroup();
+
+        return GroupRole::canDeleteGroup($role);
     }
 
-    private function canInvite(StudyGroup $group, ?GroupRole $role): bool
+    private function canInvite(StudyGroup $group, ?string $role): bool
     {
         // Can only invite to private groups
         if ($group->getPrivacy() !== 'private') {
             return false;
         }
-        
+
         if ($role === null) {
             return false;
         }
-        
-        return $role->canInviteMembers();
+
+        return GroupRole::canInviteMembers($role);
     }
 
-    private function canPost(?GroupRole $role): bool
+    private function canPost(?string $role): bool
     {
         // Must be a member to post
         return $role !== null;
     }
 
-    private function canManageMembers(?GroupRole $role): bool
+    private function canManageMembers(?string $role): bool
     {
         if ($role === null) {
             return false;
         }
-        
-        return $role->canManageMembers();
+
+        return GroupRole::canManageMembers($role);
     }
 
-    private function canRemoveMember(?GroupRole $role): bool
+    private function canRemoveMember(?string $role): bool
     {
         if ($role === null) {
             return false;
         }
-        
-        return $role->canRemoveMembers();
+
+        return GroupRole::canRemoveMembers($role);
     }
 }

@@ -13,10 +13,7 @@ class PostCreateDTO
     )]
     public ?string $title = null;
 
-    #[Assert\When(
-        expression: 'this.postType == "text"',
-        constraints: [new Assert\NotBlank(message: 'Le contenu du post est requis')]
-    )]
+    #[Assert\NotBlank(message: 'Le contenu du post est requis')]
     #[Assert\Length(
         max: 5000,
         maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères'
@@ -30,10 +27,7 @@ class PostCreateDTO
     )]
     public ?string $postType = 'text';
 
-    #[Assert\When(
-        expression: 'this.attachmentUrl !== null and this.attachmentUrl !== ""',
-        constraints: [new Assert\Url(message: 'L\'URL fournie n\'est pas valide')]
-    )]
+    #[Assert\Url(message: 'L\'URL fournie n\'est pas valide')]
     public ?string $attachmentUrl = null;
 
     #[Assert\File(
