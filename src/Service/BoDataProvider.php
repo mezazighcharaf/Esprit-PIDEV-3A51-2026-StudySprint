@@ -101,43 +101,46 @@ class BoDataProvider
     // ANALYTICS
     // ─────────────────────────────────────────────
 
-    public function getAnalyticsData(): array
+    public function getAnalyticsData(string $period = 'month'): array
     {
-        $startOfMonth = new \DateTimeImmutable('first day of this month 00:00:00');
-        $endOfMonth   = new \DateTimeImmutable('last day of this month 23:59:59');
+        [$start, $end] = $this->periodToDates($period);
 
-        // Tasks stats via SQL
-        $statsRow = $this->taskRepo->createQueryBuilder('t')
-            ->select(
-                'COUNT(t.id) as totalCount',
-                'SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) as completedCount',
-                'AVG(TIMESTAMPDIFF(MINUTE, t.startAt, t.endAt)) as avgMinutes'
-            )
-            ->where('t.startAt >= :start')
-            ->andWhere('t.startAt <= :end')
-            ->setParameter('start', $startOfMonth)
-            ->setParameter('end', $endOfMonth)
-            ->setParameter('done', 'DONE')
-            ->getQuery()->getOneOrNullResult();
+        // Tasks stats via native SQL (TIMESTAMPDIFF not supported in DQL)
+        $conn = $this->em->getConnection();
+        $statsRow = $conn->executeQuery(
+            'SELECT COUNT(t.id) AS totalCount,
+                    SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) AS completedCount,
+                    AVG(TIMESTAMPDIFF(MINUTE, t.start_at, t.end_at)) AS avgMinutes
+             FROM plan_tasks t
+             WHERE t.start_at >= :start AND t.start_at <= :end',
+            [
+                'done'  => 'DONE',
+                'start' => $start->format('Y-m-d H:i:s'),
+                'end'   => $end->format('Y-m-d H:i:s'),
+            ]
+        )->fetchAssociative();
 
         $totalSessions    = (int) ($statsRow['totalCount'] ?? 0);
         $avgMinutes       = (int) round((float) ($statsRow['avgMinutes'] ?? 0));
         $completedCount   = (int) ($statsRow['completedCount'] ?? 0);
         $completionRate   = $totalSessions > 0 ? round(($completedCount / $totalSessions) * 100) : 0;
 
-        // Average quiz score via SQL
+        // Average quiz score filtered by period
         $avgScoreRaw = $this->attemptRepo->createQueryBuilder('a')
             ->select('AVG(a.score)')
             ->where('a.completedAt IS NOT NULL')
+            ->andWhere('a.completedAt >= :start')->andWhere('a.completedAt <= :end')
+            ->setParameter('start', $start)->setParameter('end', $end)
             ->getQuery()->getSingleScalarResult();
         $avgScore = $avgScoreRaw ? round((float) $avgScoreRaw, 1) : 0;
 
-        // Top subjects by session count
+        // Top subjects by session count filtered by period
         $subjectsData = $this->em->createQueryBuilder()
             ->select('s.id, s.name, COUNT(t.id) as session_count')
             ->from('App\Entity\Subject', 's')
             ->leftJoin('s.revisionPlans', 'rp')
-            ->leftJoin('rp.tasks', 't')
+            ->leftJoin('rp.tasks', 't', 'WITH', 't.startAt >= :start AND t.startAt <= :end')
+            ->setParameter('start', $start)->setParameter('end', $end)
             ->groupBy('s.id, s.name')
             ->orderBy('session_count', 'DESC')
             ->setMaxResults(5)
@@ -165,13 +168,13 @@ class BoDataProvider
                     ['value' => 'week',    'label' => 'Cette semaine'],
                     ['value' => 'month',   'label' => 'Ce mois'],
                     ['value' => 'quarter', 'label' => 'Ce trimestre'],
-                ], 'selected' => 'month'],
+                ], 'selected' => $period],
             ],
             'activity_trend' => $activityTrend,
             'top_subjects'   => $topSubjects,
             'anomalies'      => [],
             'insights' => [
-                ['type' => 'success', 'text' => $totalSessions . ' sessions planifiées ce mois'],
+                ['type' => 'success', 'text' => $totalSessions . ' sessions sur la période'],
                 ['type' => 'info',    'text' => 'Taux de complétion : ' . $completionRate . '%'],
                 ['type' => $avgScore >= 50 ? 'success' : 'warning', 'text' => 'Score moyen quiz : ' . $avgScore . '%'],
             ],
@@ -268,7 +271,7 @@ class BoDataProvider
     // CONTENT OVERVIEW (vraies données)
     // ─────────────────────────────────────────────
 
-    public function getContentOverviewReal(): array
+    public function getContentOverviewReal(string $q = '', string $type = ''): array
     {
         $totalSubjects = $this->subjectRepo->count([]);
         $totalChapters = $this->chapterRepo->count([]);
@@ -281,15 +284,18 @@ class BoDataProvider
             ->select('COUNT(d.id)')->where('d.isPublished = :pub')->setParameter('pub', true)
             ->getQuery()->getSingleScalarResult();
 
-        // Subjects with chapter counts
-        $subjects = $this->em->createQueryBuilder()
+        // Subjects with chapter counts (filtered)
+        $sqb = $this->em->createQueryBuilder()
             ->select('s.id, s.name, s.code, s.createdAt, COUNT(c.id) as chapterCount')
             ->from('App\Entity\Subject', 's')
             ->leftJoin('s.chapters', 'c')
             ->groupBy('s.id, s.name, s.code, s.createdAt')
             ->orderBy('s.createdAt', 'DESC')
-            ->setMaxResults(20)
-            ->getQuery()->getResult();
+            ->setMaxResults(20);
+        if ($q && (!$type || $type === 'subject')) {
+            $sqb->andWhere('s.name LIKE :q OR s.code LIKE :q')->setParameter('q', "%$q%");
+        }
+        $subjects = $sqb->getQuery()->getResult();
 
         $subjectsData = array_map(fn($s) => [
             'id'           => $s['id'],
@@ -299,14 +305,17 @@ class BoDataProvider
             'created_at'   => $s['createdAt']->format('d/m/Y'),
         ], $subjects);
 
-        // Chapters with subject name
-        $chapters = $this->em->createQueryBuilder()
+        // Chapters with subject name (filtered)
+        $cqb = $this->em->createQueryBuilder()
             ->select('c.id, c.title, c.orderNo, c.createdAt, s.name as subjectName')
             ->from('App\Entity\Chapter', 'c')
             ->join('c.subject', 's')
             ->orderBy('c.createdAt', 'DESC')
-            ->setMaxResults(20)
-            ->getQuery()->getResult();
+            ->setMaxResults(20);
+        if ($q && (!$type || $type === 'chapter')) {
+            $cqb->where('c.title LIKE :q OR s.name LIKE :q')->setParameter('q', "%$q%");
+        }
+        $chapters = $cqb->getQuery()->getResult();
 
         $chaptersData = array_map(fn($c) => [
             'id'           => $c['id'],
@@ -316,14 +325,17 @@ class BoDataProvider
             'created_at'   => $c['createdAt']->format('d/m/Y'),
         ], $chapters);
 
-        // Recent quizzes
-        $recentQuizzes = $this->em->createQueryBuilder()
+        // Recent quizzes (filtered)
+        $qqb = $this->em->createQueryBuilder()
             ->select('q.id, q.title, q.difficulty, q.isPublished, q.createdAt, s.name as subjectName')
             ->from('App\Entity\Quiz', 'q')
             ->leftJoin('q.subject', 's')
             ->orderBy('q.createdAt', 'DESC')
-            ->setMaxResults(15)
-            ->getQuery()->getResult();
+            ->setMaxResults(15);
+        if ($q && (!$type || $type === 'quiz')) {
+            $qqb->where('q.title LIKE :q OR s.name LIKE :q')->setParameter('q', "%$q%");
+        }
+        $recentQuizzes = $qqb->getQuery()->getResult();
 
         $quizzesData = array_map(fn($q) => [
             'id'         => $q['id'],
@@ -346,6 +358,8 @@ class BoDataProvider
             'subjects' => $subjectsData,
             'chapters' => $chaptersData,
             'quizzes'  => $quizzesData,
+            'q'        => $q,
+            'type'     => $type,
         ];
     }
 
@@ -353,16 +367,17 @@ class BoDataProvider
     // TRAINING OVERVIEW (vraies données)
     // ─────────────────────────────────────────────
 
-    public function getTrainingOverviewReal(): array
+    public function getTrainingOverviewReal(string $period = 'month', string $q = ''): array
     {
-        $startOfMonth = new \DateTimeImmutable('first day of this month 00:00:00');
+        [$startOfMonth, $endOfMonth] = $this->periodToDates($period);
         $startOfWeek  = new \DateTimeImmutable('monday this week 00:00:00');
 
         // Quiz attempts stats
         $totalAttempts = $this->attemptRepo->count([]);
         $monthAttempts = (int) $this->attemptRepo->createQueryBuilder('a')
             ->select('COUNT(a.id)')
-            ->where('a.startedAt >= :start')->setParameter('start', $startOfMonth)
+            ->where('a.startedAt >= :start')->andWhere('a.startedAt <= :end')
+            ->setParameter('start', $startOfMonth)->setParameter('end', $endOfMonth)
             ->getQuery()->getSingleScalarResult();
         $avgScore = (float) ($this->attemptRepo->createQueryBuilder('a')
             ->select('AVG(a.score)')
@@ -402,14 +417,19 @@ class BoDataProvider
             ->where('rs.lastReviewedAt >= :start')->setParameter('start', $startOfWeek)
             ->getQuery()->getSingleScalarResult();
 
-        // Recent quiz attempts
-        $recentAttempts = $this->attemptRepo->createQueryBuilder('a')
+        // Recent quiz attempts (filtered by period and q)
+        $aqb = $this->attemptRepo->createQueryBuilder('a')
             ->leftJoin('a.quiz', 'q')->addSelect('q')
             ->leftJoin('a.user', 'u')->addSelect('u')
             ->where('a.completedAt IS NOT NULL')
+            ->andWhere('a.completedAt >= :start')->andWhere('a.completedAt <= :end')
+            ->setParameter('start', $startOfMonth)->setParameter('end', $endOfMonth)
             ->orderBy('a.completedAt', 'DESC')
-            ->setMaxResults(15)
-            ->getQuery()->getResult();
+            ->setMaxResults(15);
+        if ($q) {
+            $aqb->andWhere('q.title LIKE :q OR u.nom LIKE :q OR u.prenom LIKE :q')->setParameter('q', "%$q%");
+        }
+        $recentAttempts = $aqb->getQuery()->getResult();
 
         $attemptsData = array_map(fn($a) => [
             'user'       => $a->getUser()->getFullName(),
@@ -437,23 +457,29 @@ class BoDataProvider
     // MENTORING OVERVIEW (vraies données)
     // ─────────────────────────────────────────────
 
-    public function getMentoringOverviewReal(): array
+    public function getMentoringOverviewReal(string $q = '', string $privacy = ''): array
     {
         $totalGroups = $this->groupRepo->count([]);
         $publicGroups = (int) $this->groupRepo->createQueryBuilder('g')
             ->select('COUNT(g.id)')->where('g.privacy = :pub')->setParameter('pub', 'PUBLIC')
             ->getQuery()->getSingleScalarResult();
 
-        // Groups with member & post counts
-        $groups = $this->em->createQueryBuilder()
+        // Groups with member & post counts (filtered)
+        $gqb = $this->em->createQueryBuilder()
             ->select('g.id, g.name, g.privacy, g.createdAt, COUNT(DISTINCT m.id) as memberCount, COUNT(DISTINCT p.id) as postCount')
             ->from('App\Entity\StudyGroup', 'g')
             ->leftJoin('g.members', 'm')
             ->leftJoin('g.posts', 'p')
             ->groupBy('g.id, g.name, g.privacy, g.createdAt')
             ->orderBy('memberCount', 'DESC')
-            ->setMaxResults(20)
-            ->getQuery()->getResult();
+            ->setMaxResults(20);
+        if ($q) {
+            $gqb->andWhere('g.name LIKE :q')->setParameter('q', "%$q%");
+        }
+        if ($privacy) {
+            $gqb->andWhere('g.privacy = :privacy')->setParameter('privacy', strtoupper($privacy));
+        }
+        $groups = $gqb->getQuery()->getResult();
 
         $groupsData = array_map(fn($g) => [
             'id'          => $g['id'],
@@ -512,6 +538,15 @@ class BoDataProvider
      * Builds the activity trend structure expected by analytics.html.twig:
      * { labels: ['Lun','Mar',...], data: [12,8,...], previous: [10,5,...] }
      */
+    private function periodToDates(string $period): array
+    {
+        return match($period) {
+            'week'    => [new \DateTimeImmutable('monday this week 00:00:00'), new \DateTimeImmutable('sunday this week 23:59:59')],
+            'quarter' => [new \DateTimeImmutable('first day of -2 month 00:00:00'), new \DateTimeImmutable('last day of this month 23:59:59')],
+            default   => [new \DateTimeImmutable('first day of this month 00:00:00'), new \DateTimeImmutable('last day of this month 23:59:59')],
+        };
+    }
+
     private function buildActivityTrend7Days(): array
     {
         $rows = $this->activityLogRepo->getDailyActivityForUser7Days();

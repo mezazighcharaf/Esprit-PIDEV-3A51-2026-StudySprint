@@ -1,124 +1,392 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}StudySprint - Plateforme d'apprentissage{% endblock %}
+{% block title %}StudySprint - Apprenez plus vite, retenez plus longtemps{% endblock %}
 
 {% block stylesheets %}
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --primary: #5AAEEF;
+        --primary-dark: #3A8ECF;
+        --accent: #FDB499;
+        --bg: #F7FFFC;
+        --text: #4A5673;
+        --text-muted: #6B7C94;
+        --surface: #FFFFFF;
+        --border: #E5EAF2;
+        --success: #4BB543;
+        --gradient: linear-gradient(135deg, #5AAEEF 0%, #3A8ECF 50%, #667eea 100%);
     }
+
+    html { scroll-behavior: smooth; }
+
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
     }
+
+    /* ── NAVBAR ── */
+    .navbar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 2rem;
+        transition: background 0.3s, box-shadow 0.3s;
+    }
+    .navbar.scrolled {
+        background: var(--surface);
+        box-shadow: 0 2px 20px rgba(90,174,239,0.12);
+    }
+    .navbar-logo {
+        font-size: 1.5rem; font-weight: 800; color: white;
+        text-decoration: none; display: flex; align-items: center; gap: 0.4rem;
+        transition: color 0.3s;
+    }
+    .navbar.scrolled .navbar-logo { color: var(--primary); }
+    .navbar-logo svg { width: 28px; height: 28px; }
+    .navbar-links { display: flex; align-items: center; gap: 1.5rem; }
+    .navbar-links a {
+        color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 500;
+        transition: color 0.2s;
+    }
+    .navbar.scrolled .navbar-links a { color: var(--text); }
+    .navbar-links a:hover { color: white; }
+    .navbar.scrolled .navbar-links a:hover { color: var(--primary); }
+    .nav-btn {
+        padding: 0.5rem 1.25rem; border-radius: 0.5rem; font-weight: 600;
+        text-decoration: none; transition: all 0.2s;
+    }
+    .nav-btn-outline {
+        border: 2px solid rgba(255,255,255,0.7); color: white !important;
+    }
+    .nav-btn-outline:hover { background: rgba(255,255,255,0.15) !important; }
+    .navbar.scrolled .nav-btn-outline {
+        border-color: var(--primary); color: var(--primary) !important;
+    }
+    .navbar.scrolled .nav-btn-outline:hover { background: rgba(90,174,239,0.08) !important; }
+    .nav-btn-filled {
+        background: white; color: var(--primary) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .nav-btn-filled:hover {
+        transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+    }
+    .navbar.scrolled .nav-btn-filled {
+        background: var(--primary); color: white !important;
+    }
+
+    /* ── HERO ── */
     .hero {
         min-height: 100vh;
-        display: flex;
-        flex-direction: column;
+        background: var(--gradient);
+        display: flex; align-items: center;
+        position: relative; overflow: hidden;
+        padding: 6rem 2rem 4rem;
+    }
+    .hero-inner {
+        max-width: 1200px; margin: 0 auto; width: 100%;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
         align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2rem;
-        color: white;
+    }
+    .hero-content { animation: fadeSlideUp 0.8s ease both; }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+        color: white; padding: 0.4rem 1rem; border-radius: 50px;
+        font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem;
+        backdrop-filter: blur(8px);
     }
     .hero h1 {
-        font-size: 3.5rem;
-        font-weight: 800;
+        font-size: clamp(2.5rem, 5vw, 3.8rem); font-weight: 800;
+        color: white; line-height: 1.1; margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: #FDB499; }
+    .hero-sub {
+        font-size: 1.1rem; color: rgba(255,255,255,0.85);
+        line-height: 1.7; margin-bottom: 2rem; max-width: 480px;
+    }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-hero-white {
+        padding: 0.9rem 2rem; background: white; color: var(--primary);
+        border-radius: 0.6rem; font-weight: 700; text-decoration: none;
+        font-size: 1rem; transition: all 0.2s;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .btn-hero-white:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+    .btn-hero-outline {
+        padding: 0.9rem 2rem; border: 2px solid rgba(255,255,255,0.7);
+        color: white; border-radius: 0.6rem; font-weight: 700; text-decoration: none;
+        font-size: 1rem; transition: all 0.2s;
+    }
+    .btn-hero-outline:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+    /* Flashcard mockup */
+    .hero-visual { display: flex; align-items: center; justify-content: center; animation: fadeSlideUp 0.8s 0.2s ease both; }
+    .flashcard-mock {
+        width: 320px; height: 200px;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 1.5rem; padding: 2rem;
+        backdrop-filter: blur(16px);
+        display: flex; flex-direction: column; justify-content: space-between;
+        animation: float 6s ease-in-out infinite;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+    }
+    .fc-tag { background: rgba(253,180,153,0.4); color: #fff; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+    .fc-q { color: white; font-size: 1.1rem; font-weight: 600; margin: 0.75rem 0; }
+    .fc-hint { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+    .fc-footer { display: flex; gap: 0.5rem; }
+    .fc-btn { flex: 1; padding: 0.4rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; text-align: center; }
+    .fc-btn-red { background: rgba(224,62,62,0.3); color: #fca5a5; }
+    .fc-btn-green { background: rgba(75,181,67,0.3); color: #86efac; }
+    .fc-btn-blue { background: rgba(90,174,239,0.3); color: #bae6fd; }
+
+    /* Floating blobs */
+    .blob { position: absolute; border-radius: 50%; opacity: 0.12; pointer-events: none; }
+    .blob-1 { width: 400px; height: 400px; background: white; top: -100px; right: -100px; animation: float 8s ease-in-out infinite; }
+    .blob-2 { width: 250px; height: 250px; background: white; bottom: 50px; left: -80px; animation: float 10s ease-in-out infinite reverse; }
+    .blob-3 { width: 150px; height: 150px; background: #FDB499; top: 40%; right: 30%; animation: float 7s ease-in-out infinite 2s; }
+
+    /* ── STATS ── */
+    .stats {
+        background: var(--surface); box-shadow: 0 4px 40px rgba(90,174,239,0.1);
+        padding: 2rem;
+    }
+    .stats-inner {
+        max-width: 800px; margin: 0 auto;
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        text-align: center; gap: 1rem;
+    }
+    .stat-divider { border-left: 1px solid var(--border); }
+    .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* ── FEATURES ── */
+    .features { padding: 6rem 2rem; background: var(--bg); }
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-tag {
+        display: inline-block; background: rgba(90,174,239,0.1);
+        color: var(--primary); padding: 0.3rem 1rem; border-radius: 50px;
+        font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em;
         margin-bottom: 1rem;
-        text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .hero p {
-        font-size: 1.25rem;
-        max-width: 600px;
-        margin-bottom: 2.5rem;
-        opacity: 0.9;
+    .section-header h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; color: var(--text); }
+    .section-header p { color: var(--text-muted); margin-top: 0.75rem; font-size: 1.05rem; }
+
+    .features-grid {
+        max-width: 1100px; margin: 0 auto;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
     }
-    .cta-buttons {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
+    .feature-card {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 1.25rem; padding: 2rem;
+        transition: transform 0.25s, box-shadow 0.25s;
     }
-    .btn {
-        padding: 1rem 2rem;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: transform 0.2s, box-shadow 0.2s;
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(90,174,239,0.15); }
+    .feature-icon {
+        width: 52px; height: 52px; border-radius: 1rem; margin-bottom: 1.25rem;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
     }
-    .btn-white {
-        background: white;
-        color: #667eea;
+    .fi-blue { background: rgba(90,174,239,0.12); }
+    .fi-orange { background: rgba(253,180,153,0.2); }
+    .fi-purple { background: rgba(102,126,234,0.12); }
+    .fi-green { background: rgba(75,181,67,0.1); }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+    .feature-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── CTA FINAL ── */
+    .cta-final {
+        padding: 5rem 2rem;
+        background: var(--gradient); text-align: center;
+        position: relative; overflow: hidden;
     }
-    .btn-white:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.3);
+    .cta-final h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; color: white; margin-bottom: 1rem; }
+    .cta-final p { color: rgba(255,255,255,0.85); font-size: 1.1rem; margin-bottom: 2rem; }
+    .btn-cta-white {
+        padding: 1rem 2.5rem; background: white; color: var(--primary);
+        border-radius: 0.6rem; font-weight: 700; text-decoration: none;
+        font-size: 1.05rem; transition: all 0.2s;
+        display: inline-block; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
-    .btn-outline {
-        background: transparent;
-        color: white;
-        border: 2px solid white;
+    .btn-cta-white:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 14px 36px rgba(0,0,0,0.25); }
+
+    /* ── FOOTER ── */
+    .footer { background: var(--text); padding: 2rem; text-align: center; }
+    .footer-logo { font-size: 1.3rem; font-weight: 800; color: white; margin-bottom: 0.5rem; }
+    .footer p { color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+    .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.75rem; }
+    .footer-links a { color: rgba(255,255,255,0.4); font-size: 0.8rem; text-decoration: none; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    .btn-outline:hover {
-        background: white;
-        color: #667eea;
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
     }
-    .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        margin-top: 4rem;
-        max-width: 1000px;
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+        .hero-inner { grid-template-columns: 1fr; text-align: center; }
+        .hero-sub, .hero-cta { margin: 0 auto 1.5rem; justify-content: center; }
+        .hero-visual { display: none; }
+        .features-grid { grid-template-columns: repeat(2, 1fr); }
+        .stats-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+        .stat-divider { border-left: none; border-top: 1px solid var(--border); padding-top: 1.5rem; }
     }
-    .feature {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 1.5rem;
-        border-radius: 1rem;
-        backdrop-filter: blur(10px);
-    }
-    .feature h3 {
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
-    }
-    .feature p {
-        font-size: 0.95rem;
-        opacity: 0.85;
-        margin-bottom: 0;
+    @media (max-width: 600px) {
+        .navbar-links .hide-mobile { display: none; }
+        .features-grid { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="hero">
-    <h1>StudySprint</h1>
-    <p>La plateforme d'apprentissage intelligente qui vous aide a reviser efficacement avec des quiz, des flashcards et des plans de revision personnalises.</p>
-
-    <div class="cta-buttons">
-        <a href="{{ path('app_register') }}" class="btn btn-white">Commencer gratuitement</a>
-        <a href="{{ path('app_login') }}" class="btn btn-outline">Se connecter</a>
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+    <a href="{{ path('app_home') }}" class="navbar-logo">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2L4 16h8l-2 10 14-16h-8l2-10z" fill="currentColor"/>
+        </svg>
+        StudySprint
+    </a>
+    <div class="navbar-links">
+        <a href="#features" class="hide-mobile">Fonctionnalités</a>
+        <a href="#about" class="hide-mobile">À propos</a>
+        <a href="{{ path('app_login') }}" class="nav-btn nav-btn-outline">Se connecter</a>
+        <a href="{{ path('app_register') }}" class="nav-btn nav-btn-filled">Commencer</a>
     </div>
+</nav>
 
-    <div class="features">
-        <div class="feature">
-            <h3>Quiz Interactifs</h3>
-            <p>Testez vos connaissances avec des quiz personnalises et suivez votre progression.</p>
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="hero-inner">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4H13L9.5 8l1.5 4L7 10l-4 2 1.5-4L1 5h4.5z" fill="#FDB499"/></svg>
+                Plateforme IA d'apprentissage #1
+            </div>
+            <h1>
+                Apprenez plus vite,<br>
+                <span>retenez plus longtemps.</span>
+            </h1>
+            <p class="hero-sub">
+                StudySprint combine l'IA, les flashcards intelligentes et les quiz adaptatifs pour booster vos révisions et maximiser votre mémorisation.
+            </p>
+            <div class="hero-cta">
+                <a href="{{ path('app_register') }}" class="btn-hero-white">Commencer gratuitement</a>
+                <a href="#features" class="btn-hero-outline">Voir les fonctionnalités</a>
+            </div>
         </div>
-        <div class="feature">
-            <h3>Flashcards SM-2</h3>
-            <p>Memorisez efficacement grace a l'algorithme de repetition espacee SuperMemo 2.</p>
+
+        <div class="hero-visual">
+            <div class="flashcard-mock">
+                <div>
+                    <span class="fc-tag">Biologie</span>
+                    <p class="fc-q">Quelle est la fonction de la mitochondrie ?</p>
+                    <p class="fc-hint">Appuyez pour révéler la réponse...</p>
+                </div>
+                <div class="fc-footer">
+                    <div class="fc-btn fc-btn-red">Difficile</div>
+                    <div class="fc-btn fc-btn-blue">Correct</div>
+                    <div class="fc-btn fc-btn-green">Facile</div>
+                </div>
+            </div>
         </div>
-        <div class="feature">
-            <h3>Plans de Revision</h3>
-            <p>Generez automatiquement des plans de revision adaptes a vos objectifs.</p>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+    <div class="stats-inner">
+        <div>
+            <div class="stat-value">+5 000</div>
+            <div class="stat-label">Étudiants actifs</div>
         </div>
-        <div class="feature">
-            <h3>Groupes d'Etude</h3>
-            <p>Collaborez avec d'autres etudiants et partagez vos connaissances.</p>
+        <div class="stat-divider">
+            <div class="stat-value">98%</div>
+            <div class="stat-label">Taux de satisfaction</div>
+        </div>
+        <div class="stat-divider">
+            <div class="stat-value">+50 000</div>
+            <div class="stat-label">Flashcards créées</div>
         </div>
     </div>
 </div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+    <div class="section-header">
+        <div class="section-tag">FONCTIONNALITÉS</div>
+        <h2>Tout ce dont vous avez besoin pour réussir</h2>
+        <p>Des outils puissants conçus pour chaque style d'apprentissage.</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon fi-blue">🧠</div>
+            <h3>Quiz Adaptatifs IA</h3>
+            <p>L'IA génère des questions personnalisées basées sur vos points faibles et adapte la difficulté en temps réel.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-orange">📇</div>
+            <h3>Flashcards intelligentes</h3>
+            <p>Un algorithme de répétition espacée programme intelligemment vos révisions pour une mémorisation durable et efficace.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-purple">📅</div>
+            <h3>Planning Intelligent</h3>
+            <p>Générez automatiquement un plan de révision adapté à vos objectifs, votre rythme et vos échéances.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-green">👥</div>
+            <h3>Groupes d'étude</h3>
+            <p>Collaborez avec vos pairs, partagez vos decks et profitez d'un chatbot IA pour répondre à vos questions.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-blue">📊</div>
+            <h3>Suivi de progression</h3>
+            <p>Des statistiques détaillées pour visualiser vos progrès, identifier vos lacunes et célébrer vos réussites.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-orange">🌐</div>
+            <h3>APIs enrichies</h3>
+            <p>Définitions de dictionnaire, articles Wikipedia et traduction automatique intégrés directement dans vos fiches.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final" id="about">
+    <h2>Prêt à transformer vos révisions ?</h2>
+    <p>Rejoignez des milliers d'étudiants qui progressent plus vite avec StudySprint.</p>
+    <a href="{{ path('app_register') }}" class="btn-cta-white">Créer mon compte gratuitement</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-logo">⚡ StudySprint</div>
+    <p>© 2026 StudySprint. Tous droits réservés.</p>
+    <div class="footer-links">
+        <a href="#">Mentions légales</a>
+        <a href="#">Confidentialité</a>
+        <a href="#">CGU</a>
+    </div>
+</footer>
+
+<script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+</script>
 {% endblock %}

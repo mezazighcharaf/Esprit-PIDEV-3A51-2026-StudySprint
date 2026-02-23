@@ -80,23 +80,23 @@ class PlanningController extends AbstractController
             ->getQuery()
             ->getResult();
         
-        // Calculate stats for this month via SQL aggregation (avoid PHP loops)
-        $statsRow = $taskRepo->createQueryBuilder('t')
-            ->select(
-                'COUNT(t.id) as totalCount',
-                'SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) as completedCount',
-                'SUM(TIMESTAMPDIFF(MINUTE, t.startAt, t.endAt)) as totalMinutes'
-            )
-            ->join('t.plan', 'p')
-            ->where('p.user = :user')
-            ->andWhere('t.startAt >= :start')
-            ->andWhere('t.startAt <= :end')
-            ->setParameter('user', $currentUser)
-            ->setParameter('start', $startOfMonth)
-            ->setParameter('end', $endOfMonth)
-            ->setParameter('done', PlanTask::STATUS_DONE)
-            ->getQuery()
-            ->getOneOrNullResult();
+        // Calculate stats for this month via native SQL (TIMESTAMPDIFF not supported in DQL)
+        $conn = $taskRepo->getEntityManager()->getConnection();
+        $statsRow = $conn->executeQuery(
+            'SELECT COUNT(t.id) AS totalCount,
+                    SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) AS completedCount,
+                    SUM(TIMESTAMPDIFF(MINUTE, t.start_at, t.end_at)) AS totalMinutes
+             FROM plan_tasks t
+             INNER JOIN revision_plans p ON t.plan_id = p.id
+             WHERE p.user_id = :userId AND t.start_at >= :start AND t.start_at <= :end',
+            [
+                'done'   => PlanTask::STATUS_DONE,
+                'userId' => $currentUser->getId(),
+                'start'  => $startOfMonth->format('Y-m-d H:i:s'),
+                'end'    => $endOfMonth->format('Y-m-d H:i:s'),
+            ]
+        )->fetchAssociative();
+        $statsRow = $statsRow ?: [];
 
         $sessionsCount = (int) ($statsRow['totalCount'] ?? 0);
         $completedCount = (int) ($statsRow['completedCount'] ?? 0);
@@ -104,10 +104,14 @@ class PlanningController extends AbstractController
         $completionRate = $sessionsCount > 0 ? round(($completedCount / $sessionsCount) * 100) : 0;
 
         // Get user's plans for AI suggest buttons
-        $userPlans = $planRepo->findBy(
-            ['user' => $currentUser],
-            ['startDate' => 'DESC']
-        );
+        $userPlans = $planRepo->createQueryBuilder('p')
+            ->where('p.user = :user')
+            ->andWhere('p.endDate >= :today')
+            ->setParameter('user', $currentUser)
+            ->setParameter('today', new \DateTimeImmutable('today'))
+            ->orderBy('p.startDate', 'ASC')
+            ->getQuery()
+            ->getResult();
 
         return $this->render('fo/planning/index.html.twig', [
             'tasks' => $tasks,
@@ -121,7 +125,7 @@ class PlanningController extends AbstractController
         ]);
     }
 
-    #[Route('/events.json', name: 'events_json', methods: ['GET'])]
+    #[Route('/events', name: 'events_json', methods: ['GET'])]
     public function eventsJson(Request $request, PlanTaskRepository $taskRepo, UserRepository $userRepo): JsonResponse
     {
         $currentUser = $this->getUser() ?? $userRepo->findOneBy([]);

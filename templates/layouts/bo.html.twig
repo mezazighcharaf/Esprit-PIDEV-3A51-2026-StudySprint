@@ -258,4 +258,18 @@
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 {% block drawers %}{% endblock %}
+
+{% endblock %} {# end block body #}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form').forEach(function(form) {
+            form.setAttribute('novalidate', 'novalidate');
+            form.querySelectorAll('[required]').forEach(function(el){ el.removeAttribute('required'); });
+            form.querySelectorAll('[min]').forEach(function(el){ el.removeAttribute('min'); });
+        });
+    });
+    </script>
 {% endblock %}

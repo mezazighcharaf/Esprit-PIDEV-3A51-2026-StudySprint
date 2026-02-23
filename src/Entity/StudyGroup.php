@@ -132,6 +132,14 @@ class StudyGroup
         return $this->createdBy;
     }
 
+    /**
+     * Alias used by some voters/controllers expecting getOwner().
+     */
+    public function getOwner(): ?User
+    {
+        return $this->createdBy;
+    }
+
     public function setCreatedBy(User $createdBy): static
     {
         $this->createdBy = $createdBy;

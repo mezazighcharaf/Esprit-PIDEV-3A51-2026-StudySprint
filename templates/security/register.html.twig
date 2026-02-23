@@ -4,162 +4,341 @@
 
 {% block stylesheets %}
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --primary: #5AAEEF;
+        --primary-dark: #3A8ECF;
+        --accent: #FDB499;
+        --bg: #F7FFFC;
+        --text: #4A5673;
+        --text-muted: #6B7C94;
+        --border: #E5EAF2;
+        --success: #4BB543;
+        --error: #E03E3E;
+        --gradient: linear-gradient(135deg, #5AAEEF 0%, #3A8ECF 50%, #667eea 100%);
     }
+
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh; display: flex;
+        background: var(--bg); color: var(--text);
+    }
+
+    /* ── SPLIT ── */
+    .split-left {
+        flex: 1; background: var(--gradient);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 3rem; position: relative; overflow: hidden;
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 0;
     }
-    .register-container {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        width: 100%;
-        max-width: 400px;
+    .split-right {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        padding: 3rem 2rem; background: var(--bg);
+        min-height: 100vh; overflow-y: auto;
     }
-    .logo {
-        text-align: center;
-        margin-bottom: 2rem;
+
+    .left-logo {
+        position: absolute; top: 2rem; left: 2rem;
+        font-size: 1.4rem; font-weight: 800; color: white;
+        text-decoration: none; display: flex; align-items: center; gap: 0.4rem;
     }
-    .logo h1 {
-        font-size: 2rem;
-        color: #667eea;
-        font-weight: 700;
+    .left-tagline { text-align: center; z-index: 1; }
+    .left-tagline h2 { font-size: 2rem; font-weight: 800; color: white; line-height: 1.2; margin-bottom: 1rem; }
+    .left-tagline p { color: rgba(255,255,255,0.8); font-size: 1rem; line-height: 1.7; }
+
+    .advantages {
+        margin-top: 2rem; background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2); border-radius: 1.25rem;
+        padding: 1.5rem 1.75rem; backdrop-filter: blur(12px);
+        animation: float 6s ease-in-out infinite; max-width: 300px; width: 100%;
     }
-    .logo p {
-        color: #6b7280;
-        margin-top: 0.5rem;
+    .adv-title { color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
+    .adv-item {
+        display: flex; align-items: flex-start; gap: 0.75rem;
+        padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    .form-group {
-        margin-bottom: 1.25rem;
+    .adv-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .adv-check {
+        width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+        background: rgba(75,181,67,0.3); color: #86efac;
+        display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
     }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: #374151;
+    .adv-text { color: white; font-size: 0.88rem; line-height: 1.4; }
+    .adv-sub { color: rgba(255,255,255,0.55); font-size: 0.78rem; }
+
+    .blob { position: absolute; border-radius: 50%; opacity: 0.1; pointer-events: none; }
+    .blob-1 { width: 350px; height: 350px; background: white; top: -100px; right: -100px; animation: float 8s ease-in-out infinite; }
+    .blob-2 { width: 200px; height: 200px; background: white; bottom: -60px; left: -60px; animation: float 10s ease-in-out infinite reverse; }
+
+    /* ── FORM ── */
+    .form-box { width: 100%; max-width: 440px; animation: fadeSlideUp 0.6s ease both; }
+    .form-header { margin-bottom: 1.75rem; }
+    .form-logo {
+        font-size: 1.4rem; font-weight: 800; color: var(--primary);
+        display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1.25rem;
+        text-decoration: none;
     }
-    .form-control {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 1rem;
+    .form-header h1 { font-size: 1.7rem; font-weight: 800; color: var(--text); }
+    .form-header p { color: var(--text-muted); margin-top: 0.4rem; font-size: 0.9rem; }
+
+    .alert { padding: 0.9rem 1.1rem; border-radius: 0.6rem; margin-bottom: 1.25rem; font-size: 0.9rem; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; }
+    .alert-danger { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 500; font-size: 0.88rem; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+        position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); pointer-events: none;
+    }
+    .input-wrap input {
+        width: 100%; padding: 0.78rem 1rem 0.78rem 2.5rem;
+        border: 1.5px solid var(--border); border-radius: 0.6rem;
+        font-size: 0.95rem; background: white; color: var(--text);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    .input-wrap input:focus {
+        outline: none; border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(90,174,239,0.15);
     }
-    .btn {
-        width: 100%;
-        padding: 0.875rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.2s;
+
+    /* Symfony form widgets override */
+    .form-group .form-control,
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+        width: 100%; padding: 0.78rem 1rem 0.78rem 2.5rem;
+        border: 1.5px solid var(--border); border-radius: 0.6rem;
+        font-size: 0.95rem; background: white; color: var(--text);
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
     }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    .form-group .form-control:focus,
+    .form-group input:focus {
+        outline: none; border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(90,174,239,0.15);
     }
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 20px -10px rgba(102, 126, 234, 0.5);
+    .form-group .invalid-feedback,
+    .form-group ul.list-unstyled { color: var(--error); font-size: 0.82rem; margin-top: 0.3rem; list-style: none; padding: 0; }
+
+    .eye-toggle {
+        position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; color: var(--text-muted);
+        font-size: 0.95rem; padding: 0;
     }
-    .alert {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
+    .eye-toggle:hover { color: var(--primary); }
+
+    /* Password strength */
+    .strength-bar { height: 4px; border-radius: 2px; background: var(--border); margin-top: 0.5rem; overflow: hidden; }
+    .strength-fill { height: 100%; width: 0; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+    .strength-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    .btn-submit {
+        width: 100%; padding: 0.9rem; border: none; border-radius: 0.6rem;
+        background: var(--gradient); color: white;
+        font-size: 1rem; font-weight: 700; cursor: pointer;
+        transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 4px 16px rgba(90,174,239,0.35);
+        margin-top: 0.5rem;
     }
-    .alert-success {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #16a34a;
+    .btn-submit:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(90,174,239,0.4); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .rgpd { text-align: center; color: var(--text-muted); font-size: 0.78rem; margin-top: 1rem; }
+    .rgpd a { color: var(--primary); text-decoration: none; }
+
+    .divider {
+        text-align: center; position: relative; margin: 1.25rem 0;
+        color: var(--text-muted); font-size: 0.85rem;
     }
-    .error-list {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
+    .divider::before, .divider::after {
+        content: ''; position: absolute; top: 50%; width: 40%;
+        height: 1px; background: var(--border);
     }
-    .error-list ul {
-        margin: 0;
-        padding-left: 1.25rem;
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .bottom-link { text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+    .bottom-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .bottom-link a:hover { text-decoration: underline; }
+
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    .login-link {
-        text-align: center;
-        margin-top: 1.5rem;
-        color: #6b7280;
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
-    .login-link a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    .login-link a:hover {
-        text-decoration: underline;
+
+    @media (max-width: 768px) {
+        body { flex-direction: column; }
+        .split-left { display: none; }
+        .split-right { padding: 2rem 1.5rem; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="register-container">
-    <div class="logo">
-        <h1>StudySprint</h1>
-        <p>Creez votre compte</p>
-    </div>
-
-    {% for flash_message in app.flashes('success') %}
-        <div class="alert alert-success">
-            {{ flash_message }}
+<div class="split-left">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <a href="{{ path('app_home') }}" class="left-logo">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><path d="M14 2L4 16h8l-2 10 14-16h-8l2-10z" fill="white"/></svg>
+        StudySprint
+    </a>
+    <div class="left-tagline">
+        <h2>Commencez à apprendre<br>dès aujourd'hui.</h2>
+        <p>Rejoignez des milliers d'étudiants qui progressent plus vite grâce à l'IA.</p>
+        <div class="advantages">
+            <div class="adv-title">Ce que vous obtenez</div>
+            <div class="adv-item">
+                <div class="adv-check">✓</div>
+                <div>
+                    <div class="adv-text">Accès gratuit et illimité</div>
+                    <div class="adv-sub">Aucune carte de crédit requise</div>
+                </div>
+            </div>
+            <div class="adv-item">
+                <div class="adv-check">✓</div>
+                <div>
+                    <div class="adv-text">Quiz IA et flashcards intelligentes</div>
+                    <div class="adv-sub">Mémorisation optimale garantie</div>
+                </div>
+            </div>
+            <div class="adv-item">
+                <div class="adv-check">✓</div>
+                <div>
+                    <div class="adv-text">Groupes d'étude collaboratifs</div>
+                    <div class="adv-sub">Apprenez avec vos pairs</div>
+                </div>
+            </div>
+            <div class="adv-item">
+                <div class="adv-check">✓</div>
+                <div>
+                    <div class="adv-text">Statistiques de progression</div>
+                    <div class="adv-sub">Visualisez vos progrès en temps réel</div>
+                </div>
+            </div>
         </div>
-    {% endfor %}
+    </div>
+</div>
 
-    {{ form_start(registrationForm) }}
+<div class="split-right">
+    <div class="form-box">
+        <div class="form-header">
+            <a href="{{ path('app_home') }}" class="form-logo">
+                <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><path d="M14 2L4 16h8l-2 10 14-16h-8l2-10z" fill="#5AAEEF"/></svg>
+                StudySprint
+            </a>
+            <h1>Rejoignez StudySprint 🚀</h1>
+            <p>Créez votre compte gratuit en 30 secondes</p>
+        </div>
+
+        {% for flash_message in app.flashes('success') %}
+        <div class="alert alert-success">✅ {{ flash_message }}</div>
+        {% endfor %}
+
+        {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+
         <div class="form-group">
             {{ form_label(registrationForm.fullName) }}
-            {{ form_widget(registrationForm.fullName) }}
+            <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                {{ form_widget(registrationForm.fullName, {'attr': {'placeholder': 'Jean Dupont'}}) }}
+            </div>
             {{ form_errors(registrationForm.fullName) }}
         </div>
 
         <div class="form-group">
             {{ form_label(registrationForm.email) }}
-            {{ form_widget(registrationForm.email) }}
+            <div class="input-wrap">
+                <span class="input-icon">✉</span>
+                {{ form_widget(registrationForm.email, {'attr': {'placeholder': 'votre@email.com'}}) }}
+            </div>
             {{ form_errors(registrationForm.email) }}
         </div>
 
         <div class="form-group">
             {{ form_label(registrationForm.plainPassword.first) }}
-            {{ form_widget(registrationForm.plainPassword.first) }}
+            <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                {{ form_widget(registrationForm.plainPassword.first, {'attr': {'id': 'password1', 'placeholder': '••••••••'}}) }}
+                <button type="button" class="eye-toggle" id="eyeToggle1">👁</button>
+            </div>
             {{ form_errors(registrationForm.plainPassword.first) }}
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-label" id="strengthLabel">Force du mot de passe</div>
         </div>
 
         <div class="form-group">
             {{ form_label(registrationForm.plainPassword.second) }}
-            {{ form_widget(registrationForm.plainPassword.second) }}
+            <div class="input-wrap">
+                <span class="input-icon">🔒</span>
+                {{ form_widget(registrationForm.plainPassword.second, {'attr': {'id': 'password2', 'placeholder': '••••••••'}}) }}
+                <button type="button" class="eye-toggle" id="eyeToggle2">👁</button>
+            </div>
             {{ form_errors(registrationForm.plainPassword.second) }}
         </div>
 
-        <button type="submit" class="btn btn-primary">S'inscrire</button>
-    {{ form_end(registrationForm) }}
+        <button type="submit" class="btn-submit">Créer mon compte gratuitement</button>
 
-    <p class="login-link">
-        Deja un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
-    </p>
+        {{ form_end(registrationForm) }}
+
+        <p class="rgpd">En créant un compte, vous acceptez nos <a href="#">CGU</a> et notre <a href="#">politique de confidentialité</a>.</p>
+
+        <div class="divider">déjà membre ?</div>
+
+        <p class="bottom-link">
+            <a href="{{ path('app_login') }}">← Se connecter à mon compte</a>
+        </p>
+    </div>
 </div>
+
+<script>
+    // Eye toggles
+    function setupEye(toggleId, inputId) {
+        const btn = document.getElementById(toggleId);
+        const inp = document.getElementById(inputId);
+        if (!btn || !inp) return;
+        btn.addEventListener('click', () => {
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            btn.textContent = show ? '🙈' : '👁';
+        });
+    }
+    setupEye('eyeToggle1', 'password1');
+    setupEye('eyeToggle2', 'password2');
+
+    // Password strength
+    const pw1 = document.getElementById('password1');
+    const fill = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    if (pw1 && fill && label) {
+        pw1.addEventListener('input', () => {
+            const v = pw1.value;
+            let score = 0;
+            if (v.length >= 8) score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+            const levels = [
+                { pct: '0%', color: '#E5EAF2', text: 'Force du mot de passe' },
+                { pct: '25%', color: '#E03E3E', text: 'Très faible' },
+                { pct: '50%', color: '#FDB499', text: 'Faible' },
+                { pct: '75%', color: '#5AAEEF', text: 'Bon' },
+                { pct: '100%', color: '#4BB543', text: 'Excellent' },
+            ];
+            const l = v.length === 0 ? levels[0] : levels[Math.min(score, 4)];
+            fill.style.width = l.pct;
+            fill.style.background = l.color;
+            label.textContent = l.text;
+            label.style.color = l.color === '#E5EAF2' ? 'var(--text-muted)' : l.color;
+        });
+    }
+</script>
 {% endblock %}

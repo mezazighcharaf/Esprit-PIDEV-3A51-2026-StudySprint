@@ -35,8 +35,8 @@ class Settings(BaseSettings):
 
     # AI Generation settings
     ai_temperature: float = 0.7
-    ai_max_tokens: int = 4000
-    ai_max_retries: int = 3
+    ai_max_tokens: int = 1500
+    ai_max_retries: int = 1
 
     # Rate Limiting
     rate_limit_per_minute: int = 60

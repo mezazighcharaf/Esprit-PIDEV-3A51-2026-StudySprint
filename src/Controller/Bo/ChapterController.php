@@ -48,6 +48,12 @@ class ChapterController extends AbstractController
         $form = $this->createForm(ChapterType::class, $item);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('attachmentFile')->getData();
+            if ($file) {
+                $filename = uniqid('chap_') . '.' . $file->guessExtension();
+                $file->move($this->getParameter('kernel.project_dir') . '/public/uploads/chapters', $filename);
+                $item->setAttachmentUrl('/uploads/chapters/' . $filename);
+            }
             $em->persist($item);
             $em->flush();
             $this->addFlash('success', 'Chapitre créé.');
@@ -68,6 +74,12 @@ class ChapterController extends AbstractController
         $form = $this->createForm(ChapterType::class, $item);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('attachmentFile')->getData();
+            if ($file) {
+                $filename = uniqid('chap_') . '.' . $file->guessExtension();
+                $file->move($this->getParameter('kernel.project_dir') . '/public/uploads/chapters', $filename);
+                $item->setAttachmentUrl('/uploads/chapters/' . $filename);
+            }
             $em->flush();
             $this->addFlash('success', 'Chapitre modifié.');
             return $this->redirectToRoute('bo_chapters_index');

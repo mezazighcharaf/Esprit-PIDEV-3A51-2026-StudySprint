@@ -6,6 +6,7 @@ use App\Dto\GroupCreateDTO;
 use App\Dto\GroupUpdateDTO;
 use App\Dto\PostCreateDTO;
 use App\Entity\GroupInvitation;
+use App\Entity\ChatbotConfig;
 use App\Entity\User;
 use App\Form\Fo\GroupFormType;
 use App\Repository\GroupInvitationRepository;
@@ -30,6 +31,7 @@ use App\Service\PostService;
 use App\Service\TranslationService;
 use App\Service\AI\GeminiChatbotService;
 use App\Repository\ChatbotConfigRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,6 +72,7 @@ class GroupsController extends AbstractController
         private TranslationService $translationService,
         private GeminiChatbotService $chatbotService,
         private ChatbotConfigRepository $chatbotConfigRepository,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     // ==================== HELPER METHODS ====================
@@ -849,8 +852,22 @@ class GroupsController extends AbstractController
 
         $isMember = $currentUserRole !== null;
 
-        // Chatbot config
+        // Chatbot config (auto-create default enabled if missing)
         $chatbotConfig = $this->chatbotConfigRepository->findByGroup($group);
+        if (!$chatbotConfig) {
+            $chatbotConfig = new ChatbotConfig();
+            $chatbotConfig->setGroup($group);
+            $chatbotConfig->setIsEnabled(true);
+            $chatbotConfig->setBotName('StudyBot');
+            $chatbotConfig->setPersonality('tutor');
+            $chatbotConfig->setTriggerMode('auto-detect');
+            $chatbotConfig->setTriggerKeywords([]);
+            $chatbotConfig->setLanguage('fr');
+            $chatbotConfig->setMaxResponseLength(800);
+            $chatbotConfig->setSubjectContext($group->getSubject());
+            $this->entityManager->persist($chatbotConfig);
+            $this->entityManager->flush();
+        }
 
         $viewModel = [
             'group' => $groupData,

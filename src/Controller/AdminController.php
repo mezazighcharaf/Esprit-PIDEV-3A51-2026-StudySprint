@@ -29,11 +29,13 @@ class AdminController extends AbstractController
     }
 
     #[Route('/analytics', name: 'analytics', methods: ['GET'])]
-    public function analytics(): Response
+    public function analytics(Request $request): Response
     {
+        $period = $request->query->get('period', 'month');
+        if (!in_array($period, ['week', 'month', 'quarter'])) $period = 'month';
         return $this->render('bo/analytics.html.twig', [
             'state' => 'default',
-            'data' => $this->dataProvider->getAnalyticsData(),
+            'data'  => $this->dataProvider->getAnalyticsData($period),
         ]);
     }
 
@@ -52,27 +54,34 @@ class AdminController extends AbstractController
     }
 
     #[Route('/content', name: 'content', methods: ['GET'])]
-    public function content(): Response
+    public function content(Request $request): Response
     {
-        $data = $this->dataProvider->getContentOverviewReal();
+        $q    = $request->query->get('q', '');
+        $type = $request->query->get('type', '');
+        $data = $this->dataProvider->getContentOverviewReal($q, $type);
         $state = empty($data['subjects']) ? 'empty' : 'default';
-        return $this->render('bo/content.html.twig', ['state' => $state, 'data' => $data]);
+        return $this->render('bo/content.html.twig', ['state' => $state, 'data' => $data, 'q' => $q, 'type' => $type]);
     }
 
     #[Route('/mentoring', name: 'mentoring', methods: ['GET'])]
-    public function mentoring(): Response
+    public function mentoring(Request $request): Response
     {
-        $data = $this->dataProvider->getMentoringOverviewReal();
+        $q       = $request->query->get('q', '');
+        $privacy = $request->query->get('privacy', '');
+        $data = $this->dataProvider->getMentoringOverviewReal($q, $privacy);
         $state = empty($data['groups']) ? 'empty' : 'default';
-        return $this->render('bo/mentoring.html.twig', ['state' => $state, 'data' => $data]);
+        return $this->render('bo/mentoring.html.twig', ['state' => $state, 'data' => $data, 'q' => $q, 'privacy' => $privacy]);
     }
 
     #[Route('/training', name: 'training', methods: ['GET'])]
-    public function training(): Response
+    public function training(Request $request): Response
     {
-        $data = $this->dataProvider->getTrainingOverviewReal();
+        $period = $request->query->get('period', 'month');
+        if (!in_array($period, ['week', 'month', 'quarter'])) $period = 'month';
+        $q = $request->query->get('q', '');
+        $data = $this->dataProvider->getTrainingOverviewReal($period, $q);
         $state = empty($data['recent_attempts']) ? 'empty' : 'default';
-        return $this->render('bo/training.html.twig', ['state' => $state, 'data' => $data]);
+        return $this->render('bo/training.html.twig', ['state' => $state, 'data' => $data, 'period' => $period, 'q' => $q]);
     }
 
     #[Route('/analytics/export', name: 'analytics_export', methods: ['GET'])]

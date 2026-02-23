@@ -1,6 +1,10 @@
 {% extends 'layouts/fo.html.twig' %}
 {% block title %}{{ subject.name }} - StudySprint{% endblock %}
 
+{% block stylesheets %}
+<style>@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+{% endblock %}
+
 {% block content %}
 {# Breadcrumb #}
 <div style="margin-bottom: 1.5rem;">
@@ -243,11 +247,13 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') { closeDictModal(); closeTranslateModal(); }
 });
 
+var AI_SPINNER = '<div style="text-align:center;padding:1.25rem;color:#6b7280;font-size:13px;display:flex;align-items:center;justify-content:center;gap:0.5rem;"><svg style="width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> IA en cours…</div>';
+
 function lookupSubjectWord() {
     var word = document.getElementById('dict-subject-input').value.trim();
     if (!word) return;
     var result = document.getElementById('dict-subject-result');
-    result.innerHTML = '<div style="text-align:center;padding:1rem;color:#9ca3af;font-size:13px;">Recherche en cours…</div>';
+    result.innerHTML = AI_SPINNER;
     fetch('/api/dictionary/' + encodeURIComponent(word))
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -256,22 +262,15 @@ function lookupSubjectWord() {
                 return;
             }
             var html = '<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">';
-            html += '<div style="padding:0.875rem 1rem;background:#f0f9ff;border-bottom:1px solid #bae6fd;">';
-            html += '<span style="font-size:18px;font-weight:700;color:#0284c7;">' + (data.word || word) + '</span>';
-            if (data.phonetic) html += ' <span style="font-size:13px;color:#64748b;">' + data.phonetic + '</span>';
+            html += '<div style="padding:0.875rem 1rem;background:#f0f9ff;border-bottom:1px solid #bae6fd;display:flex;align-items:center;gap:0.5rem;">';
+            html += '<span style="font-size:16px;font-weight:700;color:#0284c7;">' + (data.word || word) + '</span>';
+            html += '<span style="font-size:10px;background:#dbeafe;color:#1d4ed8;padding:0.15rem 0.5rem;border-radius:50px;font-weight:600;">IA</span>';
             html += '</div>';
-            if (data.meanings && data.meanings.length) {
-                data.meanings.slice(0, 2).forEach(function(m) {
-                    html += '<div style="padding:0.75rem 1rem;">';
-                    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#667eea;margin-bottom:0.5rem;letter-spacing:0.05em;">' + (m.partOfSpeech || '') + '</div>';
-                    if (m.definitions && m.definitions[0]) {
-                        html += '<div style="font-size:14px;color:#1f2937;line-height:1.6;">' + m.definitions[0].definition + '</div>';
-                        if (m.definitions[0].example) {
-                            html += '<div style="font-size:12px;color:#6b7280;margin-top:0.375rem;font-style:italic;">"' + m.definitions[0].example + '"</div>';
-                        }
-                    }
-                    html += '</div>';
-                });
+            if (data.definition) {
+                html += '<div style="padding:0.875rem 1rem;">';
+                html += '<div style="font-size:14px;color:#1f2937;line-height:1.6;">' + data.definition + '</div>';
+                if (data.example) html += '<div style="font-size:12px;color:#6b7280;margin-top:0.5rem;font-style:italic;border-left:3px solid #e5e7eb;padding-left:0.5rem;">' + data.example + '</div>';
+                html += '</div>';
             }
             html += '</div>';
             result.innerHTML = html;
@@ -287,11 +286,11 @@ function doSubjectTranslate() {
     var target = document.getElementById('translate-subject-tgt').value;
     var result = document.getElementById('translate-subject-result');
     if (!text) return;
-    result.innerHTML = '<div style="text-align:center;padding:1rem;color:#9ca3af;font-size:13px;">Traduction en cours…</div>';
+    result.innerHTML = AI_SPINNER;
     fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: text, source: source, target: target })
+        body: JSON.stringify({ text: text, source: source, target: target })
     })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -300,8 +299,8 @@ function doSubjectTranslate() {
                 return;
             }
             result.innerHTML = '<div style="padding:1rem;background:#ecfdf5;border-radius:10px;border:1px solid #a7f3d0;">'
-                + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#059669;margin-bottom:0.5rem;letter-spacing:0.05em;">Traduction</div>'
-                + '<div style="font-size:15px;color:#1f2937;line-height:1.6;">' + (data.translatedText || data.translated_text || '') + '</div>'
+                + '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#059669;margin-bottom:0.5rem;letter-spacing:0.05em;display:flex;align-items:center;gap:0.4rem;">Traduction <span style="font-size:10px;background:#d1fae5;color:#065f46;padding:0.1rem 0.4rem;border-radius:50px;">IA</span></div>'
+                + '<div style="font-size:15px;color:#1f2937;line-height:1.6;">' + (data.translated || '') + '</div>'
                 + '</div>';
         })
         .catch(function() {

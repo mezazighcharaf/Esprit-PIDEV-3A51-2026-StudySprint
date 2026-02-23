@@ -44,6 +44,21 @@
         </div>
     </div>
 
+    {# Search / Filter bar #}
+    <form method="get" action="{{ path('admin_content') }}" style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher (matière, chapitre, quiz)…"
+               style="flex:1; min-width:200px; padding:0.5rem 0.875rem; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px; outline:none;"
+               onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'">
+        <select name="type" style="padding:0.5rem 0.75rem; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px;">
+            <option value="" {{ type == '' ? 'selected' : '' }}>Tous les types</option>
+            <option value="subject" {{ type == 'subject' ? 'selected' : '' }}>Matières</option>
+            <option value="chapter" {{ type == 'chapter' ? 'selected' : '' }}>Chapitres</option>
+            <option value="quiz" {{ type == 'quiz' ? 'selected' : '' }}>Quiz</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+        {% if q or type %}<a href="{{ path('admin_content') }}" class="btn btn-secondary btn-sm">Réinitialiser</a>{% endif %}
+    </form>
+
     {# Tabs #}
     <div style="border-bottom: 1px solid var(--color-gray-200); margin-bottom: 1.25rem;">
         <nav class="flex gap-4" id="content-tabs">

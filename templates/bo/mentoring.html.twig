@@ -38,6 +38,20 @@
         </div>
     </div>
 
+    {# Search / Filter bar #}
+    <form method="get" action="{{ path('admin_mentoring') }}" style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap;">
+        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un groupe…"
+               style="flex:1; min-width:200px; padding:0.5rem 0.875rem; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px; outline:none;"
+               onfocus="this.style.borderColor='var(--color-primary)'" onblur="this.style.borderColor='var(--color-border)'">
+        <select name="privacy" style="padding:0.5rem 0.75rem; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px;">
+            <option value="" {{ privacy == '' ? 'selected' : '' }}>Tous</option>
+            <option value="PUBLIC" {{ privacy == 'PUBLIC' ? 'selected' : '' }}>Public</option>
+            <option value="PRIVATE" {{ privacy == 'PRIVATE' ? 'selected' : '' }}>Privé</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+        {% if q or privacy %}<a href="{{ path('admin_mentoring') }}" class="btn btn-secondary btn-sm">Réinitialiser</a>{% endif %}
+    </form>
+
     {# Tabs #}
     <div style="border-bottom: 1px solid var(--color-gray-200); margin-bottom: 1.25rem;">
         <nav class="flex gap-4">

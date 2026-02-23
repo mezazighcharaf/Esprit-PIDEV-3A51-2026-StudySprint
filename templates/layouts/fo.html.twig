@@ -2,6 +2,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
 {% endblock %}
 
 {% block body %}
@@ -25,15 +26,6 @@
                                 <polyline points="9 22 9 12 15 12 15 22"/>
                             </svg>
                             <span>Accueil</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('fo_profile_show') }}" class="sidebar-link {{ app.request.get('_route') starts with 'fo_profile_' ? 'active' : '' }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            <span>Mon Profil</span>
                         </a>
                     </li>
                     <li>
@@ -171,6 +163,21 @@
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
 {% block drawers %}{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form').forEach(function(form) {
+            form.setAttribute('novalidate', 'novalidate');
+            form.noValidate = true;
+            form.querySelectorAll('[required]').forEach(function(el){ el.removeAttribute('required'); });
+            form.querySelectorAll('[min]').forEach(function(el){ el.removeAttribute('min'); });
+            form.querySelectorAll('[pattern]').forEach(function(el){ el.removeAttribute('pattern'); });
+        });
+    });
+    </script>
+{% endblock %}
 
 {# ─── MERCURE REAL-TIME NOTIFICATIONS ─── #}
 <style>

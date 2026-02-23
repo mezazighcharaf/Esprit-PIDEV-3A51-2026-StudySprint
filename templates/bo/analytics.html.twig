@@ -93,10 +93,20 @@
     </div>
 
     {# Filterbar #}
-    {{ include('components/_filterbar.html.twig', {
-        filters: data.filters,
-        show_clear: true
-    }) }}
+    <form method="get" action="{{ path('admin_analytics') }}" id="analytics-filter-form">
+        {{ include('components/_filterbar.html.twig', {
+            filters: data.filters,
+            show_clear: true
+        }) }}
+    </form>
+    <script>
+    document.getElementById('analytics-filter-form').querySelectorAll('select').forEach(function(s){
+        s.addEventListener('change', function(){ document.getElementById('analytics-filter-form').submit(); });
+    });
+    document.querySelectorAll('.filterbar-clear').forEach(function(btn){
+        btn.addEventListener('click', function(){ window.location.href = '{{ path('admin_analytics') }}'; });
+    });
+    </script>
 
     {# KPIs Row #}
     <div class="bo-kpi-row">
@@ -121,7 +131,7 @@
             </div>
             <div class="bo-kpi-value">{{ kpi.value }}</div>
             <div class="bo-kpi-subtitle">{{ kpi.subtitle }}</div>
-            {% if kpi.sparkline %}
+            {% if kpi.sparkline is defined and kpi.sparkline %}
             <div class="bo-kpi-sparkline">
                 <svg viewBox="0 0 100 32" preserveAspectRatio="none">
                     <polyline

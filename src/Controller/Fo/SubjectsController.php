@@ -85,7 +85,10 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Matière introuvable');
         }
 
-        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+        $currentUserId = $this->getUser()?->getId();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
+        if (!$isAdmin && !$isSubjectOwner) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette matière.');
         }
 
@@ -113,7 +116,10 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Matière introuvable');
         }
 
-        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+        $currentUserId = $this->getUser()?->getId();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
+        if (!$isAdmin && !$isSubjectOwner) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette matière.');
         }
 
@@ -150,6 +156,13 @@ class SubjectsController extends AbstractController
                 return $this->redirectToRoute('fo_subjects_show', ['id' => $subjectId]);
             }
 
+            $file = $form->get('attachmentFile')->getData();
+            if ($file) {
+                $filename = uniqid('chap_') . '.' . $file->guessExtension();
+                $file->move($this->getParameter('kernel.project_dir') . '/public/uploads/chapters', $filename);
+                $chapter->setAttachmentUrl('/uploads/chapters/' . $filename);
+            }
+
             $chapter->setCreatedBy($currentUser);
             $em->persist($chapter);
             $em->flush();
@@ -174,7 +187,13 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Chapitre ou matière introuvable');
         }
 
-        if ($subject->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+        $currentUserId = $this->getUser()?->getId();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
+        $isChapterOwner = $chapter->getCreatedBy()?->getId() === $currentUserId;
+
+        // Autoriser tout utilisateur connecté (ROLE_USER), en plus des propriétaires et admin
+        if (!$this->isGranted('ROLE_USER')) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas modifier ce chapitre.');
         }
 
@@ -182,6 +201,12 @@ class SubjectsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $file = $form->get('attachmentFile')->getData();
+            if ($file) {
+                $filename = uniqid('chap_') . '.' . $file->guessExtension();
+                $file->move($this->getParameter('kernel.project_dir') . '/public/uploads/chapters', $filename);
+                $chapter->setAttachmentUrl('/uploads/chapters/' . $filename);
+            }
             $em->flush();
             $this->addFlash('success', 'Chapitre modifié avec succès !');
             return $this->redirectToRoute('fo_subjects_show', ['id' => $subjectId]);
@@ -203,7 +228,12 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Chapitre introuvable');
         }
 
-        if ($chapter->getSubject()->getCreatedBy()?->getId() !== $this->getUser()?->getId()) {
+        $currentUserId = $this->getUser()?->getId();
+        $isSubjectOwner = $chapter->getSubject()->getCreatedBy()?->getId() === $currentUserId;
+        $isChapterOwner = $chapter->getCreatedBy()?->getId() === $currentUserId;
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+
+        if (!$isAdmin && !$isSubjectOwner && !$isChapterOwner) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer ce chapitre.');
         }
 

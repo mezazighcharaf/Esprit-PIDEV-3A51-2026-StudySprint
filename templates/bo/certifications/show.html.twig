@@ -21,6 +21,45 @@
 <div class="alert alert-info mb-4">{{ message }}</div>
 {% endfor %}
 
+{# ── ACTIONS ADMIN (en haut, bien visible) ── #}
+{% if certRequest.pending %}
+<div style="background: #fff; border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+    <div style="font-weight: 700; color: #111827; font-size: 15px; width: 100%; margin-bottom: 0.5rem;">
+        ⚡ Action requise — cette demande est en attente de décision
+    </div>
+
+    {# Approuver #}
+    <form method="post" action="{{ path('bo_certifications_approve', {id: certRequest.id}) }}"
+          onsubmit="return confirm('Approuver cette demande ? L\'utilisateur deviendra professeur certifié.');"
+          style="flex-shrink: 0;">
+        <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ certRequest.id) }}">
+        <button type="submit" class="btn" style="background: #10b981; color: white; border-color: #10b981; padding: 0.65rem 1.5rem; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Approuver la demande
+        </button>
+    </form>
+
+    {# Refuser #}
+    <form method="post" action="{{ path('bo_certifications_reject', {id: certRequest.id}) }}"
+          onsubmit="return confirm('Refuser cette demande ?');"
+          style="display: flex; gap: 0.5rem; align-items: flex-end; flex: 1; min-width: 280px;">
+        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ certRequest.id) }}">
+        <div style="flex: 1;">
+            <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 0.25rem;">Motif de refus (optionnel)</label>
+            <input type="text" name="reason" class="form-input" placeholder="Ex: documents insuffisants..." style="width: 100%;">
+        </div>
+        <button type="submit" class="btn" style="background: #ef4444; color: white; border-color: #ef4444; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Refuser
+        </button>
+    </form>
+</div>
+{% endif %}
+
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
     {# Infos demande #}
     <div class="card">
@@ -31,11 +70,19 @@
                     <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Statut</div>
                     <div>
                         {% if certRequest.status == 'PENDING' %}
-                            <span class="badge badge-warning">En attente</span>
+                            <span style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.75rem;background:#fef3c7;color:#92400e;border-radius:50px;font-size:12px;font-weight:600;">
+                                ⏳ En attente
+                            </span>
                         {% elseif certRequest.status == 'APPROVED' %}
-                            <span class="badge badge-success">Approuvée</span>
+                            <span style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.75rem;background:#d1fae5;color:#065f46;border-radius:50px;font-size:12px;font-weight:600;">
+                                ✅ Approuvée
+                            </span>
                         {% elseif certRequest.status == 'REJECTED' %}
-                            <span class="badge badge-error">Refusée</span>
+                            <span style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.75rem;background:#fee2e2;color:#991b1b;border-radius:50px;font-size:12px;font-weight:600;">
+                                ❌ Refusée
+                            </span>
+                        {% else %}
+                            <span style="padding:0.3rem 0.75rem;background:#f3f4f6;color:#6b7280;border-radius:50px;font-size:12px;">{{ certRequest.status }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -48,7 +95,7 @@
             {% if certRequest.motivation %}
             <div style="margin-bottom: 1rem;">
                 <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Motivation</div>
-                <div style="color: #111827; white-space: pre-wrap; background: #f9fafb; padding: 0.75rem; border-radius: 6px;">{{ certRequest.motivation }}</div>
+                <div style="color: #111827; white-space: pre-wrap; background: #f9fafb; padding: 0.75rem; border-radius: 6px; line-height: 1.6;">{{ certRequest.motivation }}</div>
             </div>
             {% endif %}
 
@@ -90,50 +137,23 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
                     <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Type actuel</div>
-                    <div><span class="badge">{{ certRequest.user.userType }}</span></div>
+                    <div>
+                        <span style="padding:0.25rem 0.65rem;background:#ede9fe;color:#5b21b6;border-radius:50px;font-size:12px;font-weight:600;">
+                            {{ certRequest.user.userType ?? certRequest.user.role }}
+                        </span>
+                    </div>
                 </div>
                 <div>
                     <div style="font-size: 12px; color: #9ca3af; margin-bottom: 0.25rem;">Inscrit le</div>
                     <div style="color: #111827;">{{ certRequest.user.createdAt|date('d/m/Y') }}</div>
                 </div>
             </div>
+            <div style="margin-top: 1rem;">
+                <a href="{{ path('bo_user_profiles_show', {id: certRequest.user.id}) }}" class="btn btn-secondary btn-sm" style="font-size: 12px;">
+                    Voir le profil complet →
+                </a>
+            </div>
         </div>
     </div>
 </div>
-
-{# Actions admin #}
-{% if certRequest.pending %}
-<div class="card" style="margin-top: 1.5rem;">
-    <div class="card-header"><h3 style="margin:0;">Actions</h3></div>
-    <div class="card-body" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-        {# Approuver #}
-        <form method="post" action="{{ path('bo_certifications_approve', {id: certRequest.id}) }}" onsubmit="return confirm('Approuver cette demande ? L\'utilisateur deviendra professeur certifié.');" style="flex: 1; min-width: 200px;">
-            <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ certRequest.id) }}">
-            <button type="submit" class="btn btn-primary" style="width: 100%; background: #10b981; border-color: #10b981;">
-                <svg style="width: 16px; height: 16px; margin-right: 0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Approuver
-            </button>
-        </form>
-
-        {# Refuser #}
-        <form method="post" action="{{ path('bo_certifications_reject', {id: certRequest.id}) }}" onsubmit="return confirm('Refuser cette demande ?');" style="flex: 2; min-width: 300px;">
-            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ certRequest.id) }}">
-            <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
-                <div style="flex: 1;">
-                    <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 0.25rem;">Motif de refus (optionnel)</label>
-                    <input type="text" name="reason" class="form-input" placeholder="Ex: documents insuffisants..." style="width: 100%;">
-                </div>
-                <button type="submit" class="btn" style="background: #ef4444; color: white; border-color: #ef4444; white-space: nowrap;">
-                    <svg style="width: 16px; height: 16px; margin-right: 0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    Refuser
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endif %}
 {% endblock %}

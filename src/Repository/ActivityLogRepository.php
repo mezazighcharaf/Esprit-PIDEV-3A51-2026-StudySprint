@@ -47,17 +47,18 @@ class ActivityLogRepository extends ServiceEntityRepository
     public function getDailyActivityForUser(User $user, int $days = 30): array
     {
         $since = new \DateTimeImmutable("-{$days} days");
+        $conn  = $this->getEntityManager()->getConnection();
 
-        return $this->createQueryBuilder('a')
-            ->select("DATE(a.createdAt) as day, COUNT(a.id) as count")
-            ->where('a.user = :user')
-            ->andWhere('a.createdAt >= :since')
-            ->setParameter('user', $user)
-            ->setParameter('since', $since)
-            ->groupBy('day')
-            ->orderBy('day', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $rows = $conn->executeQuery(
+            'SELECT DATE(a.created_at) AS day, COUNT(a.id) AS count
+             FROM activity_logs a
+             WHERE a.user_id = :userId AND a.created_at >= :since
+             GROUP BY DATE(a.created_at)
+             ORDER BY day ASC',
+            ['userId' => $user->getId(), 'since' => $since->format('Y-m-d H:i:s')]
+        )->fetchAllAssociative();
+
+        return $rows;
     }
 
     /**
@@ -80,14 +81,15 @@ class ActivityLogRepository extends ServiceEntityRepository
     public function getDailyActivityForUser7Days(): array
     {
         $since = new \DateTimeImmutable('-7 days');
+        $conn  = $this->getEntityManager()->getConnection();
 
-        return $this->createQueryBuilder('a')
-            ->select("DATE(a.createdAt) as day, COUNT(a.id) as count")
-            ->where('a.createdAt >= :since')
-            ->setParameter('since', $since)
-            ->groupBy('day')
-            ->orderBy('day', 'ASC')
-            ->getQuery()
-            ->getResult();
+        return $conn->executeQuery(
+            'SELECT DATE(a.created_at) AS day, COUNT(a.id) AS count
+             FROM activity_logs a
+             WHERE a.created_at >= :since
+             GROUP BY DATE(a.created_at)
+             ORDER BY day ASC',
+            ['since' => $since->format('Y-m-d H:i:s')]
+        )->fetchAllAssociative();
     }
 }

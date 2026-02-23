@@ -5,8 +5,9 @@ namespace App\Form\Fo;
 use App\Entity\Chapter;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -29,6 +30,12 @@ class ChapterType extends AbstractType
                 'label' => 'Numéro d\'ordre',
                 'attr' => ['class' => 'form-input', 'min' => 1],
                 'required' => true,
+            ])
+            ->add('attachmentFile', FileType::class, [
+                'label' => 'Pièce jointe (PDF/Word)',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['accept' => '.pdf,.doc,.docx', 'class' => 'form-input'],
             ])
         ;
     }

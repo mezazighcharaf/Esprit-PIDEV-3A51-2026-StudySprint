@@ -4,139 +4,259 @@
 
 {% block stylesheets %}
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --primary: #5AAEEF;
+        --primary-dark: #3A8ECF;
+        --accent: #FDB499;
+        --bg: #F7FFFC;
+        --text: #4A5673;
+        --text-muted: #6B7C94;
+        --border: #E5EAF2;
+        --gradient: linear-gradient(135deg, #5AAEEF 0%, #3A8ECF 50%, #667eea 100%);
     }
+
     body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        min-height: 100vh; display: flex;
+        background: var(--bg); color: var(--text);
+    }
+
+    /* ── SPLIT LAYOUT ── */
+    .split-left {
+        flex: 1; background: var(--gradient);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: 3rem; position: relative; overflow: hidden;
         min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
-    .login-container {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        width: 100%;
-        max-width: 400px;
+    .split-right {
+        flex: 1; display: flex; align-items: center; justify-content: center;
+        padding: 3rem 2rem; background: var(--bg);
+        min-height: 100vh;
     }
-    .logo {
-        text-align: center;
-        margin-bottom: 2rem;
+
+    /* Décor gauche */
+    .left-logo {
+        position: absolute; top: 2rem; left: 2rem;
+        font-size: 1.4rem; font-weight: 800; color: white;
+        text-decoration: none; display: flex; align-items: center; gap: 0.4rem;
     }
-    .logo h1 {
-        font-size: 2rem;
-        color: #667eea;
-        font-weight: 700;
+    .left-tagline {
+        text-align: center; z-index: 1;
     }
-    .logo p {
-        color: #6b7280;
-        margin-top: 0.5rem;
+    .left-tagline h2 {
+        font-size: 2rem; font-weight: 800; color: white;
+        line-height: 1.2; margin-bottom: 1rem;
     }
-    .form-group {
-        margin-bottom: 1.25rem;
+    .left-tagline p { color: rgba(255,255,255,0.8); font-size: 1rem; line-height: 1.7; }
+
+    /* Illustration SVG */
+    .left-illustration {
+        margin-top: 2.5rem;
+        background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 1.5rem; padding: 2rem; backdrop-filter: blur(12px);
+        animation: float 6s ease-in-out infinite;
+        max-width: 280px; width: 100%;
     }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        color: #374151;
+    .benefit-item {
+        display: flex; align-items: center; gap: 0.75rem;
+        color: white; font-size: 0.9rem; padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .form-control {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 1rem;
+    .benefit-item:last-child { border-bottom: none; }
+    .benefit-check {
+        width: 24px; height: 24px; border-radius: 50%;
+        background: rgba(75,181,67,0.3); color: #86efac;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem; flex-shrink: 0;
+    }
+
+    /* Blobs */
+    .blob { position: absolute; border-radius: 50%; opacity: 0.1; pointer-events: none; }
+    .blob-1 { width: 350px; height: 350px; background: white; top: -100px; right: -100px; animation: float 8s ease-in-out infinite; }
+    .blob-2 { width: 200px; height: 200px; background: white; bottom: -60px; left: -60px; animation: float 10s ease-in-out infinite reverse; }
+
+    /* ── FORM ── */
+    .form-box { width: 100%; max-width: 420px; animation: fadeSlideUp 0.6s ease both; }
+    .form-header { margin-bottom: 2rem; }
+    .form-logo {
+        font-size: 1.5rem; font-weight: 800; color: var(--primary);
+        display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1.5rem;
+        text-decoration: none;
+    }
+    .form-header h1 { font-size: 1.75rem; font-weight: 800; color: var(--text); }
+    .form-header p { color: var(--text-muted); margin-top: 0.4rem; font-size: 0.95rem; }
+
+    .alert {
+        padding: 0.9rem 1.1rem; border-radius: 0.6rem;
+        margin-bottom: 1.5rem; font-size: 0.9rem;
+        display: flex; align-items: center; gap: 0.6rem;
+    }
+    .alert-danger { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+        position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+        color: var(--text-muted); pointer-events: none; font-size: 1rem;
+    }
+    .input-wrap input {
+        width: 100%; padding: 0.8rem 1rem 0.8rem 2.6rem;
+        border: 1.5px solid var(--border); border-radius: 0.6rem;
+        font-size: 0.95rem; background: white; color: var(--text);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    .input-wrap input:focus {
+        outline: none; border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(90,174,239,0.15);
     }
-    .btn {
-        width: 100%;
-        padding: 0.875rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.2s;
+    .eye-toggle {
+        position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; color: var(--text-muted);
+        font-size: 1rem; padding: 0;
     }
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    .eye-toggle:hover { color: var(--primary); }
+
+    .form-extras {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.5rem; font-size: 0.85rem;
     }
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 20px -10px rgba(102, 126, 234, 0.5);
+    .remember-me { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-muted); }
+    .remember-me input { accent-color: var(--primary); }
+    .forgot-link { color: var(--primary); text-decoration: none; font-weight: 500; }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .btn-submit {
+        width: 100%; padding: 0.9rem; border: none; border-radius: 0.6rem;
+        background: var(--gradient); color: white;
+        font-size: 1rem; font-weight: 700; cursor: pointer;
+        transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 4px 16px rgba(90,174,239,0.35);
     }
-    .alert {
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
+    .btn-submit:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(90,174,239,0.4); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .divider {
+        text-align: center; position: relative; margin: 1.5rem 0;
+        color: var(--text-muted); font-size: 0.85rem;
     }
-    .alert-danger {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #dc2626;
+    .divider::before, .divider::after {
+        content: ''; position: absolute; top: 50%; width: 40%;
+        height: 1px; background: var(--border);
     }
-    .register-link {
-        text-align: center;
-        margin-top: 1.5rem;
-        color: #6b7280;
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .bottom-link {
+        text-align: center; color: var(--text-muted); font-size: 0.9rem;
     }
-    .register-link a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
+    .bottom-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .bottom-link a:hover { text-decoration: underline; }
+
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-    .register-link a:hover {
-        text-decoration: underline;
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 768px) {
+        body { flex-direction: column; }
+        .split-left { display: none; }
+        .split-right { padding: 2rem 1.5rem; }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="login-container">
-    <div class="logo">
-        <h1>StudySprint</h1>
-        <p>Connectez-vous pour continuer</p>
+<div class="split-left">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <a href="{{ path('app_home') }}" class="left-logo">
+        <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><path d="M14 2L4 16h8l-2 10 14-16h-8l2-10z" fill="white"/></svg>
+        StudySprint
+    </a>
+    <div class="left-tagline">
+        <h2>La connaissance,<br>à portée de main.</h2>
+        <p>Reconnectez-vous à votre espace d'apprentissage et continuez là où vous vous étiez arrêté.</p>
+        <div class="left-illustration">
+            <div class="benefit-item"><div class="benefit-check">✓</div>Flashcards intelligentes personnalisées</div>
+            <div class="benefit-item"><div class="benefit-check">✓</div>Quiz adaptatifs générés par IA</div>
+            <div class="benefit-item"><div class="benefit-check">✓</div>Planning de révision intelligent</div>
+            <div class="benefit-item"><div class="benefit-check">✓</div>Collaboration en groupes d'étude</div>
+        </div>
     </div>
-
-    {% if error %}
-        <div class="alert alert-danger">
-            {{ error.messageKey|trans(error.messageData, 'security') }}
-        </div>
-    {% endif %}
-
-    <form method="post">
-        <div class="form-group">
-            <label for="username">Email</label>
-            <input type="email" id="username" name="email" value="{{ last_username }}"
-                   class="form-control" placeholder="votre@email.com" required autofocus>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <input type="password" id="password" name="password"
-                   class="form-control" placeholder="••••••••" required>
-        </div>
-
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-        <button type="submit" class="btn btn-primary">Se connecter</button>
-    </form>
-
-    <p class="register-link">
-        Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a>
-    </p>
 </div>
+
+<div class="split-right">
+    <div class="form-box">
+        <div class="form-header">
+            <a href="{{ path('app_home') }}" class="form-logo">
+                <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><path d="M14 2L4 16h8l-2 10 14-16h-8l2-10z" fill="#5AAEEF"/></svg>
+                StudySprint
+            </a>
+            <h1>Bon retour 👋</h1>
+            <p>Connectez-vous à votre espace d'apprentissage</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger">
+            ⚠ {{ error.messageKey|trans(error.messageData, 'security') }}
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            <div class="form-group">
+                <label for="username">Adresse email</label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉</span>
+                    <input type="email" id="username" name="email"
+                           value="{{ last_username }}" placeholder="votre@email.com" autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" name="password" placeholder="••••••••">
+                    <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Afficher le mot de passe">👁</button>
+                </div>
+            </div>
+
+            <div class="form-extras">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember_me"> Se souvenir de moi
+                </label>
+                <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button type="submit" class="btn-submit">Se connecter</button>
+        </form>
+
+        <div class="divider">ou</div>
+
+        <p class="bottom-link">
+            Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire gratuitement →</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    const eyeToggle = document.getElementById('eyeToggle');
+    const passwordInput = document.getElementById('password');
+    eyeToggle.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        eyeToggle.textContent = isPassword ? '🙈' : '👁';
+    });
+</script>
 {% endblock %}

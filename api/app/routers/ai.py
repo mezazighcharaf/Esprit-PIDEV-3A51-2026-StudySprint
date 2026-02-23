@@ -332,28 +332,12 @@ async def generate_quiz(
 
     difficulty_fr = {"EASY": "facile", "MEDIUM": "intermédiaire", "HARD": "difficile"}[request.difficulty]
 
-    prompt = f"""Génère exactement {request.num_questions} questions QCM de niveau {difficulty_fr} pour:
+    prompt = f"""Génère {request.num_questions} questions QCM niveau {difficulty_fr}. Contexte: {context}
 
-{context}
+Réponds avec un tableau JSON uniquement, sans aucun texte avant ou après:
+[{{"text":"question","choices":[{{"key":"A","text":"..."}},{{"key":"B","text":"..."}},{{"key":"C","text":"..."}},{{"key":"D","text":"..."}}],"correct_key":"A","explanation":"..."}}]"""
 
-IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après.
-
-Format requis pour chaque question:
-{{
-    "text": "La question ici",
-    "choices": [
-        {{"key": "A", "text": "Premier choix"}},
-        {{"key": "B", "text": "Deuxième choix"}},
-        {{"key": "C", "text": "Troisième choix"}},
-        {{"key": "D", "text": "Quatrième choix"}}
-    ],
-    "correct_key": "B",
-    "explanation": "Explication de pourquoi B est correct"
-}}
-
-Génère maintenant le tableau JSON de {request.num_questions} questions:"""
-
-    system_prompt = "Tu es un assistant éducatif expert. Tu génères des questions de quiz de haute qualité. Réponds UNIQUEMENT en JSON valide, sans markdown ni texte additionnel."
+    system_prompt = "Tu es un assistant éducatif. Réponds UNIQUEMENT en JSON valide, sans markdown."
 
     # Create log entry
     log = AiGenerationLog(
@@ -490,22 +474,12 @@ async def generate_flashcards(
 
     hint_instruction = "avec un indice (hint)" if request.include_hints else "sans indice"
 
-    prompt = f"""Génère exactement {request.num_cards} flashcards {hint_instruction} pour:
+    prompt = f"""Génère {request.num_cards} flashcards pour: {context}
 
-{context}
+IMPORTANT: Ne numérote PAS le contenu des cartes. Réponds avec un tableau JSON uniquement:
+[{{"front":"concept ou question","back":"définition ou réponse","hint":"indice court"}}]"""
 
-IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide.
-
-Format requis pour chaque flashcard:
-{{
-    "front": "Question ou concept (côté recto)",
-    "back": "Réponse ou définition (côté verso)",
-    "hint": "Indice optionnel pour aider"
-}}
-
-Génère maintenant le tableau JSON de {request.num_cards} flashcards:"""
-
-    system_prompt = "Tu es un assistant éducatif expert. Tu crées des flashcards de mémorisation efficaces. Réponds UNIQUEMENT en JSON valide."
+    system_prompt = "Tu es un assistant éducatif. Réponds UNIQUEMENT en JSON valide, sans markdown. Ne mets jamais de numéro dans le contenu des champs front, back ou hint."
 
     log = AiGenerationLog(
         user_id=request.user_id,
@@ -982,6 +956,131 @@ IMPORTANT: Retourne UNIQUEMENT un objet JSON valide:
         log.latency_ms = int((time.time() - start_time) * 1000)
         db.commit()
         raise HTTPException(status_code=503, detail=f"Génération échouée: {str(e)}")
+
+
+class TranslateToolRequest(BaseModel):
+    text: str
+    source: str = "fr"
+    target: str = "en"
+
+class DefineToolRequest(BaseModel):
+    word: str
+    lang: str = "fr"
+
+
+@router.post("/tools/translate")
+async def ai_translate(request: TranslateToolRequest, db: Session = Depends(get_db)):
+    """
+    Lightweight translation via local Ollama — tiny context window, logged to AI monitoring.
+    Returns: {"translated": "..."}
+    """
+    if not request.text.strip():
+        raise HTTPException(status_code=400, detail="Texte vide.")
+    if len(request.text) > 500:
+        raise HTTPException(status_code=400, detail="Texte trop long (max 500 caractères).")
+
+    lang_names = {"fr": "français", "en": "anglais", "ar": "arabe", "es": "espagnol", "de": "allemand"}
+    src_name = lang_names.get(request.source, request.source)
+    tgt_name = lang_names.get(request.target, request.target)
+
+    prompt = f'Traduis ce texte du {src_name} vers le {tgt_name}. Réponds avec UNIQUEMENT la traduction, sans explication ni ponctuation supplémentaire.\n\nTexte: {request.text}'
+    system_prompt = "Tu es un traducteur. Réponds UNIQUEMENT avec la traduction, rien d'autre."
+
+    available = await check_ollama_available()
+    if not available:
+        raise HTTPException(status_code=503, detail="IA indisponible.")
+
+    log = AiGenerationLog(
+        user_id=None,
+        feature="translate",
+        input_json={"text": request.text[:200], "source": request.source, "target": request.target},
+        prompt=prompt,
+        status=AiGenerationLog.STATUS_PENDING
+    )
+    db.add(log)
+    db.commit()
+
+    start_time = time.time()
+    try:
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]
+        payload = {"model": OLLAMA_MODEL, "messages": messages, "stream": False, "options": {"temperature": 0.3, "num_predict": 120}}
+        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
+            resp = await client.post(f"{settings.ollama_base_url}/api/chat", json=payload)
+            if resp.status_code != 200:
+                raise Exception(f"Ollama error {resp.status_code}")
+            translated = resp.json().get("message", {}).get("content", "").strip()
+
+        log.status = AiGenerationLog.STATUS_SUCCESS
+        log.output_json = {"translated": translated}
+        log.latency_ms = int((time.time() - start_time) * 1000)
+        db.commit()
+        return {"translated": translated, "source": request.source, "target": request.target}
+    except Exception as e:
+        log.status = AiGenerationLog.STATUS_FAILED
+        log.error_message = str(e)
+        log.latency_ms = int((time.time() - start_time) * 1000)
+        db.commit()
+        raise HTTPException(status_code=503, detail="Erreur IA.")
+
+
+@router.post("/tools/define")
+async def ai_define(request: DefineToolRequest, db: Session = Depends(get_db)):
+    """
+    Lightweight word/phrase definition via local Ollama — tiny context window, logged to AI monitoring.
+    Returns: {"word": "...", "definition": "...", "example": "..."}
+    """
+    if not request.word.strip():
+        raise HTTPException(status_code=400, detail="Mot vide.")
+
+    lang_names = {"fr": "français", "en": "anglais", "ar": "arabe", "es": "espagnol"}
+    lang_name = lang_names.get(request.lang, request.lang)
+
+    prompt = f'Définis ce terme en {lang_name} en 1-2 phrases courtes et donne un exemple d\'utilisation. Réponds UNIQUEMENT en JSON: {{"definition":"...","example":"..."}}\n\nTerme: {request.word}'
+    system_prompt = "Tu es un dictionnaire. Réponds UNIQUEMENT avec un objet JSON valide contenant 'definition' et 'example'. Sois concis."
+
+    available = await check_ollama_available()
+    if not available:
+        raise HTTPException(status_code=503, detail="IA indisponible.")
+
+    log = AiGenerationLog(
+        user_id=None,
+        feature="define",
+        input_json={"word": request.word, "lang": request.lang},
+        prompt=prompt,
+        status=AiGenerationLog.STATUS_PENDING
+    )
+    db.add(log)
+    db.commit()
+
+    start_time = time.time()
+    try:
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]
+        payload = {"model": OLLAMA_MODEL, "messages": messages, "stream": False, "options": {"temperature": 0.3, "num_predict": 150}}
+        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
+            resp = await client.post(f"{settings.ollama_base_url}/api/chat", json=payload)
+            if resp.status_code != 200:
+                raise Exception(f"Ollama error {resp.status_code}")
+            content = resp.json().get("message", {}).get("content", "").strip()
+
+        try:
+            result = parse_json_response(content)
+            definition = result.get("definition", "")
+            example = result.get("example", "")
+        except Exception:
+            definition = content
+            example = ""
+
+        log.status = AiGenerationLog.STATUS_SUCCESS
+        log.output_json = {"definition": definition, "example": example}
+        log.latency_ms = int((time.time() - start_time) * 1000)
+        db.commit()
+        return {"word": request.word, "definition": definition, "example": example}
+    except Exception as e:
+        log.status = AiGenerationLog.STATUS_FAILED
+        log.error_message = str(e)
+        log.latency_ms = int((time.time() - start_time) * 1000)
+        db.commit()
+        raise HTTPException(status_code=503, detail="Erreur IA.")
 
 
 @router.post("/feedback")

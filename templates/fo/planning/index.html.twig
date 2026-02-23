@@ -48,14 +48,21 @@
     </div>
 {% endfor %}
 
-{# FullCalendar Interactif #}
-<div class="card" style="border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Calendrier interactif</h2>
-    <div id="fullCalendar" style="min-height: 500px;"></div>
-</div>
+{# Calendar + Sidebar 2-col layout #}
+<div style="display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start;">
+    {# Left: FullCalendar #}
+    <div class="card" style="border-radius: 12px; padding: 1.5rem;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Calendrier interactif</h2>
+        <div id="fullCalendar"></div>
+    </div>
 
-{# Sidebar Sessions à venir + IA #}
-<div style="max-width: 380px;">
+    <div class="card" style="border-radius: 12px; padding: 1.5rem;">
+        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Sessions par jour</h2>
+        <canvas id="planningSessionsChart" height="120"></canvas>
+    </div>
+
+    {# Right sidebar #}
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
     <div>
         <div class="card" style="border-radius: 12px; overflow: hidden;">
             <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
@@ -208,6 +215,7 @@ document.querySelectorAll('.ai-suggest-btn').forEach(function(btn) {
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calEl = document.getElementById('fullCalendar');
@@ -233,6 +241,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     calendar.render();
+
+    // Chart.js - Sessions par jour (palette existante)
+    var ctx = document.getElementById('planningSessionsChart');
+    if (ctx) {
+        var tasksData = {{ tasks|json_encode|raw }};
+        var countsByDay = {};
+        tasksData.forEach(function(t){
+            if (!t.startAt) return;
+            var d = new Date(t.startAt.date ?? t.startAt);
+            var key = d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+            countsByDay[key] = (countsByDay[key] || 0) + 1;
+        });
+        var labels = Object.keys(countsByDay).sort();
+        var dataPoints = labels.map(function(k){ return countsByDay[k]; });
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Sessions',
+                    data: dataPoints,
+                    backgroundColor: '#667eea',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#6b7280', autoSkip: true, maxTicksLimit: 10 } },
+                    y: { beginAtZero: true, ticks: { color: '#6b7280', stepSize: 1 } }
+                }
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -6,14 +6,15 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TranslationService
 {
-    private const LIBRETRANSLATE_URL = 'https://libretranslate.com/translate';
+    // MyMemory free translation API — no key required, 1000 req/day
+    private const MYMEMORY_URL = 'https://api.mymemory.translated.net/get';
 
     public function __construct(private readonly HttpClientInterface $httpClient)
     {
     }
 
     /**
-     * Translates text using LibreTranslate.
+     * Translates text using MyMemory (free, no API key required).
      * Returns the translated string, or null on failure.
      *
      * @param string $text       Text to translate
@@ -26,18 +27,19 @@ class TranslationService
             return null;
         }
 
+        // MyMemory uses "fr|en" format; 'auto' detection not supported → default to 'fr'
+        $src = ($sourceLang === 'auto') ? 'fr' : $sourceLang;
+        $langPair = $src . '|' . $targetLang;
+
         try {
             $response = $this->httpClient->request(
-                'POST',
-                self::LIBRETRANSLATE_URL,
+                'GET',
+                self::MYMEMORY_URL,
                 [
                     'timeout' => 8,
-                    'headers' => ['Content-Type' => 'application/json'],
-                    'json' => [
-                        'q'      => $text,
-                        'source' => $sourceLang,
-                        'target' => $targetLang,
-                        'format' => 'text',
+                    'query'   => [
+                        'q'        => $text,
+                        'langpair' => $langPair,
                     ],
                 ]
             );
@@ -48,7 +50,14 @@ class TranslationService
 
             $data = $response->toArray();
 
-            return $data['translatedText'] ?? null;
+            $translated = $data['responseData']['translatedText'] ?? null;
+
+            // MyMemory returns the original text when it fails
+            if ($translated === null || strtolower(trim($translated)) === strtolower(trim($text))) {
+                return null;
+            }
+
+            return $translated;
         } catch (\Throwable) {
             return null;
         }

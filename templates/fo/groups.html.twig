@@ -84,7 +84,7 @@
                         Derniere activite : {{ group.last_activity }}
                     </div>
                     <div class="flex gap-2 mt-3">
-                        <button class="btn btn-secondary btn-sm flex-1">Voir</button>
+                        <a href="{{ path('app_group_detail', {id: group.id}) }}" class="btn btn-secondary btn-sm flex-1">Voir</a>
                         <div class="dropdown">
                             <button class="btn btn-ghost btn-icon btn-sm" data-dropdown-toggle>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
@@ -94,14 +94,20 @@
                                 </svg>
                             </button>
                             <div class="dropdown-menu">
-                                <button class="dropdown-item">Inviter des membres</button>
-                                <button class="dropdown-item">Parametres</button>
+                                <a href="{{ path('app_group_detail', {id: group.id}) }}#invite" class="dropdown-item">Inviter des membres</a>
                                 {% if group.role == 'admin' %}
+                                <a href="{{ path('app_group_edit', {id: group.id}) }}" class="dropdown-item">Paramètres</a>
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item danger">Supprimer le groupe</button>
+                                <form method="post" action="{{ path('app_group_delete', {id: group.id}) }}" onsubmit="return confirm('Supprimer ce groupe ?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_group_' ~ group.id) }}">
+                                    <button type="submit" class="dropdown-item danger" style="width:100%;text-align:left;">Supprimer le groupe</button>
+                                </form>
                                 {% else %}
                                 <div class="dropdown-divider"></div>
-                                <button class="dropdown-item danger">Quitter le groupe</button>
+                                <form method="post" action="{{ path('app_group_leave', {id: group.id}) }}" onsubmit="return confirm('Quitter ce groupe ?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('leave_group_' ~ group.id) }}">
+                                    <button type="submit" class="dropdown-item danger" style="width:100%;text-align:left;">Quitter le groupe</button>
+                                </form>
                                 {% endif %}
                             </div>
                         </div>
@@ -139,8 +145,14 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button class="btn btn-secondary btn-sm">Refuser</button>
-                            <button class="btn btn-primary btn-sm">Accepter</button>
+                            <form method="post" action="{{ path('app_invitation_respond', {id: invitation.id, action: 'decline'}) }}" style="margin:0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('invitation_' ~ invitation.id) }}">
+                                <button type="submit" class="btn btn-secondary btn-sm">Refuser</button>
+                            </form>
+                            <form method="post" action="{{ path('app_invitation_respond', {id: invitation.id, action: 'accept'}) }}" style="margin:0;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('invitation_' ~ invitation.id) }}">
+                                <button type="submit" class="btn btn-primary btn-sm">Accepter</button>
+                            </form>
                         </div>
                     </div>
                     {% endfor %}
@@ -170,6 +182,7 @@
                                     <div class="text-xs text-muted">{{ feedback.group }} - {{ feedback.date }}</div>
                                 </div>
                             </div>
+                            {% if feedback.rating is defined and feedback.rating %}
                             <div class="flex gap-1">
                                 {% for i in 1..5 %}
                                 <svg viewBox="0 0 24 24" fill="{{ i <= feedback.rating ? 'var(--color-warning)' : 'none' }}" stroke="var(--color-warning)" stroke-width="2" width="14" height="14">
@@ -177,8 +190,9 @@
                                 </svg>
                                 {% endfor %}
                             </div>
+                            {% endif %}
                         </div>
-                        <p class="text-sm" style="margin-left: 44px;">{{ feedback.message }}</p>
+                        <p class="text-sm" style="margin-left: 44px;">{{ feedback.body ?? feedback.message ?? '' }}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -207,42 +221,39 @@
             </svg>
         </button>
     </div>
-    <div class="drawer-body">
-        <div class="form-group">
-            <label class="form-label required">Nom du groupe</label>
-            <input type="text" class="form-input" placeholder="Ex: Prepa MPSI - Maths">
+    <form method="post" action="{{ path('app_group_create') }}">
+        <div class="drawer-body">
+            <div class="form-group">
+                <label class="form-label required">Nom du groupe</label>
+                <input name="name" type="text" class="form-input" placeholder="Ex: Prepa MPSI - Maths" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-textarea" placeholder="Decrivez l'objectif du groupe..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Matiere principale</label>
+                <input name="subject" type="text" class="form-input" placeholder="Ex: Mathematiques">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Visibilite</label>
+                <select name="privacy" class="form-select">
+                    <option value="private">Prive (sur invitation uniquement)</option>
+                    <option value="public">Public (visible par tous)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Inviter des membres (emails)</label>
+                <textarea name="emails" class="form-textarea" placeholder="Entrez les emails separes par des virgules..."></textarea>
+                <div class="form-hint">Les invitations seront envoyees par email.</div>
+            </div>
+            <input type="hidden" name="_token" value="{{ csrf_token('create-group') }}">
         </div>
-        <div class="form-group">
-            <label class="form-label">Description</label>
-            <textarea class="form-textarea" placeholder="Decrivez l'objectif du groupe..."></textarea>
+        <div class="drawer-footer">
+            <button type="button" class="btn btn-secondary" data-drawer-close>Annuler</button>
+            <button type="submit" class="btn btn-primary">Creer le groupe</button>
         </div>
-        <div class="form-group">
-            <label class="form-label">Matiere principale</label>
-            <select class="form-select">
-                <option value="">Aucune (groupe general)</option>
-                <option value="math">Mathematiques</option>
-                <option value="physics">Physique</option>
-                <option value="chemistry">Chimie</option>
-                <option value="english">Anglais</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Visibilite</label>
-            <select class="form-select">
-                <option value="private">Prive (sur invitation uniquement)</option>
-                <option value="public">Public (visible par tous)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Inviter des membres (emails)</label>
-            <textarea class="form-textarea" placeholder="Entrez les emails separes par des virgules..."></textarea>
-            <div class="form-hint">Les invitations seront envoyees par email.</div>
-        </div>
-    </div>
-    <div class="drawer-footer">
-        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
-        <button class="btn btn-primary">Creer le groupe</button>
-    </div>
+    </form>
 </div>
 
 {# Drawer: Join Group #}
@@ -256,50 +267,18 @@
             </svg>
         </button>
     </div>
-    <div class="drawer-body">
-        <div class="form-group">
-            <label class="form-label">Code d'invitation</label>
-            <input type="text" class="form-input" placeholder="Entrez le code d'invitation">
-            <div class="form-hint">Demandez le code au createur du groupe.</div>
-        </div>
-
-        <div class="mt-6 mb-4 text-center text-sm text-muted">ou recherchez un groupe public</div>
-
-        <div class="form-group">
-            <label class="form-label">Rechercher</label>
-            <input type="text" class="form-input" placeholder="Nom du groupe, matiere...">
-        </div>
-
-        <div class="mt-4">
-            <div class="text-sm font-medium mb-3">Groupes suggeres</div>
-            <div class="card mb-2" style="cursor: pointer;">
-                <div class="card-body p-3">
-                    <div class="flex items-center gap-3">
-                        <div class="fo-group-avatar" style="width: 36px; height: 36px; font-size: 12px;">MP</div>
-                        <div class="flex-1">
-                            <div class="font-medium text-sm">Maths Prepa</div>
-                            <div class="text-xs text-muted">15 membres - Mathematiques</div>
-                        </div>
-                        <button class="btn btn-secondary btn-sm">Rejoindre</button>
-                    </div>
-                </div>
+    <form method="post" action="{{ path('app_group_join_code') }}">
+        <div class="drawer-body">
+            <div class="form-group">
+                <label class="form-label required">Code d'invitation</label>
+                <input name="code" type="text" class="form-input" placeholder="Ex: ABCD1234" required>
             </div>
-            <div class="card" style="cursor: pointer;">
-                <div class="card-body p-3">
-                    <div class="flex items-center gap-3">
-                        <div class="fo-group-avatar" style="width: 36px; height: 36px; font-size: 12px;">SC</div>
-                        <div class="flex-1">
-                            <div class="font-medium text-sm">Sciences Co</div>
-                            <div class="text-xs text-muted">8 membres - Physique, Chimie</div>
-                        </div>
-                        <button class="btn btn-secondary btn-sm">Rejoindre</button>
-                    </div>
-                </div>
-            </div>
+            <input type="hidden" name="_token" value="{{ csrf_token('join-group') }}">
         </div>
-    </div>
-    <div class="drawer-footer">
-        <button class="btn btn-secondary" data-drawer-close>Fermer</button>
-    </div>
+        <div class="drawer-footer">
+            <button type="button" class="btn btn-secondary" data-drawer-close>Annuler</button>
+            <button type="submit" class="btn btn-primary">Rejoindre</button>
+        </div>
+    </form>
 </div>
 {% endblock %}

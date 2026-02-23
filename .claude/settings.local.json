@@ -54,7 +54,8 @@
       "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test tests/e2e/01-auth.spec.js --reporter=list 2>&1)",
       "Bash(grep Error::*)",
       "Bash(taskkill:*)",
-      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test --reporter=list 2>&1)"
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test --reporter=list 2>&1)",
+      "Bash(timeout 5 bash:*)"
     ]
   }
 }

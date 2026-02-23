@@ -40,6 +40,9 @@ class Chapter
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $content = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $attachmentUrl = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $aiSummary = null;
 
@@ -133,6 +136,17 @@ class Chapter
     public function setContent(?string $content): static
     {
         $this->content = $content;
+        return $this;
+    }
+
+    public function getAttachmentUrl(): ?string
+    {
+        return $this->attachmentUrl;
+    }
+
+    public function setAttachmentUrl(?string $attachmentUrl): static
+    {
+        $this->attachmentUrl = $attachmentUrl;
         return $this;
     }
 
