@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #334155; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { text-align: center; margin-bottom: 32px; }
+        .logo { font-size: 24px; font-weight: 800; color: #5AAEEF; text-decoration: none; }
+        .content { margin-bottom: 32px; }
+        .user-info { background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #f1f5f9; margin: 24px 0; }
+        .label { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+        .value { font-size: 1.1rem; color: #1e293b; font-weight: 600; margin-bottom: 12px; }
+        .btn { display: inline-block; background: #5AAEEF; color: #ffffff !important; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; text-align: center; transition: background 0.2s; }
+        .footer { text-align: center; font-size: 0.85rem; color: #94a3b8; margin-top: 32px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="#" class="logo">StudySprint</a>
+        </div>
+        <div class="content">
+            <h2 style="color: #1e293b; margin-top: 0;">Nouvelle demande de réactivation</h2>
+            <p>Bonjour,</p>
+            <p>Un utilisateur a soumis une demande pour réactiver son compte StudySprint qui était inactif.</p>
+            
+            <div class="user-info">
+                <div class="label">Utilisateur</div>
+                <div class="value">{{ user.prenom }} {{ user.nom }}</div>
+                
+                <div class="label">Email</div>
+                <div class="value">{{ user.email }}</div>
+                
+                <div class="label">Date de la demande</div>
+                <div class="value">{{ "now"|date("d/m/Y à H:i") }}</div>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{ url('admin_reactivations') }}" class="btn">Traiter la demande</a>
+            </div>
+        </div>
+        <div class="footer">
+            &copy; {{ "now"|date("Y") }} StudySprint - Console d'administration
+        </div>
+    </div>
+</body>
+</html>

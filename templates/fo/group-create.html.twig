@@ -1,0 +1,111 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Créer un groupe - StudySprint{% endblock %}
+{% block page_title %}Créer un groupe{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <div class="form-card" style="background: white; padding: var(--space-6); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+        
+        <h2 style="margin-bottom: var(--space-4);">Créer un nouveau groupe</h2>
+        
+        {{ form_start(form, {
+            'attr': {
+                'class': 'group-form',
+                'novalidate': 'novalidate',
+                'id': 'group-create-form'
+            }
+        }) }}
+            
+            {# Name field #}
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                {{ form_label(form.name, 'Nom du groupe', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-input'}}) }}
+                {% if form.name.vars.errors|length > 0 %}
+                    <div class="form-error" style="color: var(--color-danger); font-size: 0.875rem; margin-top: 0.25rem;">
+                        {{ form_errors(form.name) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Subject field #}
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                {{ form_label(form.subject, 'Sujet / Catégorie', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.subject, {'attr': {'class': 'form-input'}}) }}
+                {% if form.subject.vars.errors|length > 0 %}
+                    <div class="form-error" style="color: var(--color-danger); font-size: 0.875rem; margin-top: 0.25rem;">
+                        {{ form_errors(form.subject) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Description field #}
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-textarea', 'rows': 4}}) }}
+                {% if form.description.vars.errors|length > 0 %}
+                    <div class="form-error" style="color: var(--color-danger); font-size: 0.875rem; margin-top: 0.25rem;">
+                        {{ form_errors(form.description) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Privacy field #}
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+                {{ form_label(form.privacy, 'Type de confidentialité', {'label_attr': {'class': 'form-label required'}}) }}
+                {{ form_widget(form.privacy, {'attr': {'class': 'form-select'}}) }}
+                {% if form.privacy.vars.errors|length > 0 %}
+                    <div class="form-error" style="color: var(--color-danger); font-size: 0.875rem; margin-top: 0.25rem;">
+                        {{ form_errors(form.privacy) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Form actions #}
+            <div style="display: flex; gap: var(--space-3); justify-content: flex-end;">
+                <a href="{{ path('app_groups') }}" class="btn btn-ghost">Annuler</a>
+                <button type="submit" class="btn btn-primary" id="create-submit-btn">Créer le groupe</button>
+            </div>
+
+        {{ form_end(form) }}
+
+    </div>
+</div>
+
+<style>
+    .form-container {
+        padding: var(--space-4);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-family: inherit;
+        font-size: 0.9375rem;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--space-2);
+        font-weight: 500;
+        color: var(--color-text);
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: var(--color-danger);
+    }
+</style>
+{% endblock %}

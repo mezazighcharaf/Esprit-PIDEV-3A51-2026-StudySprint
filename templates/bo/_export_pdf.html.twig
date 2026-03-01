@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Export Utilisateurs — StudySprint</title>
+    <style>
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 11px;
+            color: #1e293b;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 18px;
+            color: #4338ca;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tbody td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 10px;
+        }
+        tbody tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        .badge-actif   { background: #dcfce7; color: #166534; }
+        .badge-inactif { background: #f1f5f9; color: #475569; }
+        .footer {
+            margin-top: 20px;
+            font-size: 9px;
+            color: #94a3b8;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Export Utilisateurs — StudySprint</h1>
+    <div class="subtitle">
+        Généré le {{ exportDate|date('d/m/Y à H:i') }} — {{ users|length }} utilisateur(s)
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Prénom</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Pays</th>
+                <th>Téléphone</th>
+                <th>Inscription</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.prenom }}</td>
+                <td>{{ user.nom }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if 'ROLE_STUDENT' in user.roles %}Étudiant
+                    {% elseif 'ROLE_PROFESSOR' in user.roles %}Professeur
+                    {% elseif 'ROLE_ADMIN' in user.roles %}Admin
+                    {% else %}{{ user.role }}
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge badge-{{ user.statut|default('actif')|lower }}">
+                        {{ user.statut|default('actif') }}
+                    </span>
+                </td>
+                <td>{{ user.pays ?? '-' }}</td>
+                <td>{{ user.telephone ?? '-' }}</td>
+                <td>{{ user.dateInscription|date('d/m/Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" style="text-align:center; padding: 20px; color: #94a3b8;">
+                    Aucun utilisateur à exporter.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">StudySprint — Administration</div>
+</body>
+</html>

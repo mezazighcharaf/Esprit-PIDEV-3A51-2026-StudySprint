@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+// bin/phpunit
+
+if (!is_file(dirname(__DIR__).'/vendor/autoload.php')) {
+    throw new LogicException('Composer autoloader not found. Run "composer install" first.');
+}
+
+require_once dirname(__DIR__).'/vendor/autoload.php';
+
+if (!is_file(dirname(__DIR__).'/vendor/bin/phpunit')) {
+    throw new LogicException('PHPUnit not found in vendor/bin. Run "composer require --dev phpunit/phpunit" first.');
+}
+
+// Execute the PHPUnit binary from vendor/bin
+require_once dirname(__DIR__).'/vendor/bin/phpunit';

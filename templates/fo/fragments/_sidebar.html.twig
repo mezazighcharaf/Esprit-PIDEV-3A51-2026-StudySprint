@@ -1,0 +1,246 @@
+{# ─── SIDEBAR ─── #}
+<aside class="group-detail-sidebar">
+    {# MEMBERS WIDGET #}
+    <div class="sidebar-widget">
+        {% set current_user_group_role = null %}
+        {% for member in group.members %}
+            {% if member.user_id == user.id %}
+                {% set current_user_group_role = member.role %}
+            {% endif %}
+        {% endfor %}
+
+        <h3 class="sidebar-widget-title">Membres (<span data-member-count>{{ group.members|length }}</span>)</h3>
+        
+        <div style="{% if group.members|length > 4 %}max-height: 300px; overflow-y: auto;{% endif %}">
+            {# Administrators Section #}
+            {% set admin_members = group.members|filter(m => m.role == 'admin') %}
+            {% if admin_members|length > 0 %}
+            <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color);" data-member-section="admin">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Administrateurs (<span data-member-section-count="admin">{{ admin_members|length }}</span>)</div>
+                {% for member in admin_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); background: var(--color-gray-50); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-role-admin">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <span class="badge-role-admin">Admin</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Moderators Section #}
+            {% set moderator_members = group.members|filter(m => m.role == 'moderator') %}
+            {% if moderator_members|length > 0 %}
+            <div style="margin-bottom: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border-color);" data-member-section="moderator">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Modérateurs (<span data-member-section-count="moderator">{{ moderator_members|length }}</span>)</div>
+                {% for member in moderator_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-role-moderator">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span class="badge-role-moderator">Modérateur</span>
+                        {% if current_user_group_role == 'admin' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="member" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Rétrograder membre</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Members Section #}
+            {% set regular_members = group.members|filter(m => m.role == 'member') %}
+            {% if regular_members|length > 0 %}
+            <div data-member-section="member">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); text-transform: uppercase; margin-bottom: var(--space-2);">Membres (<span data-member-section-count="member">{{ regular_members|length }}</span>)</div>
+                {% for member in regular_members %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2); margin-bottom: var(--space-1); border-radius: 6px;" data-member-user-id="{{ member.user_id }}" class="member-item">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); min-width: 0;">
+                        <div class="avatar avatar-sm avatar-role-member">{{ member.initials }}</div>
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--color-gray-900);" class="member-name">{{ member.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-gray-500);">{{ member.email }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-2);">
+                        <span class="badge-role-member">Membre</span>
+                        {% if current_user_group_role == 'admin' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="moderator" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir modérateur</button>
+                                <button class="dropdown-item member-action-btn" type="button" data-action="change-role" data-new-role="admin" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Promouvoir admin</button>
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% elseif current_user_group_role == 'moderator' %}
+                        <div class="dropdown">
+                            <button class="btn btn-ghost btn-icon btn-xs" data-dropdown-toggle style="padding: 4px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="1"/>
+                                    <circle cx="12" cy="5" r="1"/>
+                                    <circle cx="12" cy="19" r="1"/>
+                                </svg>
+                            </button>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-divider"></div>
+                                <button class="dropdown-item danger member-action-btn" type="button" data-action="remove" data-csrf="{{ csrf_token('group-member-' ~ group.id) }}">Retirer</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# INFO WIDGET #}
+    <div class="sidebar-widget">
+        <h3 class="sidebar-widget-title">Informations</h3>
+        <div class="sidebar-widget-content">
+            <div class="info-row">
+                <span class="info-label">Matière:</span>
+                <span class="info-value">{{ group.subject }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Type:</span>
+                <span class="info-value">{{ group.privacy == 'public' ? 'Public' : 'Privé' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Créé:</span>
+                <span class="info-value">{{ group.created_at }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Posts:</span>
+                <span class="info-value">{{ posts|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    {# RULES WIDGET #}
+    <div class="sidebar-widget">
+        <h3 class="sidebar-widget-title">Règles du groupe</h3>
+        <ul class="sidebar-rules">
+            <li>Soyez respectueux envers les autres membres</li>
+            <li>Pas de spam ou de contenu promotionnel</li>
+            <li>Posez des questions claires et précises</li>
+            <li>Aidez les autres membres quand vous pouvez</li>
+        </ul>
+    </div>
+
+    {# ─── CHATBOT WIDGET (Admin only) ─── #}
+    {% if is_admin is defined and is_admin %}
+    <div class="sidebar-widget" id="chatbot-config-widget" data-group-id="{{ group.id }}">
+        <h3 class="sidebar-widget-title" style="display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color: #6366F1;">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1.27A7 7 0 0 1 7.27 19H6a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                <circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/>
+                <path d="M9 17h6"/>
+            </svg>
+            Chatbot IA
+        </h3>
+
+        {% if chatbot is defined and chatbot %}
+            {# Bot is configured #}
+            <div class="chatbot-status" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ chatbot.enabled ? '#22c55e' : '#9ca3af' }}; display: inline-block;" id="chatbot-status-dot"></span>
+                    <span style="font-size: 0.8rem; font-weight: 500; color: var(--color-gray-700);" id="chatbot-status-text">{{ chatbot.enabled ? 'Activé' : 'Désactivé' }}</span>
+                </div>
+                <label class="toggle-switch" style="position: relative; display: inline-block; width: 40px; height: 22px;">
+                    <input type="checkbox" id="chatbot-toggle" {{ chatbot.enabled ? 'checked' : '' }} style="opacity: 0; width: 0; height: 0;">
+                    <span class="toggle-slider" style="position: absolute; cursor: pointer; inset: 0; background-color: {{ chatbot.enabled ? '#6366F1' : '#cbd5e1' }}; border-radius: 22px; transition: 0.3s;">
+                        <span style="position: absolute; content: ''; height: 16px; width: 16px; left: {{ chatbot.enabled ? '21px' : '3px' }}; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s;"></span>
+                    </span>
+                </label>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--color-gray-500); margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Nom:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-name">{{ chatbot.botName }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Personnalité:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-personality">
+                        {% if chatbot.personality == 'tutor' %}Tuteur
+                        {% elseif chatbot.personality == 'assistant' %}Assistant
+                        {% elseif chatbot.personality == 'mentor' %}Mentor
+                        {% elseif chatbot.personality == 'quiz-master' %}Quiz Master
+                        {% else %}{{ chatbot.personality }}{% endif %}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span>Déclenchement:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700);" id="chatbot-display-trigger">
+                        {% if chatbot.triggerMode == 'auto-detect' %}Auto (questions)
+                        {% elseif chatbot.triggerMode == 'mention' %}Par mention
+                        {% elseif chatbot.triggerMode == 'keyword' %}Par mot-clé
+                        {% else %}{{ chatbot.triggerMode }}{% endif %}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <span>Langue:</span>
+                    <span style="font-weight: 500; color: var(--color-gray-700); display: flex; align-items: center; gap: 4px;" id="chatbot-display-language">
+                        {% set langFlags = {fr: 'fr', en: 'gb', es: 'es', de: 'de', ar: 'sa', it: 'it', pt: 'pt', tr: 'tr', zh: 'cn'} %}
+                        {% set langLabels = {fr: 'Français', en: 'English', es: 'Español', de: 'Deutsch', ar: 'العربية', it: 'Italiano', pt: 'Português', tr: 'Türkçe', zh: '中文'} %}
+                        <span class="fi fi-{{ langFlags[chatbot.language] ?? 'fr' }}" style="font-size: 14px;"></span>
+                        {{ langLabels[chatbot.language] ?? 'Français' }}
+                    </span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm" id="chatbot-open-config" style="width: 100%; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Configurer
+            </button>
+        {% else %}
+            {# Bot not configured yet #}
+            <div style="text-align: center; padding: 12px 0;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">🤖</div>
+                <p style="font-size: 0.8rem; color: var(--color-gray-500); margin-bottom: 12px;">
+                    Activez le chatbot IA pour aider les membres de votre groupe avec leurs questions.
+                </p>
+                <button type="button" class="btn btn-sm" id="chatbot-open-config" style="width: 100%; background: linear-gradient(135deg, #6366F1, #8B5CF6); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Activer le chatbot
+                </button>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</aside>

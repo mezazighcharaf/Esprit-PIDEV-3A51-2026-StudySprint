@@ -1,0 +1,530 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Mon Profil - StudySprint{% endblock %}
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block content %}
+{# Robust role detection #}
+{% set rawRole = user.role|upper %}
+{% set isStudent = ('STUDENT' in rawRole) %}
+{% set isProfessor = ('PROFESSOR' in rawRole) %}
+
+<div class="profile-v2-container animate__animated animate__fadeIn">
+    {# ─── HERO SECTION (DYNAMIC GRADIENT) ─── #}
+    <div class="profile-v2-hero {% if isStudent %}student-theme{% else %}professor-theme{% endif %}">
+        <div class="mesh-bg"></div>
+        <div class="hero-content-wrapper">
+            <div class="avatar-glass-wrapper">
+                <div class="avatar-v2">
+                    <span class="initials">{{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}</span>
+                    <div class="status-ring"></div>
+                </div>
+            </div>
+            
+            <div class="hero-text-content">
+                <div class="top-meta">
+                    <span class="role-pill">
+                        {% if isStudent %}
+                            <i class="fas fa-graduation-cap"></i> Étudiant StudySprint
+                        {% elseif isProfessor %}
+                            <i class="fas fa-chalkboard-teacher"></i> Professeur Certifié
+                        {% else %}
+                            <i class="fas fa-user-shield"></i> {{ user.role|replace({'ROLE_': ''})|capitalize }}
+                        {% endif %}
+                    </span>
+                    <span class="status-pill">
+                        <i class="fas fa-circle"></i> Compte {{ user.statut|default('Actif')|capitalize }}
+                    </span>
+                </div>
+                <h1 class="user-name-v2">{{ user.prenom }} {{ user.nom }}</h1>
+                <p class="user-email-v2"><i class="far fa-envelope me-2"></i>{{ user.email }}</p>
+                
+                <div class="hero-stats">
+                    <div class="h-stat">
+                        <span class="h-stat-label">Inscrit depuis</span>
+                        <span class="h-stat-value">{{ user.dateInscription|date('d M Y') }}</span>
+                    </div>
+                    <div class="h-stat-divider"></div>
+                    <div class="h-stat">
+                        <span class="h-stat-label">Localisation</span>
+                        <span class="h-stat-value">{{ user.pays|default('Tunisie') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-actions-v2">
+                <a href="{{ path('app_profile_edit') }}" class="btn-v2 btn-primary-v2">
+                    <i class="fas fa-pen-nib me-2"></i> Éditer le profil
+                </a>
+                <a href="{{ path('app_logout') }}" class="btn-v2 btn-outline-v2">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        {# ─── SPECIFIC DETAILS ─── #}
+        <div class="col-lg-8">
+            <div class="glass-card main-details">
+                <div class="card-v2-header">
+                    <h3 class="card-v2-title">
+                        <i class="fas {% if isStudent %}fa-university{% else %}fa-award{% endif %}"></i>
+                        {% if isStudent %}Informations Académiques{% else %}Profil Professionnel{% endif %}
+                    </h3>
+                </div>
+                
+                <div class="details-grid-v2">
+                    {% if isStudent %}
+                        <div class="detail-v2-item">
+                            <div class="d-icon"><i class="fas fa-birthday-cake"></i></div>
+                            <div class="d-info">
+                                <label>Âge</label>
+                                <span>{{ user.age|default('--') }} ans</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item">
+                            <div class="d-icon"><i class="fas fa-venus-mars"></i></div>
+                            <div class="d-info">
+                                <label>Genre</label>
+                                <span>{{ user.sexe|default('Non renseigné')|capitalize }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item full-width">
+                            <div class="d-icon"><i class="fas fa-school"></i></div>
+                            <div class="d-info">
+                                <label>Établissement</label>
+                                <span>{{ user.etablissement|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item full-width highlighted">
+                            <div class="d-icon"><i class="fas fa-layer-group"></i></div>
+                            <div class="d-info">
+                                <label>Niveau d'études</label>
+                                <span>{{ user.niveau|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                    {% elseif isProfessor %}
+                        <div class="detail-v2-item">
+                            <div class="d-icon"><i class="fas fa-brain"></i></div>
+                            <div class="d-info">
+                                <label>Spécialité</label>
+                                <span>{{ user.specialite|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item">
+                            <div class="d-icon"><i class="fas fa-hourglass-half"></i></div>
+                            <div class="d-info">
+                                <label>Expérience</label>
+                                <span>{{ user.anneesExperience|default(0) }} ans</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item full-width">
+                            <div class="d-icon"><i class="fas fa-book-reader"></i></div>
+                            <div class="d-info">
+                                <label>Niveau Enseigné</label>
+                                <span>{{ user.niveauEnseignement|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                        <div class="detail-v2-item full-width highlighted">
+                            <div class="d-icon"><i class="fas fa-building"></i></div>
+                            <div class="d-info">
+                                <label>Unité / Département</label>
+                                <span>{{ user.etablissement|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ─── SIDEBAR STATS ─── #}
+        <div class="col-lg-4">
+            <div class="glass-card p-0 overflow-hidden">
+                <div class="stats-header-v2">
+                    <h4 class="mb-0">Progression</h4>
+                    <span class="percent-badge">85%</span>
+                </div>
+                <div class="p-4">
+                    <div class="v2-progress-container">
+                        <div class="v2-progress-bar" style="width: 85%"></div>
+                    </div>
+                    <ul class="v2-check-list">
+                        <li class="done"><i class="fas fa-check-circle"></i> E-mail vérifié</li>
+                        <li class="done"><i class="fas fa-check-circle"></i> Infos de base complètes</li>
+                        <li><i class="far fa-circle"></i> Ajouter une photo</li>
+                        <li><i class="far fa-circle"></i> Première session Study</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="glass-card mt-4 border-accent">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="accent-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h5 class="mb-0 fw-bold ms-3">Le saviez-vous ?</h5>
+                </div>
+                <p class="text-muted small mb-0">
+                    Compléter votre profil à 100% augmente vos chances de réussite de 40% sur StudySprint !
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --p-v2-student-grad: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --p-v2-professor-grad: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
+        --card-shadow-v2: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    .profile-v2-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+    }
+
+    /* ─── HERO STYLES ─── */
+    .profile-v2-hero {
+        position: relative;
+        padding: 3.5rem;
+        border-radius: 32px;
+        color: white;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-v2-hero.student-theme { background: var(--p-v2-student-grad); }
+    .profile-v2-hero.professor-theme { background: var(--p-v2-professor-grad); }
+
+    .mesh-bg {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(255,255,255,0.15) 0, transparent 50%),
+            radial-gradient(at 50% 0%, rgba(255,255,255,0.1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(255,255,255,0.15) 0, transparent 50%);
+        opacity: 0.6;
+    }
+
+    .hero-content-wrapper {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .avatar-glass-wrapper {
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(8px);
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .avatar-v2 {
+        width: 120px;
+        height: 120px;
+        background: white;
+        border-radius: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .avatar-v2 .initials {
+        color: #1e293b;
+        font-size: 3rem;
+        font-weight: 800;
+    }
+
+    .status-ring {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        width: 30px;
+        height: 30px;
+        background: #22c55e;
+        border: 5px solid white;
+        border-radius: 50%;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+
+    .hero-text-content {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .top-meta {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .role-pill, .status-pill {
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .role-pill { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); }
+    .status-pill { background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .status-pill i { font-size: 8px; }
+
+    .user-name-v2 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin: 0;
+        line-height: 1;
+        letter-spacing: -0.02em;
+    }
+
+    .user-email-v2 {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+
+    .hero-stats {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .h-stat { display: flex; flex-direction: column; }
+    .h-stat-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; font-weight: 700; }
+    .h-stat-value { font-size: 1.2rem; font-weight: 700; }
+    .h-stat-divider { width: 1px; height: 30px; background: rgba(255, 255, 255, 0.2); }
+
+    .hero-actions-v2 {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-v2 {
+        padding: 1rem 1.75rem;
+        border-radius: 18px;
+        font-weight: 700;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary-v2 {
+        background: white;
+        color: #1e293b;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary-v2:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        color: #000;
+    }
+
+    .btn-outline-v2 {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        width: 56px;
+    }
+
+    .btn-outline-v2:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* ─── CARD STYLES ─── */
+    .glass-card {
+        background: white;
+        border: 1px solid #f1f5f9;
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: var(--card-shadow-v2);
+        transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-v2-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .card-v2-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .card-v2-title i {
+        width: 40px;
+        height: 40px;
+        background: #f1f5f9;
+        color: var(--color-primary);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .details-grid-v2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .detail-v2-item {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        background: #f8fafc;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: all 0.25s ease;
+    }
+
+    .detail-v2-item:hover {
+        background: white;
+        border-color: #e2e8f0;
+    }
+
+    .detail-v2-item.full-width { grid-column: span 2; }
+    .detail-v2-item.highlighted { 
+        background: #f0f7ff; 
+        border-color: #dbeafe;
+    }
+    .detail-v2-item.highlighted .d-icon {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .d-icon {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        flex-shrink: 0;
+    }
+
+    .d-info label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .d-info span {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    /* ─── STATS & PROGRESS ─── */
+    .stats-header-v2 {
+        padding: 1.5rem 2rem;
+        background: #1e293b;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .percent-badge {
+        background: var(--color-primary);
+        padding: 4px 12px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .v2-progress-container {
+        height: 10px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .v2-progress-bar {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(90, 174, 239, 0.3);
+    }
+
+    .v2-check-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .v2-check-list li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .v2-check-list li i { font-size: 1.2rem; }
+    .v2-check-list li.done { color: #22c55e; }
+    .v2-check-list li.done i { color: #22c55e; }
+
+    .accent-icon {
+        width: 44px;
+        height: 44px;
+        background: #fef3c7;
+        color: #f59e0b;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .border-accent { border-left: 5px solid #f59e0b !important; }
+
+    @media (max-width: 768px) {
+        .user-name-v2 { font-size: 2.5rem; }
+        .hero-content-wrapper { gap: 1.5rem; justify-content: center; text-align: center; }
+        .top-meta { justify-content: center; }
+        .hero-stats { justify-content: center; }
+        .details-grid-v2 { grid-template-columns: 1fr; }
+        .detail-v2-item.full-width { grid-column: span 1; }
+    }
+</style>
+{% endblock %}

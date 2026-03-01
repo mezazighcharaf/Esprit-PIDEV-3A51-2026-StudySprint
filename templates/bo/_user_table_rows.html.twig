@@ -1,0 +1,104 @@
+{% for user in users %}
+<tr>
+    <td>
+        <input type="checkbox" class="user-row-checkbox" value="{{ user.id }}" aria-label="Sélectionner {{ user.prenom }} {{ user.nom }}">
+    </td>
+    <td>
+        <div class="cell-user">
+            <div class="cell-user-avatar" style="background-color: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-size: 0.8rem; font-weight: 600;">
+                {{ user.prenom|first|upper }}{{ user.nom|first|upper }}
+            </div>
+            <div class="cell-user-info">
+                <div class="cell-user-name">{{ user.prenom }} {{ user.nom }}</div>
+                <div class="cell-user-email">{{ user.email }}</div>
+            </div>
+        </div>
+    </td>
+    <td>
+        {% if user.role == 'student' or 'ROLE_STUDENT' in user.roles %}
+            <span class="badge badge-premium badge-student">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M22 10L12 5L2 10L12 15L22 10Z"/><path d="M6 12.5V16.5L12 19.5L18 16.5V12.5"/></svg>
+                Étudiant
+            </span>
+        {% elseif user.role == 'professor' or 'ROLE_PROFESSOR' in user.roles %}
+            <span class="badge badge-premium badge-prof">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2L20 2V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Professeur
+            </span>
+{% elseif 'ROLE_ADMIN' in user.roles %}
+            <span class="badge badge-premium badge-admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Admin
+            </span>
+        {% else %}
+            {{ user.role }}
+        {% endif %}
+    </td>
+    <td>
+        <span class="bo-status {{ user.statut|default('actif')|lower == 'actif' ? 'active' : 'inactive' }}">
+            <span class="bo-status-dot"></span>
+            {{ user.statut|default('actif') }}
+        </span>
+    </td>
+    <td>
+        {% if user.pays is defined and user.pays %}
+            {{ user.pays|country_name }}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+    <td>
+        {% if user.telephone is defined and user.telephone %}
+            {{ user.telephone }}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+    <td>
+        <div style="font-size: 0.85rem; color: #64748b;">
+        {% if user.pays is defined and user.role == 'student' or 'ROLE_STUDENT' in user.roles %}
+            {# Student Fields #}
+            {% if user.age %}<div>Age: {{ user.age }} ans</div>{% endif %}
+            {% if user.etablissement %}<div>École: {{ user.etablissement }}</div>{% endif %}
+            {% if user.niveau %}<div>Niveau: {{ user.niveau }}</div>{% endif %}
+        {% elseif user.specialite is defined or 'ROLE_PROFESSOR' in user.roles %}
+             {# Professor Fields #}
+             {% if user.specialite is defined %}<div>Spécialité: {{ user.specialite }}</div>{% endif %}
+             {% if user.niveauEnseignement is defined %}<div>Niveau Ens: {{ user.niveauEnseignement }}</div>{% endif %}
+             {% if user.anneesExperience is defined %}<div>Exp: {{ user.anneesExperience }} ans</div>{% endif %}
+        {% else %}
+            -
+        {% endif %}
+        </div>
+    </td>
+    <td>{{ user.dateInscription|date('d/m/Y H:i') }}</td>
+    <td>
+        <div class="dropdown">
+            <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="12" cy="5" r="1"/>
+                    <circle cx="12" cy="19" r="1"/>
+                </svg>
+            </button>
+            <div class="dropdown-menu">
+                <a href="{{ path('admin_user_edit', {id: user.id}) }}" class="dropdown-item">Modifier</a>
+                <form method="post" action="{{ path('admin_user_toggle_status', {id: user.id}) }}" style="display: inline;" class="toggle-status-form" data-user-name="{{ user.prenom }} {{ user.nom }}" data-action="{{ user.statut == 'actif' ? 'désactiver' : 'activer' }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
+                    <button type="button" class="dropdown-item" style="background: none; border: none; padding: 0.5rem 1rem; width: 100%; text-align: left; cursor: pointer;" onclick="showConfirmModal(this.closest('form'), '{{ user.statut == 'actif' ? 'désactiver' : 'activer' }}', '{{ user.prenom }} {{ user.nom }}')">
+                        {{ user.statut == 'actif' ? 'Désactiver' : 'Activer' }}
+                    </button>
+                </form>
+                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display: inline;" class="delete-user-form" data-user-name="{{ user.prenom }} {{ user.nom }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                    <button type="button" class="dropdown-item danger" style="background: none; border: none; padding: 0.5rem 1rem; width: 100%; text-align: left; cursor: pointer; color: #dc2626;" onclick="showConfirmModal(this.closest('form'), 'supprimer', '{{ user.prenom }} {{ user.nom }}', true)">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </td>
+</tr>
+{% else %}
+<tr>
+    <td colspan="9" class="text-center p-4">Aucun utilisateur trouvé.</td>
+</tr>
+{% endfor %}

@@ -1,0 +1,35 @@
+{#
+  Filterbar Component
+  Usage:
+  {{ include('components/_filterbar.html.twig', {
+      filters: [
+          { name: 'period', label: 'Periode', options: [{value: '7d', label: '7 jours'}, ...], selected: '7d' },
+          { name: 'subject', label: 'Matiere', options: [...] },
+          { name: 'group', label: 'Groupe', options: [...] }
+      ],
+      show_clear: true
+  }) }}
+#}
+
+<div class="filterbar">
+    {% for filter in filters %}
+    <div class="filterbar-group">
+        <label class="filterbar-label" for="filter-{{ filter.name }}">{{ filter.label }}</label>
+        <select class="filterbar-select" id="filter-{{ filter.name }}" name="{{ filter.name }}">
+            {% for option in filter.options %}
+            <option value="{{ option.value }}" {{ filter.selected|default('') == option.value ? 'selected' : '' }}>
+                {{ option.label }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endfor %}
+
+    <div class="filterbar-spacer"></div>
+
+    {% if show_clear|default(false) %}
+    <button type="button" class="filterbar-clear">Reinitialiser les filtres</button>
+    {% endif %}
+
+    {% block filterbar_actions %}{% endblock %}
+</div>
