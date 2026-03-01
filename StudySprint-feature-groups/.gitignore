@@ -1,0 +1,25 @@
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+# IDE
+/.idea/
+
+# Test and temporary files
+/public/modal-test.html
+/public/marketing/export-temp.js
+/public/marketing/*.pdf
+/public/marketing/*.png
+/public/marketing/node_modules/
+/public/marketing/package-lock.json
+/.env.dev
+
+# Uploaded files
+/public/uploads/

@@ -1,0 +1,43 @@
+{#
+  Logo Component
+  Usage:
+  {{ include('components/_logo.html.twig') }}
+  {{ include('components/_logo.html.twig', { size: 'sm' }) }}
+  {{ include('components/_logo.html.twig', { size: 'lg', show_text: true }) }}
+
+  Parameters:
+  - size: 'sm' (20px), 'md' (28px default), 'lg' (40px)
+  - show_text: true/false (default: false)
+#}
+
+{% set sizes = {
+    'sm': { width: 26, height: 16, font: '14px' },
+    'md': { width: 32, height: 20, font: '17px' },
+    'lg': { width: 44, height: 28, font: '22px' }
+} %}
+{% set current_size = sizes[size|default('md')] %}
+{% set uid = random(1000, 9999) %}
+
+<div class="logo-component" style="display: flex; align-items: center; gap: 10px;">
+    <svg width="{{ current_size.width }}" height="{{ current_size.height }}" viewBox="0 0 56 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            {# Single gradient that flows across the entire infinity symbol #}
+            <linearGradient id="logo-gradient-{{ uid }}" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stop-color="#1D4ED8"/>
+                <stop offset="35%" stop-color="#0891B2"/>
+                <stop offset="65%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#EAB308"/>
+            </linearGradient>
+        </defs>
+        {# Single infinity path with continuous gradient #}
+        <path d="M28 16C28 16 22 4 13 4C6 4 2 9 2 16C2 23 6 28 13 28C22 28 28 16 28 16C28 16 34 28 43 28C50 28 54 23 54 16C54 9 50 4 43 4C34 4 28 16 28 16Z"
+              stroke="url(#logo-gradient-{{ uid }})"
+              stroke-width="4.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              fill="none"/>
+    </svg>
+    {% if show_text|default(false) %}
+    <span style="font-weight: 600; font-size: {{ current_size.font }}; letter-spacing: -0.01em; background: linear-gradient(90deg, #1D4ED8 0%, #0891B2 35%, #EAB308 50%, #10B981 65%, #0891B2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">StudySprint</span>
+    {% endif %}
+</div>

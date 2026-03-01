@@ -38,7 +38,9 @@ class QuizController extends AbstractController
         $sort = $request->query->get('sort', 'newest');
 
         $queryBuilder = $repository->searchPublishedQuery($q, $difficulty, $subjectId, $sort);
-        $pagination = $paginator->paginate($queryBuilder, $request->query->getInt('page', 1), 9);
+        $pagination = $paginator->paginate($queryBuilder, $request->query->getInt('page', 1), 9, [
+            'sort_field_allow_list' => [],
+        ]);
         $subjects = $subjectRepo->findAll();
 
         return $this->render('fo/training/quizzes/index.html.twig', [

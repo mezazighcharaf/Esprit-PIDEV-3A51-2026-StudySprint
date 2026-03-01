@@ -55,7 +55,13 @@
       "Bash(grep Error::*)",
       "Bash(taskkill:*)",
       "Bash(cd /c/Users/charaf/Desktop/StudySprint && npx playwright test --reporter=list 2>&1)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(cd /c/Users/charaf/Desktop/StudySprint && python generate_presentation.py 2>&1)",
+      "Bash(do echo:*)",
+      "Bash(tasklist.exe:*)",
+      "Bash(MSYS_NO_PATHCONV=1 cmd.exe:*)",
+      "Bash(ollama run:*)",
+      "Bash(python:*)"
     ]
   }
 }

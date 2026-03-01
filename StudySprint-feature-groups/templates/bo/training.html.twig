@@ -1,0 +1,213 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Training (M5) - StudySprint BO{% endblock %}
+{% block breadcrumb %}Training (M5){% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" data-drawer-open="add-template-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nouveau template
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="bo-page-header">
+    <h1 class="bo-page-title">Training (M5)</h1>
+</div>
+
+{# Section Leader #}
+<div class="bo-section-leader">
+    <div class="bo-section-leader-title">Detail groupe</div>
+    <div class="bo-section-leader-value">Gestion des templates de quiz, resultats et logs IA du module Training.</div>
+    <a href="#" class="bo-section-leader-link">Voir la documentation</a>
+</div>
+
+{# Tabs #}
+{{ include('components/_tabs.html.twig', {
+    id: 'training-tabs',
+    tabs: data.tabs,
+    variant: 'bo'
+}) }}
+
+<div data-tab-content="training-tabs">
+    {# Tab: Templates #}
+    <div data-tab-panel="templates" class="tab-content active">
+        <div class="table-container">
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Matiere</th>
+                        <th>Questions</th>
+                        <th>Utilisations</th>
+                        <th>Creation</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for template in data.templates %}
+                    <tr>
+                        <td class="font-medium">{{ template.name }}</td>
+                        <td>{{ template.subject }}</td>
+                        <td>{{ template.questions }}</td>
+                        <td>{{ template.uses }}</td>
+                        <td class="text-muted">{{ template.created }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1"/>
+                                        <circle cx="12" cy="5" r="1"/>
+                                        <circle cx="12" cy="19" r="1"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <button class="dropdown-item">Previsualiser</button>
+                                    <button class="dropdown-item">Modifier</button>
+                                    <button class="dropdown-item">Dupliquer</button>
+                                    <div class="dropdown-divider"></div>
+                                    <button class="dropdown-item danger">Supprimer</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Tab: Results #}
+    <div data-tab-panel="results" class="tab-content">
+        <div class="table-container">
+            <table class="bo-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Quiz</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                        <th>Duree</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in data.results %}
+                    <tr>
+                        <td class="font-medium">{{ result.user }}</td>
+                        <td>{{ result.quiz }}</td>
+                        <td>
+                            {% set score_parts = result.score|split('/') %}
+                            {% set score_pct = (score_parts[0]|number_format / score_parts[1]|number_format) * 100 %}
+                            <span class="badge badge-{{ score_pct >= 80 ? 'success' : (score_pct >= 50 ? 'warning' : 'error') }}">
+                                {{ result.score }}
+                            </span>
+                        </td>
+                        <td class="text-muted">{{ result.date }}</td>
+                        <td class="text-muted">{{ result.duration }}</td>
+                        <td>
+                            <button class="btn btn-ghost btn-sm">Voir detail</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Tab: Logs IA #}
+    <div data-tab-panel="logs" class="tab-content">
+        <div class="card">
+            <div class="card-body" style="padding: 0;">
+                {% for log in data.logs %}
+                <div class="bo-log-item">
+                    <div class="bo-log-icon {{ log.status }}">
+                        {% if log.status == 'success' %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="bo-log-content">
+                        <div class="bo-log-text">
+                            <strong>{{ log.user }}</strong> - {{ log.action }}
+                            {% if log.subject != '-' %}
+                            <span class="badge badge-neutral" style="margin-left: 4px;">{{ log.subject }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="bo-log-time">{{ log.date }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Add Template #}
+<div class="drawer" id="add-template-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Nouveau template de quiz</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Nom du template</label>
+            <input type="text" class="form-input" placeholder="Ex: Quiz Integrales Niveau 2">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Matiere</label>
+            <select class="form-select">
+                <option value="">Selectionner</option>
+                <option value="math">Mathematiques</option>
+                <option value="physics">Physique</option>
+                <option value="chemistry">Chimie</option>
+                <option value="english">Anglais</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Chapitre</label>
+            <select class="form-select">
+                <option value="">Tous les chapitres</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Nombre de questions</label>
+            <input type="number" class="form-input" value="20" min="5" max="100">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Duree limite (minutes)</label>
+            <input type="number" class="form-input" placeholder="Sans limite" min="5" max="180">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Difficulte</label>
+            <select class="form-select">
+                <option value="easy">Facile</option>
+                <option value="medium" selected>Intermediaire</option>
+                <option value="hard">Difficile</option>
+                <option value="mixed">Mixte</option>
+            </select>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Creer le template</button>
+    </div>
+</div>
+{% endblock %}

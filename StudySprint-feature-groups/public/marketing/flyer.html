@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySprint - Flyer A5</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* A5 Portrait: 148mm x 210mm */
+        .flyer {
+            width: 148mm;
+            height: 210mm;
+            background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20mm 15mm;
+            text-align: center;
+        }
+
+        /* Logo */
+        .flyer .logo svg {
+            width: 44px;
+            height: 28px;
+        }
+
+        .flyer .logo-text {
+            font-size: 24px;
+        }
+
+        /* Headline */
+        .flyer .headline {
+            font-size: 36px;
+            margin-top: 12mm;
+        }
+
+        .flyer .headline span {
+            margin-bottom: 4px;
+        }
+
+        /* Tagline */
+        .flyer .tagline {
+            font-size: 14px;
+            margin-top: 8mm;
+            max-width: 110mm;
+        }
+
+        /* Benefits */
+        .flyer .benefits {
+            margin-top: 15mm;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            width: 100%;
+        }
+
+        .flyer .benefits li {
+            font-size: 13px;
+            gap: 10px;
+        }
+
+        .flyer .benefits .check {
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+        }
+
+        .flyer .benefits .benefit-title {
+            font-size: 14px;
+        }
+
+        .flyer .benefits .benefit-desc {
+            font-size: 11px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Footer */
+        .flyer .footer {
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        @media print {
+            .flyer {
+                width: 148mm;
+                height: 210mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flyer">
+        <!-- Logo -->
+        <div class="logo">
+            <svg viewBox="0 0 56 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="logo-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                        <stop offset="0%" stop-color="#1D4ED8"/>
+                        <stop offset="35%" stop-color="#0891B2"/>
+                        <stop offset="65%" stop-color="#10B981"/>
+                        <stop offset="100%" stop-color="#EAB308"/>
+                    </linearGradient>
+                </defs>
+                <path d="M28 16C28 16 22 4 13 4C6 4 2 9 2 16C2 23 6 28 13 28C22 28 28 16 28 16C28 16 34 28 43 28C50 28 54 23 54 16C54 9 50 4 43 4C34 4 28 16 28 16Z"
+                      stroke="url(#logo-gradient)"
+                      stroke-width="4.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"/>
+            </svg>
+            <span class="logo-text">StudySprint</span>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Headline -->
+            <h1 class="headline">
+                <span class="word-1">Organise.</span>
+                <span class="word-2">Révise.</span>
+                <span class="word-3">Réussis.</span>
+            </h1>
+
+            <!-- Tagline -->
+            <p class="tagline">L'assistant intelligent qui transforme tes révisions</p>
+
+            <!-- Benefits -->
+            <ul class="benefits">
+                <li>
+                    <span class="check">✓</span>
+                    <div>
+                        <span class="benefit-title">Ton planning en 30 secondes</span>
+                        <span class="benefit-desc">Plus jamais "par où commencer ?"</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div>
+                        <span class="benefit-title">Des quiz qui ciblent tes faiblesses</span>
+                        <span class="benefit-desc">Révise ce qui compte vraiment</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check">✓</span>
+                    <div>
+                        <span class="benefit-title">Vois ta progression chaque jour</span>
+                        <span class="benefit-desc">Reste motivé jusqu'au jour J</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <a href="#">@StudySprint</a>
+        </div>
+    </div>
+</body>
+</html>

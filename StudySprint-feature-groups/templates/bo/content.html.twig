@@ -1,0 +1,250 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Contenu - StudySprint BO{% endblock %}
+{% block breadcrumb %}Contenu{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" data-drawer-open="add-subject-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Ajouter
+</button>
+{% endblock %}
+
+{% block content %}
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Contenu</h1>
+    </div>
+    {{ include('components/_tabs.html.twig', {
+        id: 'content-tabs',
+        tabs: data.tabs,
+        variant: 'bo'
+    }) }}
+    {{ include('components/_skeleton.html.twig', { type: 'table', count: 1 }) }}
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Contenu</h1>
+    </div>
+    {{ include('components/_empty_state.html.twig', {
+        title: 'Aucun contenu',
+        description: 'Commencez par creer une matiere pour structurer votre contenu pedagogique.',
+        cta_text: 'Creer une matiere',
+        variant: 'bo'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Contenu</h1>
+    </div>
+
+    {# Tabs #}
+    {{ include('components/_tabs.html.twig', {
+        id: 'content-tabs',
+        tabs: data.tabs,
+        variant: 'bo'
+    }) }}
+
+    <div data-tab-content="content-tabs">
+        {# Tab: Subjects #}
+        <div data-tab-panel="subjects" class="tab-content active">
+            <div class="table-container">
+                <table class="bo-table">
+                    <thead>
+                        <tr>
+                            <th>Matiere</th>
+                            <th>Code</th>
+                            <th>Chapitres</th>
+                            <th>Ressources</th>
+                            <th>Statut</th>
+                            <th>Creation</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in data.subjects %}
+                        <tr>
+                            <td class="font-medium">{{ subject.name }}</td>
+                            <td><span class="badge badge-neutral">{{ subject.code }}</span></td>
+                            <td>{{ subject.chapters }}</td>
+                            <td>{{ subject.resources }}</td>
+                            <td>
+                                <span class="badge badge-{{ subject.status == 'Actif' ? 'success' : 'warning' }}">
+                                    {{ subject.status }}
+                                </span>
+                            </td>
+                            <td class="text-muted">{{ subject.created }}</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="12" cy="5" r="1"/>
+                                            <circle cx="12" cy="19" r="1"/>
+                                        </svg>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <button class="dropdown-item">Voir les chapitres</button>
+                                        <button class="dropdown-item">Modifier</button>
+                                        <div class="dropdown-divider"></div>
+                                        <button class="dropdown-item danger">Supprimer</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Tab: Chapters #}
+        <div data-tab-panel="chapters" class="tab-content">
+            <div class="table-container">
+                <table class="bo-table">
+                    <thead>
+                        <tr>
+                            <th>Chapitre</th>
+                            <th>Matiere</th>
+                            <th>Ressources</th>
+                            <th>Quiz</th>
+                            <th>Statut</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chapter in data.chapters %}
+                        <tr>
+                            <td class="font-medium">{{ chapter.name }}</td>
+                            <td>{{ chapter.subject }}</td>
+                            <td>{{ chapter.resources }}</td>
+                            <td>{{ chapter.quizzes }}</td>
+                            <td>
+                                <span class="badge badge-{{ chapter.status == 'Publie' ? 'success' : 'warning' }}">
+                                    {{ chapter.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="12" cy="5" r="1"/>
+                                            <circle cx="12" cy="19" r="1"/>
+                                        </svg>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <button class="dropdown-item">Voir les ressources</button>
+                                        <button class="dropdown-item">Modifier</button>
+                                        <button class="dropdown-item">Publier</button>
+                                        <div class="dropdown-divider"></div>
+                                        <button class="dropdown-item danger">Supprimer</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Tab: Resources #}
+        <div data-tab-panel="resources" class="tab-content">
+            <div class="table-container">
+                <table class="bo-table">
+                    <thead>
+                        <tr>
+                            <th>Ressource</th>
+                            <th>Type</th>
+                            <th>Matiere</th>
+                            <th>Chapitre</th>
+                            <th>Telechargements</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resource in data.resources %}
+                        <tr>
+                            <td class="font-medium">{{ resource.name }}</td>
+                            <td>
+                                <span class="badge badge-{{ resource.type == 'Video' ? 'info' : 'neutral' }}">
+                                    {{ resource.type }}
+                                </span>
+                            </td>
+                            <td>{{ resource.subject }}</td>
+                            <td>{{ resource.chapter }}</td>
+                            <td>{{ resource.downloads }}</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="bo-actions-btn" data-dropdown-toggle aria-label="Actions">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="12" cy="5" r="1"/>
+                                            <circle cx="12" cy="19" r="1"/>
+                                        </svg>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <button class="dropdown-item">Telecharger</button>
+                                        <button class="dropdown-item">Modifier</button>
+                                        <div class="dropdown-divider"></div>
+                                        <button class="dropdown-item danger">Supprimer</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Add Subject #}
+<div class="drawer" id="add-subject-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Ajouter une matiere</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Nom de la matiere</label>
+            <input type="text" class="form-input" placeholder="Ex: Mathematiques">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Code</label>
+            <input type="text" class="form-input" placeholder="Ex: MATH" maxlength="6">
+            <div class="form-hint">Code court unique (max 6 caracteres)</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" placeholder="Description de la matiere..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Statut initial</label>
+            <select class="form-select">
+                <option value="draft">Brouillon</option>
+                <option value="active">Actif</option>
+            </select>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Creer la matiere</button>
+    </div>
+</div>
+{% endblock %}

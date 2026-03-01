@@ -1,0 +1,1001 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Modifier mon Profil - StudySprint{% endblock %}
+{% block page_title %}Modifier mon Profil{% endblock %}
+
+{% block content %}
+{# Robust role detection #}
+{% set rawRole = user.role|upper %}
+{% set isStudent = ('STUDENT' in rawRole) %}
+{% set isProfessor = ('PROFESSOR' in rawRole) %}
+
+<div class="profile-v3-container animate__animated animate__fadeIn">
+    {# ─── PREMIUM HERO / HEADER ─── #}
+    <div class="profile-v3-hero {% if isStudent %}student-theme{% else %}professor-theme{% endif %}">
+        <div class="premium-mesh-v3"></div>
+        <div class="hero-content-v3">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4">
+                <div class="d-flex align-items-center gap-5" style="column-gap: 3.5rem !important;">
+                    <div class="v3-avatar-container premium-avatar">
+                        <div class="avatar-halo"></div>
+                        <div class="v3-avatar-inner">
+                            {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                        </div>
+                        <div class="v3-role-badge">
+                            <i class="fas {% if isStudent %}fa-graduation-cap{% else %}fa-chalkboard-teacher{% endif %}"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="v3-hero-title mb-2">Configuration du Compte</h2>
+                        <p class="v3-hero-subtitle mb-0">Personnalisez votre expérience StudySprint et vos informations de sécurité.</p>
+                    </div>
+                </div>
+                <a href="{{ path('app_profile') }}" class="btn-premium-back mt-4 mt-md-0">
+                    <i class="fas fa-arrow-left me-2"></i> Retour au profil
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ─── FORM CONTAINER ─── #}
+    <div class="glass-card-v3 mt-n5">
+        {{ form_start(form, {'attr': {'class': 'profile-form-v3', 'id': 'profile-form', 'novalidate': 'novalidate'}}) }}
+            
+            {% if not form.vars.valid %}
+                <div class="v3-alert-box animate__animated animate__shakeX">
+                    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="alert-content">
+                        <strong>Attention</strong>
+                        <p>Certains champs nécessitent votre attention. Veuillez vérifier les erreurs ci-dessous.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="form-sections-v3">
+                {# SECTION 1: INFORMATIONS PERSONNELLES #}
+                <div class="v3-section-card">
+                    <div class="section-header-v3">
+                        <div class="section-badge student-accent"><i class="fas fa-id-card"></i></div>
+                        <div>
+                            <h3 class="section-title-v3">Identité & Contact</h3>
+                            <p class="section-desc-v3">Vos informations de base visibles sur la plateforme.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6">
+                            <div class="v3-input-wrapper">
+                                {{ form_label(form.prenom, 'Prénom') }}
+                                <div class="input-inner-v3">
+                                    <i class="far fa-user"></i>
+                                    {{ form_widget(form.prenom, {'attr': {'placeholder': 'Ex: Jean'}}) }}
+                                </div>
+                                {{ form_errors(form.prenom) }}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="v3-input-wrapper">
+                                {{ form_label(form.nom, 'Nom de famille') }}
+                                <div class="input-inner-v3">
+                                    <i class="far fa-user"></i>
+                                    {{ form_widget(form.nom, {'attr': {'placeholder': 'Ex: Dupont'}}) }}
+                                </div>
+                                {{ form_errors(form.nom) }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="v3-input-wrapper">
+                                {{ form_label(form.email, 'Adresse Email') }}
+                                <div class="input-inner-v3">
+                                    <i class="far fa-envelope"></i>
+                                    {{ form_widget(form.email, {'attr': {'placeholder': 'nom@exemple.com'}}) }}
+                                </div>
+                                {{ form_errors(form.email) }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="v3-input-wrapper">
+                                {{ form_label(form.telephone, 'Numéro de téléphone') }}
+                                <div class="input-inner-v3">
+                                    <i class="fas fa-phone"></i>
+                                    {{ form_widget(form.telephone, {'attr': {'placeholder': '+216...'}}) }}
+                                </div>
+                                {{ form_errors(form.telephone) }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="v3-input-wrapper">
+                                {{ form_label(form.pays, 'Pays de résidence') }}
+                                <div class="input-inner-v3">
+                                    <i class="fas fa-earth-africa"></i>
+                                    {{ form_widget(form.pays) }}
+                                </div>
+                                {{ form_errors(form.pays) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# SECTION 2: DONNÉES ACADÉMIQUES #}
+                <div class="v3-section-card mt-5">
+                    <div class="section-header-v3">
+                        <div class="section-badge professor-accent">
+                            <i class="fas {% if isStudent %}fa-university{% else %}fa-briefcase{% endif %}"></i>
+                        </div>
+                        <div>
+                            <h3 class="section-title-v3">{% if isStudent %}Parcours Étudiant{% else %}Expertise Enseignante{% endif %}</h3>
+                            <p class="section-desc-v3">Détails sur votre établissement et votre niveau actuel.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mt-2">
+                        {% if isStudent %}
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.age, 'Âge') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-calendar-day"></i>
+                                        {{ form_widget(form.age) }}
+                                    </div>
+                                    {{ form_errors(form.age) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.sexe, 'Genre') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-venus-mars"></i>
+                                        {{ form_widget(form.sexe) }}
+                                    </div>
+                                    {{ form_errors(form.sexe) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.etablissement, 'Établissement / Faculté') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-school"></i>
+                                        {{ form_widget(form.etablissement, {'attr': {'data-selected': user.etablissement}}) }}
+                                    </div>
+                                    {{ form_errors(form.etablissement) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="v3-input-wrapper v3-highlight">
+                                    {{ form_label(form.niveau, 'Niveau actuel') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-layer-group"></i>
+                                        {{ form_widget(form.niveau, {'attr': {'data-selected': user.niveau}}) }}
+                                    </div>
+                                    {{ form_errors(form.niveau) }}
+                                </div>
+                            </div>
+                            
+                            {% if form.specialite is defined %}{% do form.specialite.setRendered %}{% endif %}
+                            {% if form.niveauEnseignement is defined %}{% do form.niveauEnseignement.setRendered %}{% endif %}
+                            {% if form.anneesExperience is defined %}{% do form.anneesExperience.setRendered %}{% endif %}
+                            {% if form.etablissementProfesseur is defined %}{% do form.etablissementProfesseur.setRendered %}{% endif %}
+
+                        {% elseif isProfessor %}
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.age, 'Âge') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-calendar-day"></i>
+                                        {{ form_widget(form.age) }}
+                                    </div>
+                                    {{ form_errors(form.age) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.sexe, 'Genre') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-venus-mars"></i>
+                                        {{ form_widget(form.sexe) }}
+                                    </div>
+                                    {{ form_errors(form.sexe) }}
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.etablissement, 'Établissement / Faculté') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-school"></i>
+                                        {{ form_widget(form.etablissement, {'attr': {'data-selected': user.etablissement}}) }}
+                                    </div>
+                                    {{ form_errors(form.etablissement) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.specialite, 'Spécialité') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-brain"></i>
+                                        {{ form_widget(form.specialite) }}
+                                    </div>
+                                    {{ form_errors(form.specialite) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.niveauEnseignement, 'Niveau enseigné') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-book-open"></i>
+                                        {{ form_widget(form.niveauEnseignement) }}
+                                    </div>
+                                    {{ form_errors(form.niveauEnseignement) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="v3-input-wrapper">
+                                    {{ form_label(form.anneesExperience, 'Expérience (ans)') }}
+                                    <div class="input-inner-v3">
+                                        <i class="fas fa-history"></i>
+                                        {{ form_widget(form.anneesExperience) }}
+                                    </div>
+                                    {{ form_errors(form.anneesExperience) }}
+                                </div>
+                            </div>
+
+                            {% if form.niveau is defined %}{% do form.niveau.setRendered %}{% endif %}
+                            {% if form.etablissementProfesseur is defined %}{% do form.etablissementProfesseur.setRendered %}{% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# SECTION 3: SÉCURITÉ #}
+                <div class="v3-section-card mt-5">
+                    <div class="section-header-v3">
+                        <div class="section-badge security-accent"><i class="fas fa-shield-alt"></i></div>
+                        <div>
+                            <h3 class="section-title-v3">Centre de Sécurité</h3>
+                            <p class="section-desc-v3">Gérez vos accès et renforcez la protection de votre compte.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        {# Password Card #}
+                        <div class="col-md-6">
+                            <div class="security-item-card-v3">
+                                <div class="security-card-header">
+                                    <div class="security-icon-circle" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9;">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <div class="security-card-meta">
+                                        <h4 class="m-0">Mot de passe</h4>
+                                        <span class="security-status-active"><i class="fas fa-check-circle"></i> Actif</span>
+                                    </div>
+                                </div>
+                                <p class="security-card-text">Il est recommandé de changer votre mot de passe régulièrement pour une sécurité maximale.</p>
+                                <a href="{{ path('app_profile_request_password_change') }}" class="btn-security-action">
+                                    <span>Changer le mot de passe</span>
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        {# Biometrics Card #}
+                        <div class="col-md-6">
+                            <div class="security-item-card-v3">
+                                <div class="security-card-header">
+                                    <div class="security-icon-circle" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                                        <i class="fas fa-id-card-clip"></i>
+                                    </div>
+                                    <div class="security-card-meta">
+                                        <h4 class="m-0">Face ID (Biométrie)</h4>
+                                        {% if user.faceDescriptor %}
+                                            <span class="security-status-active" style="background: rgba(34, 197, 94, 0.1); color: #16a34a;">
+                                                <i class="fas fa-check-circle"></i> Configuré
+                                            </span>
+                                        {% else %}
+                                            <span class="security-status-pending">
+                                                <i class="fas fa-circle-info"></i> Non configuré
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="security-card-text">Connectez-vous instantanément grâce à la reconnaissance faciale intelligente.</p>
+                                <a href="{{ path('app_profile_face_enroll') }}" class="btn-security-action biometric-btn">
+                                    <span>{# If configured, say "Reconfigurer" #}{% if user.faceDescriptor %}Reconfigurer{% else %}Configurer{% endif %} mon visage</span>
+                                    <i class="fas fa-camera"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                {# FOOTER ACTIONS #}
+                <div class="v3-form-footer mt-5 pt-4 border-top">
+                    <button type="submit" class="btn-save-v3">
+                        <span class="btn-inner">
+                            <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                        </span>
+                    </button>
+                    <p class="text-muted small mt-3 text-center mb-0">
+                        <i class="fas fa-shield-alt me-1"></i> Vos modifications sont sécurisées et cryptées.
+                    </p>
+                </div>
+            </div>
+
+            {{ form_rest(form) }}
+        {{ form_end(form, {'render_rest': false}) }}
+    </div>
+</div>
+
+<style>
+    :root {
+        /* Calmer blue palette */
+        --v3-primary: #2563eb;
+        --v3-primary-dark: #1e40af;
+        --v3-primary-light: #eff6ff;
+        --v3-grad: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        --v3-text-main: #0f172a;
+        --v3-text-muted: #475569;
+        --v3-border: #e2e8f0;
+        --v3-bg-soft: #f8fafc;
+        --v3-radius-lg: 32px;
+        --v3-radius-md: 20px;
+        --v3-shadow: 0 10px 30px -5px rgba(0,0,0,0.04);
+        
+        --student-accent: #2563eb;
+        --professor-accent: #8b5cf6;
+        --security-accent: #f59e0b;
+    }
+
+    .btn-action-v3 {
+        background: var(--v3-bg-soft);
+        color: var(--v3-text-main);
+        border: 2px solid var(--v3-border);
+        padding: 0.8rem 1.5rem;
+        border-radius: 14px;
+        font-weight: 600;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .btn-action-v3:hover {
+        background: var(--security-accent);
+        color: white;
+        border-color: var(--security-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+
+    /* ─── SECURITY CENTER REFINEMENT ─── */
+    .security-item-card-v3 {
+        background: #fff;
+        border: 1px solid #f1f5f9;
+        border-radius: 24px;
+        padding: 2rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .security-item-card-v3:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+        border-color: #e2e8f0;
+    }
+
+    .security-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .security-icon-circle {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .security-card-meta h4 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--v3-text-main);
+        margin-bottom: 4px;
+    }
+
+    .security-status-active {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: rgba(14, 165, 233, 0.1);
+        color: #0369a1;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .security-status-pending {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .security-card-text {
+        font-size: 0.95rem;
+        color: var(--v3-text-muted);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        flex-grow: 1;
+    }
+
+    .btn-security-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        color: var(--v3-text-main);
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+
+    .btn-security-action:hover {
+        background: #1e293b;
+        color: white;
+        border-color: #1e293b;
+        padding-left: 1.75rem;
+    }
+
+    .btn-security-action.biometric-btn:hover {
+        background: #8b5cf6;
+        border-color: #8b5cf6;
+    }
+
+    .btn-security-action i {
+        opacity: 0.5;
+        transition: transform 0.3s;
+    }
+
+    .btn-security-action:hover i {
+        opacity: 1;
+        transform: translateX(3px);
+    }
+
+    .security-accent {
+        background: #fff7ed !important;
+        color: #f59e0b !important;
+    }
+
+    .profile-v3-container {
+        padding-bottom: 6rem; /* Increased padding */
+    }
+
+    /* ─── HERO SECTION REBORN ─── */
+    .profile-v3-hero {
+        position: relative;
+        padding: 4rem 3rem 8rem;
+        border-radius: 40px;
+        background: #1e293b; /* Fallback */
+        overflow: hidden;
+        color: white;
+        transition: all 0.5s ease;
+    }
+
+    .profile-v3-hero.student-theme {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+        box-shadow: 0 20px 50px rgba(79, 70, 229, 0.2);
+    }
+
+    .profile-v3-hero.professor-theme {
+        background: linear-gradient(135deg, #0ea5e9 0%, #10b981 50%, #059669 100%);
+        box-shadow: 0 20px 50px rgba(14, 165, 233, 0.2);
+    }
+
+    .premium-mesh-v3 {
+        position: absolute;
+        inset: 0;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(255,255,255,0.2) 0, transparent 50%), 
+            radial-gradient(at 50% 0%, rgba(255,255,255,0.1) 0, transparent 50%), 
+            radial-gradient(at 100% 0%, rgba(255,255,255,0.2) 0, transparent 50%);
+        opacity: 0.6;
+        mix-blend-mode: overlay;
+    }
+
+    .premium-avatar {
+        position: relative;
+        z-index: 2;
+    }
+
+    .avatar-halo {
+        position: absolute;
+        inset: -12px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 32px;
+        animation: rotate-halo 8s linear infinite;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes rotate-halo {
+        from { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.08); }
+        to { transform: rotate(360deg) scale(1); }
+    }
+
+    .v3-avatar-inner {
+        width: 80px; height: 80px; /* More compact avatar */
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 2px solid rgba(255,255,255,0.4);
+        border-radius: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 900;
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3);
+        transform: rotate(-2deg);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .premium-avatar:hover .v3-avatar-inner {
+        transform: rotate(2deg) scale(1.05);
+        border-color: white;
+    }
+
+    .v3-avatar-container {
+        position: relative;
+        width: 80px; height: 80px;
+    }
+
+    .v3-avatar-inner {
+        width: 100%; height: 100%;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(255,255,255,0.25);
+        border-radius: 26px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.2rem; font-weight: 800;
+        box-shadow: 0 20px 30px -12px rgba(0,0,0,0.25);
+    }
+
+    .v3-role-badge {
+        position: absolute; bottom: -6px; right: -6px;
+        width: 28px; height: 28px;
+        background: white; color: var(--v3-primary);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .v3-hero-title { 
+        font-weight: 800; 
+        font-size: 2rem; 
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+    
+    .v3-hero-subtitle { 
+        color: rgba(255,255,255,0.9); 
+        font-weight: 400; 
+        font-size: 1.15rem;
+        line-height: 1.7; /* Increased line-height */
+        max-width: 600px;
+    }
+
+    .btn-premium-back {
+        background: rgba(255,255,255,0.15);
+        color: white; padding: 1.2rem 2.2rem;
+        border-radius: 20px; border: 1px solid rgba(255,255,255,0.3);
+        text-decoration: none; font-weight: 700;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+    .btn-premium-back:hover {
+        background: white;
+        color: #2563eb !important;
+        transform: translateX(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+
+    /* ─── GLASS CARD ─── */
+    .glass-card-v3 {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 5rem;
+        box-shadow: 
+            0 40px 100px -20px rgba(15, 23, 42, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .mt-n5 { margin-top: -7rem !important; }
+
+    /* ─── SECTION CARDS ─── */
+    .v3-section-card {
+        background: #ffffff;
+        padding: 4rem;
+        border-radius: 32px;
+        border: 1px solid #f1f5f9;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+    }
+    
+    .v3-section-card:hover {
+        border-color: #e2e8f0;
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+    }
+
+    .section-header-v3 {
+        display: flex; align-items: flex-start; gap: 1.75rem;
+        margin-bottom: 3.5rem;
+    }
+
+    .section-badge {
+        width: 64px; height: 64px;
+        border-radius: 20px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem;
+        background: #f8fafc;
+        color: var(--v3-primary);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .section-title-v3 { 
+        margin: 0; 
+        font-weight: 800; 
+        color: #1e293b; 
+        font-size: 1.6rem;
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: -0.01em;
+    }
+    .section-desc-v3 { 
+        margin: 0.6rem 0 0; 
+        color: #64748b; 
+        font-size: 1.05rem; 
+        line-height: 1.6;
+        max-width: 500px;
+    }
+
+    /* ─── INPUTS ─── */
+    .v3-input-wrapper label {
+        display: block; font-size: 0.82rem; font-weight: 800;
+        color: #475569; margin-bottom: 12px;
+        text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .input-inner-v3 { position: relative; }
+    .input-inner-v3 i {
+        position: absolute; left: 1.5rem; top: 50%;
+        transform: translateY(-50%); color: #94a3b8;
+        font-size: 1.2rem; transition: all 0.3s;
+    }
+
+    .input-inner-v3 select,
+    .input-inner-v3 input {
+        width: 100%;
+        padding: 1.25rem 1.5rem 1.25rem 4rem !important;
+        border-radius: 20px !important;
+        border: 2px solid #f1f5f9 !important;
+        background: #f8fafc !important;
+        font-weight: 500 !important;
+        color: #1e293b !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.1rem !important;
+    }
+
+    .input-inner-v3 input:focus,
+    .input-inner-v3 select:focus {
+        background: white !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1) !important;
+        outline: none;
+    }
+
+    .v3-input-wrapper:focus-within i { color: #3b82f6; transform: translateY(-50%) scale(1.1); }
+
+    /* ─── SECURITY CENTER REFINEMENT ─── */
+    .security-item-card-v3 {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(10px);
+        border: 1px solid #f1f5f9;
+        border-radius: 30px;
+        padding: 2.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .security-item-card-v3:hover {
+        transform: translateY(-8px);
+        background: white;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+        border-color: #e2e8f0;
+    }
+
+    .security-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .security-icon-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+    }
+
+    .security-card-meta h4 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 4px;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .security-status-active {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        padding: 6px 14px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .security-status-pending {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 6px 14px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .security-card-text {
+        font-size: 1rem;
+        color: #64748b;
+        line-height: 1.7;
+        margin-bottom: 2.5rem;
+        flex-grow: 1;
+    }
+
+    .btn-security-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f1f5f9;
+        border: none;
+        padding: 1.25rem 1.75rem;
+        border-radius: 20px;
+        color: #1e293b;
+        text-decoration: none;
+        font-weight: 800;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .btn-security-action:hover {
+        background: #1e293b;
+        color: white;
+        transform: scale(1.02);
+    }
+
+    .btn-security-action.biometric-btn:hover {
+        background: #4f46e5;
+    }
+
+    .btn-security-action i {
+        opacity: 0.4;
+        transition: transform 0.3s;
+        font-size: 1.1rem;
+    }
+
+    .btn-security-action:hover i {
+        opacity: 1;
+        transform: translateX(5px);
+    }
+
+    /* ─── SAVE BUTTON ─── */
+    .v3-form-footer {
+        margin-top: 6rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-save-v3 {
+        width: 100%;
+        max-width: 500px;
+        background: #1e293b;
+        color: white;
+        border: none;
+        padding: 1.5rem 3rem;
+        border-radius: 24px;
+        font-weight: 800;
+        font-size: 1.2rem;
+        font-family: 'Outfit', sans-serif;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 20px 40px rgba(30, 41, 59, 0.15);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-save-v3::after {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%; width: 200%; height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+
+    .btn-save-v3:hover {
+        transform: translateY(-6px) scale(1.02);
+        background: #0f172a;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.25);
+    }
+
+    .btn-save-v3:hover::after {
+        opacity: 1;
+    }
+
+    .btn-save-v3:active {
+        transform: translateY(-2px) scale(0.98);
+    }
+
+    /* ─── ALERTS ─── */
+    .v3-alert-box {
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        padding: 2rem;
+        border-radius: 24px;
+        margin-bottom: 4rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    .alert-icon {
+        width: 50px; height: 50px;
+        background: #ef4444; color: white;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    .alert-content strong { display: block; color: #9f1239; font-size: 1.1rem; margin-bottom: 0.2rem; }
+    .alert-content p { margin: 0; color: #be123c; opacity: 0.9; }
+
+    @media (max-width: 992px) {
+        .glass-card-v3 { padding: 3rem 1.5rem; }
+        .v3-section-card { padding: 2.5rem 1.5rem; }
+        .profile-v3-hero { padding: 5rem 1.5rem 8rem; text-align: center; }
+        .profile-v3-hero .d-flex { flex-direction: column; align-items: center !important; }
+        .hero-content-v3 .d-flex { text-align: center; }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const countrySelect = document.getElementById('profile_pays');
+        const schoolSelect = document.getElementById('profile_etablissement');
+        const levelSelect = document.getElementById('profile_niveau');
+
+        if (countrySelect) {
+            const initialCountry = countrySelect.value;
+            const selectedSchool = schoolSelect ? schoolSelect.getAttribute('data-selected') : null;
+            const selectedLevel = levelSelect ? levelSelect.getAttribute('data-selected') : null;
+
+            if (initialCountry) {
+                loadLocationData(initialCountry, selectedSchool, selectedLevel);
+            }
+
+            countrySelect.addEventListener('change', function() {
+                loadLocationData(this.value);
+            });
+        }
+
+        function loadLocationData(countryCode, schoolToSelect = null, levelToSelect = null) {
+            if (!countryCode) {
+                resetSelect(schoolSelect);
+                resetSelect(levelSelect);
+                return;
+            }
+
+            if (schoolSelect) {
+                fetch(`/api/location/schools/${countryCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateSelect(schoolSelect, data, schoolToSelect);
+                    });
+            }
+
+            if (levelSelect) {
+                fetch(`/api/location/levels/${countryCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateSelect(levelSelect, data, levelToSelect);
+                    });
+            }
+        }
+
+        function updateSelect(selectElement, items, selectedValue) {
+            if (!selectElement) return;
+            selectElement.innerHTML = '';
+            selectElement.disabled = false;
+            
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.text = 'Choisir...';
+            selectElement.appendChild(placeholder);
+
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.text = item;
+                if (item === selectedValue) {
+                    option.selected = true;
+                }
+                selectElement.appendChild(option);
+            });
+        }
+
+        function resetSelect(selectElement) {
+            if (!selectElement) return;
+            selectElement.innerHTML = '<option value="">Choisir un pays d\'abord</option>';
+            selectElement.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

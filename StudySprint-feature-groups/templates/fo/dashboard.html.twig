@@ -1,0 +1,241 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% set user = data.user %}
+
+{% block title %}Dashboard - StudySprint{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary" data-drawer-open="add-session-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Nouvelle session
+</button>
+{% endblock %}
+
+{% block content %}
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="fo-priority-card" style="background: var(--color-gray-200); min-height: 140px;">
+        <div class="skeleton skeleton-heading" style="background: rgba(255,255,255,0.3);"></div>
+        <div class="skeleton skeleton-text" style="background: rgba(255,255,255,0.3); width: 60%;"></div>
+    </div>
+
+    <div class="grid grid-4 gap-4 mt-6">
+        {{ include('components/_skeleton.html.twig', { type: 'kpi', count: 4 }) }}
+    </div>
+
+    <div class="grid grid-2 gap-6 mt-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="skeleton" style="height: 16px; width: 100px;"></div>
+            </div>
+            <div class="card-body">
+                {{ include('components/_skeleton.html.twig', { type: 'row', count: 4 }) }}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="skeleton" style="height: 16px; width: 120px;"></div>
+            </div>
+            <div class="card-body">
+                {{ include('components/_skeleton.html.twig', { type: 'row', count: 4 }) }}
+            </div>
+        </div>
+    </div>
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'calendar',
+        title: 'Aucune activite recente',
+        description: 'Commencez par creer votre premiere session d\'etude pour suivre votre progression.',
+        cta_text: 'Creer une session',
+        cta_url: '#'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+
+    {# Priorite du jour #}
+    <div class="fo-priority-card">
+        <div class="fo-priority-label">Priorite du jour</div>
+        <div class="fo-priority-title">{{ data.priority.subject }} - {{ data.priority.chapter }}</div>
+        <div class="fo-priority-meta">
+            <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="display: inline; vertical-align: middle; margin-right: 4px;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {{ data.priority.time_remaining }} restantes
+            </span>
+            <span>Echeance : {{ data.priority.deadline }}</span>
+        </div>
+        <div class="fo-priority-progress">
+            <div class="fo-priority-progress-bar" style="width: {{ data.priority.progress }}%;"></div>
+        </div>
+        <div class="fo-priority-actions">
+            <button class="fo-priority-btn fo-priority-btn-primary">Continuer</button>
+            <button class="fo-priority-btn fo-priority-btn-secondary">Reporter</button>
+        </div>
+    </div>
+
+    {# KPIs #}
+    <div class="grid grid-4 gap-4 mt-6">
+        {% for kpi in data.kpis %}
+        {{ include('components/_kpi_card.html.twig', {
+            label: kpi.label,
+            value: kpi.value,
+            trend: kpi.trend,
+            trend_direction: kpi.trend_direction,
+            period: kpi.period
+        }) }}
+        {% endfor %}
+    </div>
+
+    {# Todos + Activites #}
+    <div class="grid grid-2 gap-6 mt-6">
+        {# Todo List #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">A faire aujourd'hui</h3>
+                <button class="btn btn-ghost btn-sm">Voir tout</button>
+            </div>
+            <div class="card-body">
+                <div class="fo-todo-list">
+                    {% for todo in data.todos %}
+                    <div class="fo-todo-item {{ todo.completed ? 'completed' : '' }}">
+                        <div class="fo-todo-checkbox {{ todo.completed ? 'checked' : '' }}">
+                            {% if todo.completed %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div class="fo-todo-content">
+                            <div class="fo-todo-title">{{ todo.title }}</div>
+                            <div class="fo-todo-meta">
+                                <span class="badge badge-{{ todo.priority == 'high' ? 'error' : (todo.priority == 'medium' ? 'warning' : 'neutral') }}">
+                                    {{ todo.subject }}
+                                </span>
+                                <span style="margin-left: 8px; color: var(--color-gray-400);">{{ todo.due }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# Activites recentes #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Activite recente</h3>
+                <button class="btn btn-ghost btn-sm">Historique</button>
+            </div>
+            <div class="card-body">
+                <div class="fo-activity-list">
+                    {% for activity in data.activities %}
+                    <div class="fo-activity-item">
+                        <div class="fo-activity-icon {{ activity.type }}">
+                            {% if activity.type == 'quiz' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                            {% elseif activity.type == 'session' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            {% elseif activity.type == 'group' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div class="fo-activity-content">
+                            <div class="fo-activity-text">
+                                <strong>{{ activity.title }}</strong><br>
+                                {{ activity.description }}
+                            </div>
+                            <div class="fo-activity-time">{{ activity.time }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Ajouter une session #}
+<div class="drawer" id="add-session-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Nouvelle session d'etude</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Titre de la session</label>
+            <input type="text" class="form-input" placeholder="Ex: Revision Mathematiques">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Matiere</label>
+            <select class="form-select">
+                <option value="">Selectionner une matiere</option>
+                <option value="math">Mathematiques</option>
+                <option value="physics">Physique</option>
+                <option value="chemistry">Chimie</option>
+                <option value="english">Anglais</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Chapitre</label>
+            <select class="form-select">
+                <option value="">Selectionner un chapitre</option>
+            </select>
+        </div>
+        <div class="grid grid-2 gap-4">
+            <div class="form-group">
+                <label class="form-label required">Date</label>
+                <input type="date" class="form-input" value="2026-01-24">
+            </div>
+            <div class="form-group">
+                <label class="form-label required">Heure</label>
+                <input type="time" class="form-input" value="14:00">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Duree estimee</label>
+            <select class="form-select">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>1 heure</option>
+                <option value="90">1h30</option>
+                <option value="120">2 heures</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea class="form-textarea" placeholder="Objectifs, points a revoir..."></textarea>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Creer la session</button>
+    </div>
+</div>
+{% endblock %}

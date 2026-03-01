@@ -234,13 +234,31 @@
                 <label class="remember-me">
                     <input type="checkbox" name="remember_me"> Se souvenir de moi
                 </label>
-                <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+                <a href="{{ path('app_forgot_password') }}" class="forgot-link">Mot de passe oublié ?</a>
             </div>
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
             <button type="submit" class="btn-submit">Se connecter</button>
         </form>
+
+        <div class="divider">ou</div>
+        <button id="face-login-btn" class="btn-submit" type="button" style="background: #0ea5e9; box-shadow: 0 4px 16px rgba(14,165,233,0.35); cursor: pointer;">
+            <span style="margin-right: 0.5rem;">👁️‍🗨️</span> Se connecter avec Face ID
+        </button>
+
+        {# Face Login Modal UI #}
+        <div id="face-login-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+            <div class="card" style="max-width: 520px; width: 100%; padding: 1.75rem; text-align: center; border-radius: 16px;">
+                <h3 style="font-weight: 800; margin-bottom: 0.5rem;">Identification Faciale</h3>
+                <p id="face-status" style="color: #6b7280; margin-bottom: 1rem;">Initialisation...</p>
+                <div style="position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 4/3; margin-bottom: 1rem;">
+                    <video id="face-video" style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);" autoplay muted></video>
+                    <canvas id="face-overlay" style="position: absolute; top:0; left:0; width: 100%; height: 100%; transform: scaleX(-1);"></canvas>
+                </div>
+                <button type="button" id="close-face-modal" class="btn btn-ghost" style="width: 100%;">Annuler</button>
+            </div>
+        </div>
 
         <div class="divider">ou</div>
 
@@ -253,10 +271,126 @@
 <script>
     const eyeToggle = document.getElementById('eyeToggle');
     const passwordInput = document.getElementById('password');
-    eyeToggle.addEventListener('click', () => {
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
-        eyeToggle.textContent = isPassword ? '🙈' : '👁';
-    });
+    if (eyeToggle && passwordInput) {
+        eyeToggle.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeToggle.textContent = isPassword ? '🙈' : '👁';
+        });
+    }
 </script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const btn = document.getElementById('face-login-btn');
+        const emailInput = document.getElementById('username');
+        const modal = document.getElementById('face-login-modal');
+        const video = document.getElementById('face-video');
+        const overlay = document.getElementById('face-overlay');
+        const closeBtn = document.getElementById('close-face-modal');
+        const statusEl = document.getElementById('face-status');
+        if (!btn || !emailInput || !modal) return;
+
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+        let isModelsLoaded = false;
+        let interval = null;
+
+        function setBusy(b){
+            btn.disabled = b;
+            btn.style.opacity = b ? '0.6' : '1';
+            btn.style.cursor = b ? 'wait' : 'pointer';
+        }
+
+        function stopCamera(){
+            if (video && video.srcObject) {
+                video.srcObject.getTracks().forEach(t => t.stop());
+                video.srcObject = null;
+            }
+        }
+
+        function startFaceDetection(){
+            statusEl.innerText = 'Scannez votre visage...';
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            faceapi.matchDimensions(overlay, displaySize);
+
+            interval = setInterval(async () => {
+                if (modal.style.display === 'none') { clearInterval(interval); return; }
+                const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+                if (detections) {
+                    const resized = faceapi.resizeResults(detections, displaySize);
+                    faceapi.draw.drawDetections(overlay, resized);
+                    statusEl.innerHTML = '<span style="color:#16a34a; font-weight:700;">Visage détecté ! Vérification...</span>';
+                    clearInterval(interval);
+                    // Send descriptor to server for secure matching
+                    try {
+                        const descriptor = Array.from(detections.descriptor);
+                        const resp = await fetch('{{ path('api_face_verify_and_login') }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: emailInput.value, descriptor: descriptor })
+                        });
+                        const data = await resp.json();
+                        if (data.success) {
+                            statusEl.innerHTML = '<span style="color:#16a34a; font-weight:700;">Identité confirmée ! Connexion...</span>';
+                            stopCamera();
+                            window.location.href = data.targetUrl || '{{ path('app_groups') }}';
+                        } else {
+                            statusEl.innerHTML = '<span style="color:#b91c1c;">' + (data.message || 'Visage non reconnu.') + '</span>';
+                            // Retry detection after a pause
+                            setTimeout(() => { startFaceDetection(); }, 2000);
+                        }
+                    } catch (e) {
+                        statusEl.innerText = 'Erreur de connexion.';
+                        setTimeout(() => { startFaceDetection(); }, 2000);
+                    }
+                } else {
+                    statusEl.innerText = 'Recherche de visage...';
+                }
+            }, 500);
+        }
+
+        btn.addEventListener('click', async function(){
+            const email = (emailInput.value || '').trim();
+            if (!email) { alert("Saisissez votre email pour Face ID."); return; }
+            setBusy(true);
+            modal.style.display = 'flex';
+            try {
+                if (!isModelsLoaded) {
+                    statusEl.innerText = "Chargement de l'IA...";
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                    ]);
+                    isModelsLoaded = true;
+                }
+                statusEl.innerText = 'Démarrage de la caméra...';
+                const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                    startFaceDetection();
+                };
+            } catch (err) {
+                statusEl.innerText = 'Erreur : ' + err.message;
+                setBusy(false);
+            }
+        });
+
+        closeBtn.addEventListener('click', () => {
+            if (interval) clearInterval(interval);
+            stopCamera();
+            modal.style.display = 'none';
+            setBusy(false);
+        });
+    });
+    </script>
 {% endblock %}

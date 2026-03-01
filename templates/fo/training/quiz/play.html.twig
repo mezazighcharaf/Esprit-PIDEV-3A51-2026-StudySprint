@@ -20,7 +20,7 @@
                 <span class="question-points">{{ question.points }} pt{% if question.points > 1 %}s{% endif %}</span>
             </div>
             <div class="card-body">
-                <p class="question-text">{{ question.questionText }}</p>
+                <p class="question-text">{{ question.questionText|raw }}</p>
 
                 <form method="post" action="{{ path('training_quiz_play', {id: attempt.id}) }}">
                     <input type="hidden" name="question_id" value="{{ question.id }}">
@@ -31,7 +31,7 @@
                             <label class="choice-option">
                                 <input type="radio" name="quiz_attempt_answer[choice]" value="{{ choice.id }}"
                                     {% if forms[question.id].vars.data.choice and forms[question.id].vars.data.choice.id == choice.id %}checked{% endif %}>
-                                <span class="choice-label">{{ choice.label }}</span>
+                                <span class="choice-label">{{ choice.label|raw }}</span>
                             </label>
                             {% endfor %}
                         </div>
@@ -113,4 +113,22 @@
     border-top: 1px solid var(--border-color);
 }
 </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="mathjax-script" async></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise();
+        }
+      });
+    </script>
 {% endblock %}

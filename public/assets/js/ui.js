@@ -1903,8 +1903,12 @@
     groupId: null,
     modal: null,
     backdrop: null,
+    loading: false,
+    initialized: false,
 
     init() {
+      if (this.initialized) return;
+      this.initialized = true;
       const widget = document.getElementById('chatbot-config-widget');
       if (!widget) return;
 
@@ -2026,8 +2030,32 @@
       Drawer.closeAll();
       Modal.closeAll();
       // Load current config from API BEFORE showing modal
-      await this.loadConfig();
-      Modal.open('chatbot-config-modal');
+      try {
+        await this.loadConfig();
+      } catch (e) {
+        console.error('Chatbot config load failed', e);
+      }
+      const modalEl = document.getElementById('chatbot-config-modal');
+      if (modalEl) {
+        Modal.open('chatbot-config-modal');
+        modalEl.classList.add('open');
+        // Fallback: force display if CSS class not applied for some reason
+        const styles = window.getComputedStyle(modalEl);
+        if (styles.display === 'none' || styles.visibility === 'hidden') {
+          modalEl.style.display = 'flex';
+          modalEl.style.visibility = 'visible';
+          modalEl.style.opacity = '1';
+        }
+        // Show backdrop if present
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.classList.add('open');
+          backdrop.style.display = 'block';
+          backdrop.style.visibility = 'visible';
+          backdrop.style.opacity = '1';
+        }
+        document.body.style.overflow = 'hidden';
+      }
     },
 
     closeModal() {
@@ -2035,6 +2063,8 @@
     },
 
     async loadConfig() {
+      if (this.loading) return;
+      this.loading = true;
       try {
         const response = await fetch(`/app/api/chatbot/groups/${this.groupId}/config`, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -2073,6 +2103,7 @@
       } catch (e) {
         console.error('Failed to load chatbot config', e);
       }
+      this.loading = false;
     },
 
     async saveConfig() {

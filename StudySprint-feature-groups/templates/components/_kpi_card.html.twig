@@ -1,0 +1,82 @@
+{#
+  KPI Card Component
+  Usage:
+  {{ include('components/_kpi_card.html.twig', {
+      label: 'Utilisateurs actifs',
+      value: '58',
+      trend: '+12%',
+      trend_direction: 'up', // 'up' | 'down' | null
+      period: 'vs semaine derniere',
+      icon: 'users', // optional
+      icon_color: 'primary', // primary | secondary | success | warning
+      sparkline: true // optional
+  }) }}
+#}
+
+<div class="kpi-card">
+    <div class="kpi-header">
+        <span class="kpi-label">{{ label }}</span>
+        {% if icon is defined and icon %}
+        <div class="kpi-icon {{ icon_color|default('primary') }}">
+            {% if icon == 'users' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {% elseif icon == 'chart' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            {% elseif icon == 'check' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            {% elseif icon == 'clock' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="kpi-value">{{ value }}</div>
+    <div class="kpi-footer">
+        {% if trend is defined and trend %}
+        <span class="kpi-trend {{ trend_direction|default('') }}">
+            {% if trend_direction == 'up' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+            </svg>
+            {% elseif trend_direction == 'down' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+                <polyline points="17 18 23 18 23 12"/>
+            </svg>
+            {% endif %}
+            {{ trend }}
+        </span>
+        {% endif %}
+        {% if period is defined and period %}
+        <span class="kpi-period">{{ period }}</span>
+        {% endif %}
+    </div>
+    {% if sparkline is defined and sparkline %}
+    <div class="kpi-sparkline">
+        <svg viewBox="0 0 100 32" preserveAspectRatio="none">
+            <polyline
+                fill="none"
+                stroke="var(--color-primary)"
+                stroke-width="2"
+                points="0,28 15,24 30,26 45,18 60,20 75,12 90,16 100,8"
+            />
+        </svg>
+    </div>
+    {% endif %}
+</div>

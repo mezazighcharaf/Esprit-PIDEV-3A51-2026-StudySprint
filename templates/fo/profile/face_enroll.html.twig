@@ -1,0 +1,214 @@
+{% extends 'layouts/fo.html.twig' %}
+{% block title %}Face ID - Enrôlement{% endblock %}
+{% block page_title %}Sécurité biométrique{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body" style="padding: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div>
+                <h1 style="font-size: 22px; font-weight: 700; margin: 0;">Enrôler mon visage</h1>
+                <p style="color: #6b7280; margin: 0.25rem 0 0;">Positionnez votre visage devant la caméra pour générer votre empreinte faciale.</p>
+            </div>
+            <a href="{{ path('fo_profile_show') }}" class="btn btn-ghost">Retour au profil</a>
+        </div>
+
+        <div id="enroll-status" style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.9rem; font-size: 14px; color: #374151;">
+            Chargement des modèles IA...
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
+            <div>
+                <div style="position: relative; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; background: #0f172a;">
+                    <video id="video" autoplay playsinline muted style="width: 100%; display: block; background: black; min-height: 300px; transform: scaleX(-1);"></video>
+                    <canvas id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1);"></canvas>
+                </div>
+                <div style="display: flex; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap;">
+                    <button id="capture-btn" class="btn btn-primary" disabled>Capturer mon visage</button>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 0.5rem;">Comment ça marche</h3>
+                <ol style="color: #4b5563; font-size: 14px; line-height: 1.8; padding-left: 1rem;">
+                    <li id="step-1" style="font-weight: 600; color: #6366f1;">Chargement de l'IA de reconnaissance faciale...</li>
+                    <li id="step-2">Centrez votre visage dans le cadre</li>
+                    <li id="step-3">Cliquez « Capturer » quand le cadre est vert</li>
+                    <li id="step-4">L'empreinte sera envoyée automatiquement</li>
+                </ol>
+
+                <div id="result-box" style="display: none; margin-top: 1rem; padding: 1rem; border-radius: 10px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="font-size: 1.5rem;">✅</span>
+                        <span style="font-weight: 700; color: #166534; font-size: 1rem;">Enrôlement réussi !</span>
+                    </div>
+                    <p style="font-size: 13px; color: #166534; margin: 0;">Votre empreinte faciale (128 dimensions) a été enregistrée. Vous pouvez maintenant utiliser Face ID pour vous connecter.</p>
+                    <a href="{{ path('fo_profile_edit') }}" class="btn btn-secondary" style="margin-top: 0.75rem;">Retour au profil</a>
+                </div>
+
+                <p style="margin-top: 1rem; color: #6b7280; font-size: 12px;">
+                    Aucune image n'est stockée — uniquement un vecteur mathématique de 128 dimensions issu du réseau neuronal face-api.js.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+(function(){
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+    const video = document.getElementById('video');
+    const overlay = document.getElementById('overlay');
+    const captureBtn = document.getElementById('capture-btn');
+    const statusEl = document.getElementById('enroll-status');
+    const resultBox = document.getElementById('result-box');
+    let stream = null;
+    let isCapturing = false;
+    let detectionInterval = null;
+
+    function setStatus(msg, color) {
+        statusEl.innerHTML = msg;
+        statusEl.style.color = color || '#374151';
+    }
+
+    function setStep(num) {
+        for (let i = 1; i <= 4; i++) {
+            const el = document.getElementById('step-' + i);
+            if (i < num) {
+                el.style.color = '#16a34a';
+                el.style.fontWeight = '400';
+            } else if (i === num) {
+                el.style.color = '#6366f1';
+                el.style.fontWeight = '600';
+            } else {
+                el.style.color = '#4b5563';
+                el.style.fontWeight = '400';
+            }
+        }
+    }
+
+    async function init() {
+        try {
+            setStatus('Chargement des modèles IA (TinyFaceDetector + FaceLandmarks + FaceRecognition)...', '#92400e');
+            setStep(1);
+
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+
+            setStatus('Modèles chargés. Démarrage de la caméra...', '#0f766e');
+            setStep(2);
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+            });
+            video.srcObject = stream;
+
+            video.onloadedmetadata = () => {
+                video.play();
+                overlay.width = video.videoWidth;
+                overlay.height = video.videoHeight;
+                setStatus('Caméra active. Centrez votre visage — le cadre deviendra <span style="color:#16a34a;font-weight:700;">vert</span> quand détecté.', '#374151');
+                startDetectionLoop();
+            };
+        } catch (e) {
+            setStatus("Erreur : " + e.message, '#b91c1c');
+        }
+    }
+
+    function startDetectionLoop() {
+        detectionInterval = setInterval(async () => {
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks();
+
+            const ctx = overlay.getContext('2d');
+            ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+            if (detection) {
+                const dims = { width: video.videoWidth, height: video.videoHeight };
+                const resized = faceapi.resizeResults(detection, dims);
+                // Draw green box
+                const box = resized.detection.box;
+                ctx.strokeStyle = '#22c55e';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                captureBtn.disabled = false;
+                captureBtn.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)';
+                if (!isCapturing) {
+                    setStatus('Visage détecté ! Cliquez <strong>« Capturer mon visage »</strong> pour enregistrer.', '#16a34a');
+                    setStep(3);
+                }
+            } else {
+                captureBtn.disabled = true;
+                captureBtn.style.background = '';
+                if (!isCapturing) {
+                    setStatus('Recherche de visage... Centrez-vous devant la caméra.', '#92400e');
+                    setStep(2);
+                }
+            }
+        }, 400);
+    }
+
+    captureBtn.addEventListener('click', async () => {
+        if (isCapturing) return;
+        isCapturing = true;
+        captureBtn.disabled = true;
+        setStatus('Extraction de l\'empreinte faciale (128D)...', '#6366f1');
+        setStep(4);
+
+        // Stop detection loop during capture for better performance
+        if (detectionInterval) clearInterval(detectionInterval);
+
+        try {
+            // Full detection with descriptor
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                setStatus('Visage perdu pendant la capture. Réessayez.', '#b91c1c');
+                isCapturing = false;
+                captureBtn.disabled = false;
+                startDetectionLoop();
+                return;
+            }
+
+            const descriptor = Array.from(detection.descriptor);
+            setStatus('Empreinte extraite (' + descriptor.length + 'D). Envoi au serveur...', '#92400e');
+
+            // Send to server
+            const resp = await fetch('{{ path("api_face_enroll") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descriptor: descriptor })
+            });
+            const data = await resp.json();
+
+            if (resp.ok && !data.error) {
+                setStatus('✅ Enrôlement réussi ! Empreinte faciale ' + descriptor.length + 'D enregistrée.', '#065f46');
+                resultBox.style.display = 'block';
+                // Stop camera
+                if (stream) stream.getTracks().forEach(t => t.stop());
+            } else {
+                setStatus('Erreur serveur : ' + (data.error || 'Inconnu'), '#b91c1c');
+                isCapturing = false;
+                captureBtn.disabled = false;
+                startDetectionLoop();
+            }
+        } catch (e) {
+            setStatus('Erreur réseau : ' + e.message, '#b91c1c');
+            isCapturing = false;
+            captureBtn.disabled = false;
+            startDetectionLoop();
+        }
+    });
+
+    // Start immediately
+    init();
+})();
+</script>
+{% endblock %}

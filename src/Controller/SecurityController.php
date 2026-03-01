@@ -12,6 +12,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use App\Service\MailerService;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class SecurityController extends AbstractController
 {
@@ -49,7 +50,8 @@ class SecurityController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        MailerService $mailerService
+        MailerService $mailerService,
+        Security $security
     ): Response {
         // If user is already logged in, redirect
         if ($this->getUser()) {
@@ -78,9 +80,12 @@ class SecurityController extends AbstractController
                 // Mail sending failure should not block registration
             }
 
-            $this->addFlash('success', 'Votre compte a été créé. Vous pouvez maintenant vous connecter.');
+            // Auto-login after registration
+            $security->login($user, 'form_login', 'main');
 
-            return $this->redirectToRoute('app_login');
+            $this->addFlash('success', 'Bienvenue sur StudySprint ! Votre compte a été créé.');
+
+            return $this->redirectToRoute('app_dashboard');
         }
 
         return $this->render('security/register.html.twig', [

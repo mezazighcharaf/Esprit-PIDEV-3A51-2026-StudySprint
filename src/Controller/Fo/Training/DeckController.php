@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\AiGatewayService;
+use App\Service\PdfExportService;
 
 #[Route('/fo/training/decks', name: 'fo_training_decks_')]
 class DeckController extends AbstractController
@@ -30,7 +31,9 @@ class DeckController extends AbstractController
         $sort = $request->query->get('sort', 'newest');
 
         $queryBuilder = $repository->searchPublishedQuery($q, $subjectId, $sort);
-        $pagination = $paginator->paginate($queryBuilder, $request->query->getInt('page', 1), 9);
+        $pagination = $paginator->paginate($queryBuilder, $request->query->getInt('page', 1), 9, [
+            'sort_field_allow_list' => [],
+        ]);
         $subjects = $subjectRepo->findAll();
 
         return $this->render('fo/training/decks/index.html.twig', [
@@ -326,5 +329,22 @@ class DeckController extends AbstractController
         }
 
         return $this->redirectToRoute('fo_training_decks_ai_generate_form');
+    }
+
+    #[Route('/{id}/export-pdf', name: 'export_pdf', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function exportPdf(int $id, FlashcardDeckRepository $deckRepo, PdfExportService $pdfService): Response
+    {
+        $deck = $deckRepo->find($id);
+
+        if (!$deck || !$deck->isPublished()) {
+            throw $this->createNotFoundException('Deck introuvable ou non publié');
+        }
+
+        $cards = $deck->getFlashcards()->count() > 0 ? $deck->getFlashcards()->toArray() : $deck->getCards()->toArray();
+
+        return $pdfService->generateFromTemplate('pdf/flashcard_deck.html.twig', [
+            'deck' => $deck,
+            'cards' => $cards,
+        ], 'flashcards-' . $deck->getId() . '.pdf');
     }
 }

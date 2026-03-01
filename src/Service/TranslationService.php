@@ -62,4 +62,19 @@ class TranslationService
             return null;
         }
     }
+
+    public function getSupportedLanguages(): array
+    {
+        return [
+            'fr' => 'Français',
+            'en' => 'English',
+            'es' => 'Español',
+            'de' => 'Deutsch',
+            'ar' => 'العربية',
+            'it' => 'Italiano',
+            'pt' => 'Português',
+            'tr' => 'Türkçe',
+            'zh' => '中文',
+        ];
+    }
 }

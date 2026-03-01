@@ -1,0 +1,226 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% set user = data.user %}
+
+{% block title %}Planning - StudySprint{% endblock %}
+{% block page_title %}Planning{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary" data-drawer-open="add-session-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Ajouter une session
+</button>
+{% endblock %}
+
+{% block content %}
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="grid" style="grid-template-columns: 2fr 1fr; gap: var(--space-6);">
+        <div class="card">
+            <div class="card-header">
+                <div class="skeleton" style="height: 20px; width: 150px;"></div>
+            </div>
+            <div class="card-body">
+                <div class="skeleton" style="height: 300px;"></div>
+            </div>
+        </div>
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="skeleton" style="height: 16px; width: 120px;"></div>
+                </div>
+                <div class="card-body">
+                    {{ include('components/_skeleton.html.twig', { type: 'row', count: 3 }) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    {{ include('components/_empty_state.html.twig', {
+        icon: 'calendar',
+        title: 'Aucune session planifiee',
+        description: 'Planifiez vos sessions d\'etude pour mieux organiser votre travail et atteindre vos objectifs.',
+        cta_text: 'Planifier une session',
+        cta_url: '#'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+
+    {# Stats rapides #}
+    <div class="flex gap-6 mb-6">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold" style="color: var(--color-primary);">{{ data.stats.sessions_this_week }}</span>
+            <span class="text-sm text-muted">sessions cette semaine</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold" style="color: var(--color-secondary);">{{ data.stats.total_hours }}</span>
+            <span class="text-sm text-muted">de travail planifie</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-2xl font-bold" style="color: var(--color-success);">{{ data.stats.completion_rate }}%</span>
+            <span class="text-sm text-muted">taux de completion</span>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 2fr 1fr; gap: var(--space-6);">
+        {# Calendrier #}
+        <div class="fo-calendar">
+            <div class="fo-calendar-header">
+                <div class="fo-calendar-nav">
+                    <button class="btn btn-ghost btn-icon btn-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                </div>
+                <h3 class="fo-calendar-title">{{ data.current_month }}</h3>
+                <div class="fo-calendar-nav">
+                    <button class="btn btn-ghost btn-icon btn-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="fo-calendar-grid">
+                {% for day_name in ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'] %}
+                <div class="fo-calendar-day-header">{{ day_name }}</div>
+                {% endfor %}
+
+                {% for day in data.calendar_days %}
+                <div class="fo-calendar-day {{ not day.current_month ? 'other-month' : '' }} {{ day.today ? 'today' : '' }} {{ day.has_event ? 'has-event' : '' }}">
+                    {{ day.day }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Sessions a venir #}
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sessions a venir</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    {% for session in data.sessions %}
+                    <div style="padding: var(--space-4); border-bottom: 1px solid var(--border-color);">
+                        <div class="flex items-start justify-between mb-2">
+                            <div>
+                                <div class="font-medium">{{ session.title }}</div>
+                                <div class="text-sm text-muted">{{ session.subject }} - {{ session.chapter }}</div>
+                            </div>
+                            <span class="badge badge-{{ session.type == 'quiz' ? 'secondary' : (session.type == 'group' ? 'warning' : 'primary') }}">
+                                {{ session.type == 'quiz' ? 'Quiz' : (session.type == 'group' ? 'Groupe' : 'Revision') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm text-muted">
+                            <span class="flex items-center gap-1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                                {{ session.date }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                {{ session.time }} ({{ session.duration }})
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-ghost btn-sm" style="width: 100%;">Voir toutes les sessions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Ajouter une session #}
+<div class="drawer" id="add-session-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Planifier une session</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="form-group">
+            <label class="form-label required">Titre</label>
+            <input type="text" class="form-input" placeholder="Ex: Revision Mathematiques">
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Type de session</label>
+            <select class="form-select">
+                <option value="revision">Revision</option>
+                <option value="quiz">Quiz / Evaluation</option>
+                <option value="group">Session de groupe</option>
+                <option value="flashcards">Flashcards</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label required">Matiere</label>
+            <select class="form-select">
+                <option value="">Selectionner</option>
+                <option value="math">Mathematiques</option>
+                <option value="physics">Physique</option>
+                <option value="chemistry">Chimie</option>
+                <option value="english">Anglais</option>
+            </select>
+        </div>
+        <div class="grid grid-2 gap-4">
+            <div class="form-group">
+                <label class="form-label required">Date</label>
+                <input type="date" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label required">Heure</label>
+                <input type="time" class="form-input">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Duree</label>
+            <select class="form-select">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>1 heure</option>
+                <option value="90">1h30</option>
+                <option value="120">2 heures</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-check">
+                <input type="checkbox">
+                <span class="form-check-label">Repeter chaque semaine</span>
+            </label>
+        </div>
+        <div class="form-group">
+            <label class="form-check">
+                <input type="checkbox" checked>
+                <span class="form-check-label">Recevoir un rappel 15 min avant</span>
+            </label>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Annuler</button>
+        <button class="btn btn-primary">Planifier</button>
+    </div>
+</div>
+{% endblock %}

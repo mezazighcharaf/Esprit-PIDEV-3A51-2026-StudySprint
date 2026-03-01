@@ -85,6 +85,62 @@
     </div>
 </div>
 
+{# ── Centre de Sécurité ── #}
+<div style="margin-top: 2rem;">
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg style="width: 20px; height: 20px; color: #6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        Centre de Sécurité
+    </h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        {# Password Card #}
+        <div class="card" style="border: 1px solid #e5e7eb;">
+            <div class="card-body" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #1f2937; font-size: 0.95rem;">Mot de passe</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">Sécurisez votre compte</div>
+                </div>
+                <a href="{{ path('app_forgot_password') }}" class="btn btn-secondary btn-sm">Changer</a>
+            </div>
+        </div>
+
+        {# Face ID Card #}
+        <div class="card" style="border: 1px solid #e5e7eb;">
+            <div class="card-body" style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0H5a2 2 0 01-2-2v-4m6 6h10a2 2 0 002-2v-4"/>
+                        <circle cx="12" cy="11" r="3"/>
+                    </svg>
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #1f2937; font-size: 0.95rem;">Face ID (Biométrie)</div>
+                    {% if app.user.faceDescriptor %}
+                        <div style="font-size: 0.8rem; color: #16a34a; display: flex; align-items: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; display: inline-block;"></span>
+                            Configuré
+                        </div>
+                    {% else %}
+                        <div style="font-size: 0.8rem; color: #9ca3af; display: flex; align-items: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #9ca3af; display: inline-block;"></span>
+                            Non configuré
+                        </div>
+                    {% endif %}
+                </div>
+                <a href="{{ path('face_enroll_page') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none;">
+                    {{ app.user.faceDescriptor ? 'Reconfigurer' : 'Configurer' }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 (function () {
     var input    = document.getElementById('avatar-input');

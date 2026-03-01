@@ -1,0 +1,740 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Analytics - StudySprint BO{% endblock %}
+{% block breadcrumb %}Analytics{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-secondary btn-sm" data-drawer-open="analytics-drawer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    Detail analytique
+</button>
+<button class="btn btn-secondary btn-sm">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Exporter
+</button>
+{% endblock %}
+
+{% block content %}
+{% if state == 'loading' %}
+    {# ─── LOADING STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Analytics</h1>
+    </div>
+
+    <div class="filterbar mb-4">
+        <div class="skeleton" style="height: 32px; width: 120px;"></div>
+        <div class="skeleton" style="height: 32px; width: 120px;"></div>
+        <div class="skeleton" style="height: 32px; width: 120px;"></div>
+    </div>
+
+    <div class="bo-kpi-row">
+        {% for i in 1..5 %}
+        <div class="bo-kpi-card">
+            <div class="skeleton" style="height: 14px; width: 80px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="height: 28px; width: 60px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="height: 12px; width: 100px;"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="bo-analytics-grid">
+        <div class="bo-analytics-main">
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <div class="skeleton" style="height: 16px; width: 150px;"></div>
+                </div>
+                <div class="bo-chart-body">
+                    <div class="skeleton" style="height: 200px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bo-analytics-side">
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <div class="skeleton" style="height: 16px; width: 100px;"></div>
+                </div>
+                <div class="bo-chart-body">
+                    {{ include('components/_skeleton.html.twig', { type: 'row', count: 5 }) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% elseif state == 'empty' %}
+    {# ─── EMPTY STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Analytics</h1>
+    </div>
+    {{ include('components/_empty_state.html.twig', {
+        title: 'Aucune donnee disponible',
+        description: 'Les donnees analytiques seront disponibles une fois que des utilisateurs auront commence a utiliser la plateforme.',
+        variant: 'bo'
+    }) }}
+
+{% else %}
+    {# ─── DEFAULT STATE ─── #}
+    <div class="bo-page-header">
+        <h1 class="bo-page-title">Analytics</h1>
+    </div>
+
+    {# Filterbar #}
+    {{ include('components/_filterbar.html.twig', {
+        filters: data.filters,
+        show_clear: true
+    }) }}
+
+    {# KPIs Row #}
+    <div class="bo-kpi-row">
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Utilisateurs (Hors Admin)</span>
+            </div>
+            <div class="bo-kpi-value">{{ stats.user_kpis.total_non_admins }}</div>
+            <div class="bo-kpi-subtitle">Total communautaire</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Etudiants</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-primary);">{{ stats.user_kpis.students }}</div>
+            <div class="bo-kpi-subtitle">Apprenants inscrits</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Professeurs</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-secondary);">{{ stats.user_kpis.professors }}</div>
+            <div class="bo-kpi-subtitle">Enseignants actifs</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Actifs / Inactifs</span>
+            </div>
+            <div class="bo-kpi-value">
+                <span style="color: var(--color-success);">{{ stats.user_kpis.active }}</span>
+                <span style="color: var(--color-gray-300);">/</span>
+                <span style="color: var(--color-error);">{{ stats.user_kpis.inactive }}</span>
+            </div>
+            <div class="bo-kpi-subtitle">Statut des comptes</div>
+        </div>
+    </div>
+
+    {# Main Analytics Grid #}
+    <div class="bo-analytics-grid">
+        <div class="bo-analytics-main">
+            {# Registration Trend Chart (LINE) #}
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Inscriptions par annee</h3>
+                </div>
+                <div class="bo-chart-body" style="height: 300px;">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                {# Age Distribution Chart (COLUMN/BAR) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Repartition par age (Etudiants)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="ageChart"></canvas>
+                    </div>
+                </div>
+
+                {# Country Distribution Chart (PIE) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Repartition par pays</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="countryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Professor Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Professeurs (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="profHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Student Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Étudiants (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="studentHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Professor Experience Chart (BAR) #}
+            <div class="bo-chart-card" style="margin-top: 1.5rem;">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Expérience des Professeurs</h3>
+                </div>
+                <div class="bo-chart-body" style="height: 250px;">
+                    <canvas id="profExpChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bo-analytics-side">
+            {# Insights #}
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Insights contenu</h3>
+                </div>
+                <div class="bo-chart-body">
+                    <div class="bo-insights-list">
+                        {% for insight in data.insights %}
+                        <div class="bo-insight-item {{ insight.type }}">
+                            <div class="bo-insight-icon">
+                                {% if insight.type == 'success' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                                {% elseif insight.type == 'warning' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                {% elseif insight.type == 'error' %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="15" y1="9" x2="9" y2="15"/>
+                                    <line x1="9" y1="9" x2="15" y2="15"/>
+                                </svg>
+                                {% else %}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            <div class="bo-insight-content">
+                                <div class="bo-insight-text">{{ insight.text|raw }}</div>
+                                {% if insight.action is defined and insight.action %}
+                                <div class="bo-insight-action">{{ insight.action }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {# Top Subjects #}
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Top matieres</h3>
+                </div>
+                <div class="bo-chart-body">
+                    <div class="bo-top-list">
+                        {% for subject in data.top_subjects %}
+                        <div class="bo-top-item">
+                            <div class="bo-top-rank">{{ loop.index }}</div>
+                            <div class="bo-top-info">
+                                <div class="bo-top-name">{{ subject.name }}</div>
+                                <div class="bo-top-bar">
+                                    <div class="bo-top-bar-fill" style="width: {{ subject.percentage }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="bo-top-value">{{ subject.value }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {# Anomalies #}
+            <div class="bo-anomalies-card">
+                <div class="bo-anomalies-header">
+                    <h3 class="bo-anomalies-title">A surveiller</h3>
+                    <span class="bo-anomalies-count">{{ data.anomalies|length }}</span>
+                </div>
+                <table class="bo-table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Anomalie</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for anomaly in data.anomalies %}
+                        <tr>
+                            <td>
+                                <div class="cell-user">
+                                    <div class="cell-user-avatar">{{ anomaly.user|slice(0,1) }}{{ anomaly.user|split(' ')|last|slice(0,1) }}</div>
+                                    <div class="cell-user-info">
+                                        <div class="cell-user-name">{{ anomaly.user }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-xs">
+                                    <div class="font-medium" style="color: var(--color-{{ anomaly.severity == 'error' ? 'error' : 'warning' }});">{{ anomaly.type }}</div>
+                                    <div class="text-muted">{{ anomaly.details }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-ghost btn-sm">Voir</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colors from tokens
+    const primaryColor = '#5AAEEF';
+    const orangeColor = '#FDB499';
+    const successColor = '#2DCA73';
+    const warningColor = '#FFB800';
+    const grayColor = '#94a3b8';
+
+    // Helper to wrap long labels into arrays for multiline display
+    const wrapLabel = (label, maxLength = 12) => {
+        if (!label) return label;
+        if (label.length <= maxLength) return label;
+        const words = label.split(' ');
+        const lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxLength) {
+                if (currentLine) lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + ' ';
+            }
+        });
+        if (currentLine) lines.push(currentLine.trim());
+        return lines;
+    };
+
+    // 1. Registration Line Chart
+    const regCtx = document.getElementById('registrationChart');
+    if (regCtx) {
+        const regData = {{ stats.registrations|json_encode|raw }};
+        new Chart(regCtx, {
+            type: 'line',
+            data: {
+                labels: regData.map(d => d.year),
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: regData.map(d => d.count),
+                    borderColor: primaryColor,
+                    backgroundColor: primaryColor + '20',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'white',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 2. Age Distribution Column Chart
+    const ageCtx = document.getElementById('ageChart');
+    if (ageCtx) {
+        const ageData = {{ stats.age_distribution|json_encode|raw }};
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ageData.labels,
+                datasets: ageData.datasets.map((ds, index) => ({
+                    label: ds.label,
+                    data: ds.data,
+                    backgroundColor: index === 0 ? primaryColor : orangeColor,
+                    borderRadius: 4
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 10 } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Country Pie Chart
+    const countryCtx = document.getElementById('countryChart');
+    if (countryCtx) {
+        const countryData = {{ stats.countries|json_encode|raw }};
+        new Chart(countryCtx, {
+            type: 'pie',
+            data: {
+                labels: countryData.map(d => d.label),
+                datasets: [{
+                    data: countryData.map(d => d.value),
+                    backgroundColor: [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899'],
+                    borderWidth: 2,
+                    borderColor: 'white'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Professor Experience Chart
+    const expCtx = document.getElementById('profExpChart');
+    if (expCtx) {
+        const expData = {{ stats.professor_experience|json_encode|raw }};
+        new Chart(expCtx, {
+            type: 'bar',
+            data: {
+                labels: expData.map(d => d.label),
+                datasets: [{
+                    label: 'Professeurs',
+                    data: expData.map(d => d.value),
+                    backgroundColor: '#8B5CF6',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Professor Hierarchy Chart
+    const profHierCtx = document.getElementById('profHierarchyChart');
+    if (profHierCtx) {
+        const rawData = {{ stats.professor_hierarchy|json_encode|raw }};
+        
+        // Group data by country for multi-dataset approach (for legend)
+        const countries = [...new Set(rawData.map(d => d.pays))];
+        const establishments = rawData.map(d => wrapLabel(d.etablissement, 15));
+        
+        const palette = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasets = countries.map((country, index) => {
+            return {
+                label: country, // Country Code (TN, FR, etc.)
+                data: rawData.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: palette[index % palette.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(profHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishments, // Only establishments on X axis
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawData[index].pays + ' - ' + rawData[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Student Hierarchy Chart
+    const studHierCtx = document.getElementById('studentHierarchyChart');
+    if (studHierCtx) {
+        const rawDataStud = {{ stats.student_hierarchy|json_encode|raw }};
+        
+        const countriesStud = [...new Set(rawDataStud.map(d => d.pays))];
+        const establishmentsStud = rawDataStud.map(d => wrapLabel(d.etablissement, 15));
+        
+        const paletteStud = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasetsStud = countriesStud.map((country, index) => {
+            return {
+                label: country,
+                data: rawDataStud.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: paletteStud[index % paletteStud.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(studHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishmentsStud,
+                datasets: datasetsStud
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawDataStud[index].pays + ' - ' + rawDataStud[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block drawers %}
+{# Drawer: Detail analytique #}
+<div class="drawer" id="analytics-drawer">
+    <div class="drawer-header">
+        <h2 class="drawer-title">Detail analytique</h2>
+        <button class="drawer-close" data-drawer-close aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="bo-drawer-section">
+            <h4 class="bo-drawer-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                Metriques cles
+            </h4>
+            <div class="bo-drawer-stat-grid">
+                <div class="bo-drawer-stat">
+                    <div class="bo-drawer-stat-label">Sessions totales</div>
+                    <div class="bo-drawer-stat-value">1,247</div>
+                </div>
+                <div class="bo-drawer-stat">
+                    <div class="bo-drawer-stat-label">Temps moyen</div>
+                    <div class="bo-drawer-stat-value">42 min</div>
+                </div>
+                <div class="bo-drawer-stat">
+                    <div class="bo-drawer-stat-label">Taux completion</div>
+                    <div class="bo-drawer-stat-value">68%</div>
+                </div>
+                <div class="bo-drawer-stat">
+                    <div class="bo-drawer-stat-label">Score moyen quiz</div>
+                    <div class="bo-drawer-stat-value">74%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bo-drawer-section">
+            <h4 class="bo-drawer-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                </svg>
+                Segments utilisateurs
+            </h4>
+            <div class="mb-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Tres actifs (>5 sessions/sem)</span>
+                    <span class="font-medium">32%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar success" style="width: 32%;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Actifs reguliers (2-5 sessions/sem)</span>
+                    <span class="font-medium">45%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 45%;"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Occasionnels (<2 sessions/sem)</span>
+                    <span class="font-medium">18%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar warning" style="width: 18%;"></div>
+                </div>
+            </div>
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Inactifs (0 session)</span>
+                    <span class="font-medium">5%</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar error" style="width: 5%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bo-drawer-section">
+            <h4 class="bo-drawer-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Actions rapides
+            </h4>
+            <div class="flex flex-col gap-2">
+                <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Exporter en CSV
+                </button>
+                <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    Generer rapport PDF
+                </button>
+                <button class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Envoyer par email
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="drawer-footer">
+        <button class="btn btn-secondary" data-drawer-close>Fermer</button>
+        <button class="btn btn-primary">Exporter</button>
+    </div>
+</div>
+{% endblock %}

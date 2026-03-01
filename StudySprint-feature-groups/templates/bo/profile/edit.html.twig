@@ -1,0 +1,309 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Modifier Profil Administrateur - StudySprint{% endblock %}
+{% block breadcrumb %}Modifier Profil{% endblock %}
+
+{% block content %}
+<div class="admin-profile-v4-container animate__animated animate__fadeIn">
+    {# ─── CINEMATIC HERO SECTION ─── #}
+    <div class="admin-v4-hero">
+        <div class="admin-mesh-v4"></div>
+        <div class="hero-inner-v4 d-flex flex-column gap-5">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-4">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="admin-avatar-premium">
+                        <div class="avatar-halo-v4"></div>
+                        <div class="avatar-box-v4">
+                            {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                        </div>
+                        <div class="admin-badge-v4"><i class="fas fa-shield-check"></i></div>
+                    </div>
+                    <div>
+                        <h1 class="admin-v4-title mb-1">Configuration Administrative</h1>
+                        <p class="admin-v4-subtitle mb-0">Paramétrez votre identité système et vos accès de haute sécurité.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ path('app_profile') }}" class="btn-v4-glass" style="margin-top: 4rem !important; display: inline-block;">
+                    <i class="fas fa-chevron-left me-2"></i> Retour au Tableau de Bord
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ─── CRYSTAL GLASS CARD ─── #}
+    <div class="crystal-card-v4 mt-n5">
+        {{ form_start(form, {'attr': {'class': 'admin-form-v4', 'novalidate': 'novalidate'}}) }}
+            
+            {% if not form.vars.valid %}
+                <div class="admin-v4-alert animate__animated animate__shakeX mb-5">
+                    <div class="alert-icon-v4"><i class="fas fa-bolt"></i></div>
+                    <div class="alert-text-v4">
+                        <strong>Action Requise</strong>
+                        <p>Certaines données administratives sont invalides. Merci de les corriger.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="form-sections-v4">
+                {# SECTION 1: SYSTEM IDENTITY #}
+                <div class="v4-section-card">
+                    <div class="v4-card-header d-flex align-items-center gap-3 mb-5">
+                        <div class="v4-icon-badge identity-gradient"><i class="fas fa-user-gear"></i></div>
+                        <div>
+                            <h3 class="m-0 fw-bold">Identité & Système</h3>
+                            <p class="text-muted small m-0">Informations critiques du compte administrateur.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="v4-input-group">
+                                {{ form_label(form.prenom, 'Prénom Système') }}
+                                <div class="v4-input-container">
+                                    <i class="far fa-user"></i>
+                                    {{ form_widget(form.prenom, {'attr': {'class': 'v4-field'}}) }}
+                                </div>
+                                {{ form_errors(form.prenom) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="v4-input-group">
+                                {{ form_label(form.nom, 'Nom de Famille') }}
+                                <div class="v4-input-container">
+                                    <i class="far fa-user"></i>
+                                    {{ form_widget(form.nom, {'attr': {'class': 'v4-field'}}) }}
+                                </div>
+                                {{ form_errors(form.nom) }}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="v4-input-group">
+                                {{ form_label(form.email, 'Email Professionnel Autorisé') }}
+                                <div class="v4-input-container">
+                                    <i class="far fa-envelope-open"></i>
+                                    {{ form_widget(form.email, {'attr': {'class': 'v4-field'}}) }}
+                                </div>
+                                {{ form_errors(form.email) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# SECTION 2: REGIONAL CONFIG #}
+                <div class="v4-section-card mt-5">
+                    <div class="v4-card-header d-flex align-items-center gap-3 mb-5">
+                        <div class="v4-icon-badge regional-gradient"><i class="fas fa-globe-africa"></i></div>
+                        <div>
+                            <h3 class="m-0 fw-bold">Paramètres Régionaux</h3>
+                            <p class="text-muted small m-0">Localisation et coordonnées de contact.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="v4-input-group">
+                                {{ form_label(form.telephone, 'Ligne Directe') }}
+                                <div class="v4-input-container">
+                                    <i class="fas fa-headset"></i>
+                                    {{ form_widget(form.telephone, {'attr': {'class': 'v4-field'}}) }}
+                                </div>
+                                {{ form_errors(form.telephone) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="v4-input-group">
+                                {{ form_label(form.pays, 'Pays d\'Opération') }}
+                                <div class="v4-input-container">
+                                    <i class="fas fa-map-pin"></i>
+                                    {{ form_widget(form.pays, {'attr': {'class': 'v4-field v4-select'}}) }}
+                                </div>
+                                {{ form_errors(form.pays) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# FOOTER ACTIONS #}
+                <div class="v4-form-footer mt-5 pt-5 border-top">
+                    <button type="submit" class="btn-save-high-tech">
+                        <span class="btn-glow"></span>
+                        <span class="btn-content">
+                            <i class="fas fa-fingerprint me-2"></i> Valider les modifications système
+                        </span>
+                    </button>
+                    <div style="display: none;">{{ form_rest(form) }}</div>
+                </div>
+            </div>
+        {{ form_end(form, {'render_rest': false}) }}
+    </div>
+</div>
+
+<style>
+    :root {
+        --admin-midnight: #0f172a;
+        --admin-indigo: #4338ca;
+        --admin-primary: #6366f1;
+        --admin-border: rgba(226, 232, 240, 0.4);
+        --admin-glass: rgba(255, 255, 255, 0.9);
+        --font-main: 'Inter', sans-serif;
+        --font-head: 'Outfit', sans-serif;
+    }
+
+    .admin-profile-v4-container {
+        padding: 2rem;
+        font-family: var(--font-main);
+    }
+
+    /* ─── HERO REBORN ─── */
+    .admin-v4-hero {
+        position: relative;
+        padding: 5rem 4rem 10rem;
+        background: var(--admin-midnight);
+        border-radius: 40px;
+        overflow: hidden;
+        color: white;
+    }
+
+    .admin-mesh-v4 {
+        position: absolute;
+        inset: 0;
+        background: 
+            radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.2) 0, transparent 40%),
+            radial-gradient(at 90% 10%, rgba(67, 56, 202, 0.2) 0, transparent 40%),
+            radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0, transparent 80%);
+        z-index: 1;
+    }
+
+    .hero-inner-v4 { position: relative; z-index: 2; }
+
+    .admin-v4-title { font-family: var(--font-head); font-weight: 800; font-size: 2.5rem; letter-spacing: -0.02em; }
+    .admin-v4-subtitle { font-size: 1.15rem; color: rgba(255,255,255,0.7); font-weight: 400; max-width: 600px; }
+
+    .btn-v4-glass {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white; padding: 1rem 2rem;
+        border-radius: 20px; text-decoration: none;
+        font-weight: 700; transition: all 0.3s;
+        margin-top: 1rem;
+    }
+    .btn-v4-glass:hover {
+        background: white; color: var(--admin-midnight);
+        transform: translateY(-3px);
+    }
+
+    /* ─── AVATAR PREMIUM ─── */
+    .admin-avatar-premium {
+        position: relative;
+        width: 100px; height: 100px;
+    }
+
+    .avatar-halo-v4 {
+        position: absolute; inset: -10px;
+        border: 2px dashed rgba(99, 102, 241, 0.4);
+        border-radius: 35px;
+        animation: rotate-v4 10s linear infinite;
+    }
+
+    @keyframes rotate-v4 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .avatar-box-v4 {
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, var(--admin-indigo), var(--admin-primary));
+        border-radius: 30px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2.5rem; font-weight: 900; color: white;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        font-family: var(--font-head);
+    }
+
+    .admin-badge-v4 {
+        position: absolute; bottom: -5px; right: -5px;
+        width: 35px; height: 35px;
+        background: #10b981; color: white;
+        border-radius: 12px; border: 4px solid var(--admin-midnight);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+    }
+
+    /* ─── CRYSTAL CARD ─── */
+    .crystal-card-v4 {
+        background: var(--admin-glass);
+        backdrop-filter: blur(30px);
+        border: 1px solid white;
+        border-radius: 45px;
+        padding: 5rem;
+        box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.15);
+        position: relative;
+        z-index: 5;
+    }
+
+    .mt-n5 { margin-top: -4rem !important; }
+
+    .v4-section-card {
+        background: rgba(255,255,255,0.5);
+        border-radius: 30px;
+        padding: 4rem;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        transition: all 0.4s ease;
+    }
+    .v4-section-card:hover { transform: translateY(-5px); border-color: var(--admin-primary); background: white; }
+
+    .v4-icon-badge {
+        width: 60px; height: 60px;
+        border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; color: white;
+    }
+    .identity-gradient { background: linear-gradient(135deg, #6366f1, #4338ca); }
+    .regional-gradient { background: linear-gradient(135deg, #10b981, #059669); }
+
+    /* ─── INPUTS V4 ─── */
+    .v4-input-group label {
+        font-family: var(--font-head); font-weight: 800; font-size: 0.8rem;
+        text-transform: uppercase; color: #64748b; margin-bottom: 12px;
+        display: block; letter-spacing: 0.05em;
+    }
+
+    .v4-input-container { position: relative; }
+    .v4-input-container i {
+        position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%);
+        color: #94a3b8; font-size: 1.2rem; transition: color 0.3s;
+    }
+
+    .v4-field {
+        width: 100%; border: 2px solid #f1f5f9; background: #ffffff;
+        padding: 1.25rem 1.5rem 1.25rem 4rem; border-radius: 18px;
+        font-weight: 600; color: var(--admin-midnight); font-size: 1.1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .v4-field:focus {
+        border-color: var(--admin-primary); background: white;
+        box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+    .v4-input-container:focus-within i { color: var(--admin-primary); }
+
+    /* ─── SAVE BUTTON HIGH TECH ─── */
+    .btn-save-high-tech {
+        width: 100%; padding: 1.8rem; border-radius: 25px; border: none;
+        background: var(--admin-midnight); color: white;
+        font-family: var(--font-head); font-weight: 850; font-size: 1.25rem;
+        position: relative; overflow: hidden; transition: all 0.4s;
+        cursor: pointer;
+    }
+    .btn-save-high-tech:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3); }
+
+    /* ─── ALERTS ─── */
+    .admin-v4-alert {
+        background: #fff1f2; border: 1px solid #fecdd3;
+        padding: 2rem; border-radius: 25px; display: flex; gap: 1.5rem; align-items: center;
+    }
+    .alert-icon-v4 { width: 50px; height: 50px; background: #ef4444; color: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .alert-text-v4 strong { display: block; color: #9f1239; font-size: 1.2rem; }
+    .alert-text-v4 p { margin: 0; color: #be123c; opacity: 0.8; }
+</style>
+{% endblock %}

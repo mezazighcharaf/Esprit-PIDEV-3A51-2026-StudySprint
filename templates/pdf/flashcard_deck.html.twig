@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Helvetica, Arial, sans-serif; color: #1e293b; font-size: 13px; }
+        .header { background: #667eea; color: white; padding: 24px 32px; margin-bottom: 24px; }
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .header .meta { font-size: 12px; opacity: 0.85; }
+        .info-bar { display: flex; padding: 0 32px; margin-bottom: 20px; font-size: 12px; color: #6b7280; }
+        .info-bar span { margin-right: 24px; }
+        .card-table { width: 100%; border-collapse: collapse; margin: 0 32px; }
+        .card-table { width: calc(100% - 64px); margin: 0 32px; }
+        .card-table th { background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        .card-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 12px; line-height: 1.5; }
+        .card-table tr:nth-child(even) td { background: #fafbfc; }
+        .card-num { color: #667eea; font-weight: 700; text-align: center; width: 40px; }
+        .hint { color: #9ca3af; font-style: italic; font-size: 11px; margin-top: 4px; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 10px; color: #9ca3af; padding: 12px; border-top: 1px solid #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ deck.title }}</h1>
+        <div class="meta">
+            {{ deck.subject ? deck.subject.name : '' }}
+            {% if deck.chapter %} — {{ deck.chapter.title }}{% endif %}
+            &nbsp;&bull;&nbsp; {{ cards|length }} carte{{ cards|length > 1 ? 's' : '' }}
+        </div>
+    </div>
+
+    <table class="card-table">
+        <thead>
+            <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 45%;">Recto (Question)</th>
+                <th style="width: 45%;">Verso (Réponse)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for card in cards %}
+            <tr>
+                <td class="card-num">{{ loop.index }}</td>
+                <td>
+                    {{ card.front }}
+                    {% if card.hint %}
+                    <div class="hint">Indice : {{ card.hint }}</div>
+                    {% endif %}
+                </td>
+                <td>{{ card.back }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">StudySprint — Exporté le {{ "now"|date("d/m/Y à H:i") }}</div>
+</body>
+</html>

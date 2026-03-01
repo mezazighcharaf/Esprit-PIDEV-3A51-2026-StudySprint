@@ -1,0 +1,286 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Profil Administrateur - StudySprint{% endblock %}
+{% block breadcrumb %}Mon Profil{% endblock %}
+
+{% block content %}
+<div class="admin-profile-v4-container animate__animated animate__fadeIn">
+    <div class="row g-4">
+        {# ─── CINEMATIC HERO ─── #}
+        <div class="col-12">
+            <div class="admin-v4-hero-compact">
+                <div class="admin-mesh-v4"></div>
+                <div class="hero-inner-v4 d-flex flex-column gap-5">
+                    <div class="d-flex align-items-center flex-wrap gap-5">
+                        <div class="admin-avatar-premium-huge">
+                            <div class="avatar-halo-v4"></div>
+                            <div class="avatar-box-v4">
+                                {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                            </div>
+                            <div class="admin-badge-v4-huge"><i class="fas fa-crown"></i></div>
+                        </div>
+                        <div class="hero-text-v4">
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <h2 class="m-0 admin-name-v4 text-white subtitle-none">{{ user.prenom }} {{ user.nom }}</h2>
+                                <span class="v4-badge-role">SUPER ADMINISTRATEUR</span>
+                            </div>
+                            <p class="v4-email-sub"><i class="far fa-envelope-open me-2"></i>{{ user.email }}</p>
+                            
+                            <div class="admin-v4-quick-grid">
+                                <div class="v4-q-item">
+                                    <span class="v4-q-label">Identité</span>
+                                    <span class="v4-q-val">Vérifiée</span>
+                                </div>
+                                <div class="v4-q-item">
+                                    <span class="v4-q-label">Dernière Sync</span>
+                                    <span class="v4-q-val">Active</span>
+                                </div>
+                                <div class="v4-q-item">
+                                    <span class="v4-q-label">Niveau Sécu</span>
+                                    <span class="v4-q-val">Niveau 10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ path('app_profile_edit') }}" class="btn-v4-premium-action" style="margin-top: 2rem !important;">
+                            <i class="fas fa-sliders-h me-1"></i> Configurer le Profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ─── DETAILS & PERMISSIONS ─── #}
+        <div class="col-lg-8">
+            <div class="crystal-card-v4-compact">
+                <div class="v4-crystal-header">
+                    <h3 class="m-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-id-card-clip text-primary"></i> Attributs du Compte
+                    </h3>
+                </div>
+                <div class="v4-crystal-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="v4-data-tile">
+                                <label>Prénom</label>
+                                <span>{{ user.prenom }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="v4-data-tile">
+                                <label>Nom</label>
+                                <span>{{ user.nom }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="v4-data-tile">
+                                <label>Ligne Administrative</label>
+                                <span>{{ user.telephone|default('Non renseigné') }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="v4-data-tile">
+                                <label>Zone d'Opération</label>
+                                <span>{{ user.pays|default('Afrique / Tunisie') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crystal-card-v4-compact mt-4">
+                <div class="v4-crystal-header">
+                    <h3 class="m-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-user-shield text-warning"></i> Centre de Sécurité
+                    </h3>
+                </div>
+                <div class="v4-crystal-body">
+                    <div class="v4-security-list">
+                        <div class="v4-sec-card-mini">
+                            <div class="v4-sec-icon-wrap"><i class="fas fa-fingerprint"></i></div>
+                            <div class="v4-sec-text">
+                                <h6>Face ID Biométrie</h6>
+                                <p class="{% if user.faceDescriptor %}text-success{% else %}text-muted{% endif %} opacity-75">
+                                    {% if user.faceDescriptor %}Identification activée{% else %}Non configuré{% endif %}
+                                </p>
+                            </div>
+                            <a href="{{ path('app_profile_face_enroll') }}" class="btn-v4-sec {% if user.faceDescriptor %}v4-success{% else %}v4-primary{% endif %}">
+                                <i class="fas fa-camera"></i>
+                            </a>
+                        </div>
+                        <div class="v4-sec-card-mini mt-3">
+                            <div class="v4-sec-icon-wrap"><i class="fas fa-key"></i></div>
+                            <div class="v4-sec-text">
+                                <h6>Clé d'Accès</h6>
+                                <p class="opacity-75">Rotation recommandée du MDP</p>
+                            </div>
+                            <a href="{{ path('app_profile_request_password_change') }}" class="btn-v4-sec">
+                                <i class="fas fa-sync-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ─── RIGHTS ─── #}
+        <div class="col-lg-4">
+            <div class="crystal-card-v4-compact h-100">
+                <div class="v4-crystal-header">
+                    <h3 class="m-0 d-flex align-items-center gap-2">
+                        <i class="fas fa-lock text-danger"></i> Privilèges Master
+                    </h3>
+                </div>
+                <div class="v4-crystal-body">
+                    <ul class="v4-privilege-list">
+                        <li><i class="fas fa-bolt text-warning"></i> Contrôle Système Total</li>
+                        <li><i class="fas fa-users-cog text-primary"></i> Accès Matrice Utilisateurs</li>
+                        <li><i class="fas fa-chart-line text-success"></i> Analyses Statistiques Avancées</li>
+                        <li><i class="fas fa-server text-info"></i> Gestion des Données Noyau</li>
+                        <li><i class="fas fa-user-secret text-secondary"></i> Protocoles de Haute Sécurité</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --v4-midnight: #0f172a;
+        --v4-primary: #6366f1;
+        --v4-glass: rgba(255, 255, 255, 0.95);
+        --font-head: 'Outfit', sans-serif;
+    }
+
+    .admin-profile-v4-container { padding: 2rem; font-family: 'Inter', sans-serif; }
+
+    /* ─── HERO COMPACT ─── */
+    .admin-v4-hero-compact {
+        position: relative;
+        padding: 4rem;
+        background: var(--v4-midnight);
+        border-radius: 40px;
+        overflow: hidden;
+        color: white;
+    }
+
+    .admin-mesh-v4 {
+        position: absolute; inset: 0;
+        background: 
+            radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.2) 0, transparent 50%),
+            radial-gradient(at 100% 100%, rgba(67, 56, 202, 0.2) 0, transparent 50%);
+        opacity: 0.6;
+    }
+
+    .hero-inner-v4 { position: relative; z-index: 2; }
+
+    .admin-avatar-premium-huge {
+        position: relative;
+        width: 120px; height: 120px;
+    }
+
+    .avatar-halo-v4 {
+        position: absolute; inset: -8px;
+        border: 2px dashed rgba(255,255,255,0.2);
+        border-radius: 40px;
+        animation: rotate-v4 15s linear infinite;
+    }
+
+    @keyframes rotate-v4 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .avatar-box-v4 {
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, #4f46e5, #818cf8);
+        border-radius: 35px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; font-weight: 900; color: white;
+        font-family: var(--font-head);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    .admin-badge-v4-huge {
+        position: absolute; bottom: -5px; right: -5px;
+        width: 40px; height: 40px;
+        background: #fbbf24; color: black;
+        border-radius: 14px; border: 4px solid var(--v4-midnight);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .admin-name-v4 { font-family: var(--font-head); font-weight: 800; font-size: 2.2rem; }
+    .v4-badge-role {
+        padding: 6px 14px; background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 12px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em;
+    }
+    .v4-email-sub { color: rgba(255,255,255,0.6); font-size: 1.1rem; }
+
+    .admin-v4-quick-grid { display: flex; gap: 2.5rem; margin-top: 1.5rem; }
+    .v4-q-item { display: flex; flex-direction: column; }
+    .v4-q-label { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .v4-q-val { font-size: 1.1rem; font-weight: 700; color: white; }
+
+    .btn-v4-premium-action {
+        background: white; color: var(--v4-midnight);
+        padding: 1.25rem 2rem; border-radius: 20px;
+        font-weight: 800; text-decoration: none; display: inline-flex; align-items: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-top: 1rem;
+    }
+    .btn-v4-premium-action:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 20px 40px rgba(255,255,255,0.2); text-decoration: none !important; color: var(--v4-midnight) !important;}
+
+    /* ─── CRYSTAL CARDS ─── */
+    .crystal-card-v4-compact {
+        background: var(--v4-glass);
+        backdrop-filter: blur(20px);
+        border-radius: 35px;
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 40px 80px -20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .v4-crystal-header { padding: 2.5rem 3rem 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .v4-crystal-header h3 { font-family: var(--font-head); font-weight: 800; font-size: 1.4rem; color: var(--v4-midnight); }
+
+    .v4-crystal-body { padding: 3rem; }
+
+    .v4-data-tile {
+        background: #f8fafc; border-radius: 20px; padding: 1.5rem; border: 1px solid #f1f5f9;
+        transition: all 0.3s;
+    }
+    .v4-data-tile:hover { background: white; border-color: var(--v4-primary); transform: translateY(-3px); }
+    .v4-data-tile label { display: block; font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em; }
+    .v4-data-tile span { font-weight: 700; color: var(--v4-midnight); font-size: 1.2rem; }
+
+    .v4-sec-card-mini {
+        display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem;
+        background: white; border-radius: 24px; border: 1px solid #f1f5f9;
+    }
+    .v4-sec-icon-wrap {
+        width: 54px; height: 54px; background: #f1f5f9; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #475569;
+    }
+    .v4-sec-text h6 { margin: 0; font-weight: 800; font-size: 1.1rem; color: var(--v4-midnight); }
+    .v4-sec-text p { margin: 2px 0 0; font-size: 0.9rem; }
+
+    .btn-v4-sec {
+        margin-left: auto; width: 48px; height: 48px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        background: #f1f5f9; color: #475569; transition: all 0.3s; text-decoration: none;
+    }
+    .btn-v4-sec.v4-primary { background: var(--v4-midnight); color: white; }
+    .btn-v4-sec.v4-success { background: #10b981; color: white; }
+    .btn-v4-sec:hover { transform: scale(1.1); }
+
+    .v4-privilege-list { list-style: none; padding: 0; margin: 0; }
+    .v4-privilege-list li {
+        padding: 1.5rem 0; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 1rem;
+        font-weight: 700; color: #475569; font-size: 0.95rem;
+    }
+    .v4-privilege-list li i { font-size: 1.1rem; }
+    .subtitle-none { border: none !important; }
+</style>
+{% endblock %}

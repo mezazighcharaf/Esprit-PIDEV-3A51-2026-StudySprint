@@ -1,0 +1,199 @@
+{% extends 'layouts/auth.html.twig' %}
+
+{% block title %}Connexion - StudySprint{% endblock %}
+
+{% block content %}
+    <h1 class="auth-title">Connexion</h1>
+
+    <form method="post" class="auth-form">
+        {% if error %}
+            <div class="alert alert-danger" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+                
+                {% if 'désactivé' in error.messageKey|trans(error.messageData, 'security') %}
+                    <div style="margin-top: 1rem;">
+                        <button type="button" onclick="document.getElementById('reactivation-form').submit()" class="btn btn-secondary btn-sm" style="background: #991b1b; color: white; border: none;">
+                            Envoyer une demande de réactivation
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="inputEmail">Email</label>
+            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus placeholder="Votre email">
+        </div>
+
+        <div class="form-group">
+            <label for="inputPassword">Mot de passe</label>
+            <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required placeholder="••••••••">
+            <div style="text-align: right; margin-top: 0.5rem;">
+                <a href="{{ path('app_forgot_password') }}" style="color: var(--color-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+                    Mot de passe oublié ?
+                </a>
+            </div>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+                <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+            </button>
+            
+            <button type="button" id="face-login-btn" class="btn btn-secondary" style="width: 100%; justify-content: center; padding: 0.8rem; background: #8b5cf6; border: none; color: white;">
+                <i class="fas fa-face-viewfinder me-2"></i> Connexion Faciale (IA)
+            </button>
+        </div>
+
+        {# Face Login Modal UI #}
+        <div id="face-login-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+            <div class="glass-card-v3" style="max-width: 500px; width: 100%; padding: 2rem; text-align: center;">
+                <h3 class="fw-bold mb-3">Identification Faciale</h3>
+                <p id="face-status" class="text-muted mb-4">Initialisation...</p>
+                
+                <div class="video-container mb-4" style="position: relative; border-radius: 15px; overflow: hidden; background: #000; aspect-ratio: 4/3;">
+                    <video id="face-video" style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);" autoplay muted></video>
+                    <canvas id="face-overlay" style="position: absolute; top:0; left:0; width: 100%; height: 100%; transform: scaleX(-1);"></canvas>
+                </div>
+
+                <button type="button" id="close-face-modal" class="btn btn-light" style="width: 100%;">Annuler</button>
+            </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 1.5rem; color: #64748b; font-size: 0.9rem;">
+            Pas encore de compte ? <a href="{{ path('app_register') }}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">S'inscrire</a>
+        </p>
+    </form>
+
+    <form id="reactivation-form" action="{{ path('app_reactivation_request') }}" method="post" style="display: none;">
+        <input type="hidden" name="email" value="{{ last_username }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('reactivation') }}">
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+    const faceLoginBtn = document.getElementById('face-login-btn');
+    const faceModal = document.getElementById('face-login-modal');
+    const faceVideo = document.getElementById('face-video');
+    const faceStatus = document.getElementById('face-status');
+    const closeFaceModal = document.getElementById('close-face-modal');
+    const emailInput = document.getElementById('inputEmail');
+
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+    let isModelsLoaded = false;
+
+    faceLoginBtn.addEventListener('click', async () => {
+        if (!emailInput.value) {
+            alert("Veuillez d'abord saisir votre email pour que nous puissions récupérer votre empreinte faciale.");
+            return;
+        }
+
+        faceModal.style.display = 'flex';
+        
+        try {
+            if (!isModelsLoaded) {
+                faceStatus.innerText = "Chargement de l'IA...";
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                ]);
+                isModelsLoaded = true;
+            }
+
+            faceStatus.innerText = "Démarrage de la caméra...";
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            faceVideo.srcObject = stream;
+
+            faceVideo.onloadedmetadata = () => {
+                startFaceVerification();
+            };
+
+        } catch (err) {
+            faceStatus.innerText = "Erreur : " + err.message;
+        }
+    });
+
+    async function startFaceVerification() {
+        faceStatus.innerText = "Scannez votre visage...";
+        
+        try {
+            const resp = await fetch("{{ path('api_face_verify') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: emailInput.value })
+            });
+            const data = await resp.json();
+
+            if (!data.success) {
+                faceStatus.innerHTML = `<span class="text-danger">${data.message}</span>`;
+                stopCamera();
+                return;
+            }
+
+            const storedDescriptor = new Float32Array(data.storedDescriptor);
+            const faceMatcher = new faceapi.FaceMatcher(new faceapi.LabeledFaceDescriptors(emailInput.value, [storedDescriptor]), 0.6);
+
+            const interval = setInterval(async () => {
+                if (faceModal.style.display === 'none') {
+                    clearInterval(interval);
+                    return;
+                }
+
+                const detections = await faceapi.detectSingleFace(faceVideo, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceDescriptor();
+
+                if (detections) {
+                    const match = faceMatcher.findBestMatch(detections.descriptor);
+                    if (match.label !== 'unknown') {
+                        faceStatus.innerHTML = '<span class="text-success fw-bold">Visage reconnu ! Connexion...</span>';
+                        clearInterval(interval);
+                        
+                        setTimeout(async () => {
+                            try {
+                                const loginResp = await fetch("{{ path('api_face_login_finalize') }}", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ email: emailInput.value })
+                                });
+                                const loginData = await loginResp.json();
+                                if (loginData.success) {
+                                    stopCamera();
+                                    window.location.href = loginData.targetUrl;
+                                } else {
+                                    faceStatus.innerHTML = `<span class="text-danger">${loginData.message}</span>`;
+                                }
+                            } catch (e) {
+                                faceStatus.innerText = "Erreur de connexion finale.";
+                            }
+                        }, 500);
+                    } else {
+                        faceStatus.innerHTML = '<span class="text-danger fw-bold"><i class="fas fa-user-slash"></i> Identité non reconnue.</span>';
+                    }
+                } else {
+                    faceStatus.innerText = "Recherche de visage...";
+                }
+            }, 500);
+
+        } catch (err) {
+            faceStatus.innerText = "Erreur de vérification.";
+        }
+    }
+
+    function stopCamera() {
+        if (faceVideo.srcObject) {
+            faceVideo.srcObject.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    closeFaceModal.addEventListener('click', () => {
+        stopCamera();
+        faceModal.style.display = 'none';
+    });
+</script>
+{% endblock %}

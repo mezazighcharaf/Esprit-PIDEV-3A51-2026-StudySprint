@@ -13,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Notifier\Message\SmsMessage;
+use Symfony\Component\Notifier\Transport;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -26,7 +28,7 @@ class PasswordResetController extends AbstractController
     ) {}
 
     #[Route('/forgot-password', name: 'app_forgot_password')]
-    public function request(Request $request, \Symfony\Component\Notifier\TexterInterface $texter): Response
+    public function request(Request $request): Response
     {
         $dto = new PasswordResetRequestDTO();
         $form = $this->createForm(PasswordResetRequestType::class, $dto);
@@ -52,22 +54,28 @@ class PasswordResetController extends AbstractController
                 $this->entityManager->flush();
 
                 if ($dto->method === 'telephone') {
-                    try {
-                        // Ensure phone number is E.164 format (assume +216 if missing)
-                        $phoneNumber = $user->getTelephone();
-                        if (!str_starts_with($phoneNumber, '+')) {
-                            $phoneNumber = '+216' . ltrim($phoneNumber, '0');
-                        }
+                    $twilioDsn = $_ENV['TWILIO_DSN'] ?? $_SERVER['TWILIO_DSN'] ?? null;
+                    if (!$twilioDsn) {
+                        $this->addFlash('error', "Envoi SMS désactivé (TWILIO_DSN manquant). Contactez l'admin.");
+                    } else {
+                        try {
+                            // Ensure phone number is E.164 format (assume +216 if missing)
+                            $phoneNumber = $user->getTelephone();
+                            if (!str_starts_with($phoneNumber, '+')) {
+                                $phoneNumber = '+216' . ltrim($phoneNumber, '0');
+                            }
 
-                        $sms = new \Symfony\Component\Notifier\Message\SmsMessage(
-                            $phoneNumber,
-                            "StudySprint: Votre code de vérification est " . $verificationCode
-                        );
-                        $texter->send($sms);
-                        $this->addFlash('success', 'Un code de vérification a été envoyé par SMS à votre numéro.');
-                    } catch (\Exception $e) {
-                         // En cas d'erreur (ex: numéro non vérifié en mode trial), on affiche l'erreur.
-                         $this->addFlash('error', "Erreur d'envoi SMS : " . $e->getMessage());
+                            $sms = new SmsMessage(
+                                $phoneNumber,
+                                "StudySprint: Votre code de vérification est " . $verificationCode
+                            );
+                            $transport = Transport::fromDsn($twilioDsn);
+                            $transport->send($sms);
+                            $this->addFlash('success', 'Un code de vérification a été envoyé par SMS à votre numéro.');
+                        } catch (\Exception $e) {
+                             // En cas d'erreur (ex: numéro non vérifié en mode trial), on affiche l'erreur.
+                             $this->addFlash('error', "Erreur d'envoi SMS : " . $e->getMessage());
+                        }
                     }
                 } else {
                     // Send email with verification code

@@ -1519,7 +1519,7 @@ class GroupsController extends AbstractController
             return $this->errorResponse('Langue cible non supportée');
         }
 
-        $translation = $this->translationService->translate($text, $targetLang, $sourceLang);
+        $translation = $this->translationService->translate($text, $sourceLang, $targetLang);
 
         if ($translation === null) {
             return $this->errorResponse('Échec de la traduction. Veuillez réessayer.', Response::HTTP_SERVICE_UNAVAILABLE);

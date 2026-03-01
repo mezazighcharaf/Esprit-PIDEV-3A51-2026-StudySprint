@@ -37,6 +37,7 @@ security:
         - { path: ^/password-reset, roles: PUBLIC_ACCESS }
         - { path: ^/reactivation-request, roles: PUBLIC_ACCESS }
         - { path: ^/face-auth, roles: PUBLIC_ACCESS }
+        - { path: ^/api/security/face/verify-and-login, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         # Admin/BO routes
         - { path: ^/admin(/|$), roles: ROLE_ADMIN }

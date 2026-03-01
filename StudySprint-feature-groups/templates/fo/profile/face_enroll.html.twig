@@ -1,0 +1,572 @@
+{% extends 'layouts/fo.html.twig' %}
+
+{% block title %}Enregistrement Facial - StudySprint{% endblock %}
+{% block page_title %}Sécurité Biométrique{% endblock %}
+
+{% block content %}
+{# Import Premium Fonts #}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="profile-v3-container animate__animated animate__fadeIn">
+<div class="profile-v3-container animate__animated animate__fadeIn" style="background: white !important;">
+    <div class="profile-v3-hero-minimal">
+        <div class="hero-content-v3 py-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-5">
+                <div class="d-flex align-items-center gap-4">
+                    <div>
+                        <h2 class="v3-hero-title mb-2 animate__animated animate__fadeInRight" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.2rem; letter-spacing: -0.02em; color: #1e293b;">Reconnaissance Faciale</h2>
+                        <p class="v3-hero-subtitle mb-0 animate__animated animate__fadeInRight animate__delay-1s" style="font-size: 1.05rem; color: #64748b; max-width: 500px; line-height: 1.6;">Protégez votre espace avec une sécurité biométrique de pointe.</p>
+                    </div>
+                </div>
+                <div class="animate__animated animate__fadeInLeft animate__delay-1s">
+                    <a href="{{ path('app_profile_edit') }}" class="btn-premium-v3 glass">
+                        <span class="btn-icon"><i class="fas fa-times"></i></span>
+                        <span class="btn-text" style="margin-right: 0; padding: 0 1.25rem; font-size: 0.9rem;">Annuler</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div id="setup-container" class="setup-wrapper">
+                    {# Step Indicator #}
+                    <div class="steps-progress-v3 mb-5 mt-4">
+                        <div class="step-item active" id="step-1-indicator">
+                            <span class="step-number">1</span>
+                            <span class="step-label">Initialisation</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step-item" id="step-2-indicator">
+                            <span class="step-number">2</span>
+                            <span class="step-label">Scan Facial</span>
+                        </div>
+                    </div>
+
+                    <div class="enroll-status mb-4" id="init-loader">
+                        <div class="tech-loader">
+                            <div class="tech-circle"></div>
+                            <div class="tech-circle-inner"></div>
+                            <i class="fas fa-microchip tech-icon"></i>
+                        </div>
+                        <p id="status-text" class="mt-4 tech-status-text">Synchronisation des moteurs IA...</p>
+                    </div>
+
+                    <div class="tech-video-frame mb-5" id="video-wrapper" style="display: none;">
+                        <div class="video-container shadow-2xl border-0">
+                            <video id="video" width="640" height="480" autoplay muted></video>
+                            <canvas id="overlay"></canvas>
+                            
+                            <div class="tech-hud">
+                                <div class="hud-corner top-left"></div>
+                                <div class="hud-corner top-right"></div>
+                                <div class="hud-corner bottom-left"></div>
+                                <div class="hud-corner bottom-right"></div>
+                                
+                                <div class="scan-line"></div>
+                                
+                                <div class="hud-data left">
+                                    <div class="data-item">FPS: <span id="fps-val">30</span></div>
+                                    <div class="data-item">RES: 640x480</div>
+                                </div>
+                                <div class="hud-data right">
+                                    <div class="data-item">BIO-ID: ENABLED</div>
+                                    <div class="data-item">AUTH: PENDING</div>
+                                </div>
+                            </div>
+
+                            <div class="face-guide-v3">
+                                <div class="guide-circle"></div>
+                                <div class="guide-text">Centrez votre visage</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="controls" style="display: none;" class="animate__animated animate__fadeInUp mb-5">
+                        <button id="capture-btn" class="btn-tech-capture">
+                            <span class="btn-glow"></span>
+                            <i class="fas fa-fingerprint me-2"></i> Capturer mon visage
+                        </button>
+                        <p class="text-muted small mt-4">
+                            <i class="fas fa-lock me-1"></i> Vos données biométriques sont anonymisées localement.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="success-container" style="display: none;" class="text-center py-5 animate__animated animate__zoomIn position-relative">
+                    <div class="success-bg-ornament"></div>
+                    
+                    <div class="success-crown-container mb-5">
+                        <div class="success-orb-v3"></div>
+                        <div class="success-orb-glow"></div>
+                        <div class="success-icon-v3 animate__animated animate__bounceIn animate__delay-1s">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="sparkles-v3">
+                            <div class="sparkle-v3 s1"></div>
+                            <div class="sparkle-v3 s2"></div>
+                            <div class="sparkle-v3 s3"></div>
+                            <div class="sparkle-v3 s4"></div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="v3-hero-title mb-3" style="color: var(--v3-text-main) !important; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.2rem; letter-spacing: -0.02em;">Enregistrement Réussi !</h2>
+                    <p class="section-desc-v3 mb-5 mx-auto" style="max-width: 500px; font-size: 1.1rem; color: #475569; line-height: 1.6; font-weight: 500;">
+                        Félicitations ! Votre empreinte faciale est désormais active. Profitez d'une connexion ultra-rapide et ultra-sécurisée.
+                    </p>
+                    
+                    <div class="d-flex flex-column align-items-center gap-4 mt-5 pb-4">
+                        <a href="{{ path('app_profile') }}" class="btn-premium-v3">
+                            <span class="btn-text">Retour au profil</span>
+                            <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                        <div class="security-badge-mini">
+                            <i class="fas fa-shield-check me-2"></i>
+                            <span>SÉCURITÉ BIOMÉTRIQUE ACTIVÉE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ─── BASE TECH STYLES ─── */
+    .profile-v3-container {
+        background: white !important;
+        min-height: 100vh;
+        padding-bottom: 5rem;
+    }
+
+    .profile-v3-hero-minimal {
+        background: white;
+        padding: 5rem 0 2rem 0;
+        margin-bottom: 3.5rem;
+    }
+
+    .hero-content-v3 {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+        --v3-font-main: 'Inter', sans-serif;
+        --v3-font-accent: 'Outfit', sans-serif;
+    }
+
+    body {
+        font-family: var(--v3-font-main);
+    }
+
+    .setup-wrapper {
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Steps Progress */
+    .steps-progress-v3 {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        width: 100%;
+        max-width: 500px;
+    }
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        opacity: 0.3;
+        transition: all 0.5s;
+    }
+    .step-item.active { opacity: 1; }
+    .step-number {
+        width: 36px; height: 36px;
+        background: #f1f5f9;
+        color: #64748b;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; border: 2px solid transparent;
+        font-family: var(--v3-font-accent);
+    }
+    .step-item.active .step-number {
+        background: #8b5cf6;
+        color: white;
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+    }
+    .step-label { font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--v3-font-accent); }
+    .step-line { flex-grow: 1; height: 2px; background: #f1f5f9; border-radius: 2px; }
+
+    /* Tech Loader */
+    .tech-loader {
+        position: relative;
+        width: 120px; height: 120px;
+        margin: 0 auto;
+    }
+    .tech-circle {
+        position: absolute; inset: 0;
+        border: 4px solid rgba(139, 92, 246, 0.1);
+        border-top-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 1.5s linear infinite;
+    }
+    .tech-circle-inner {
+        position: absolute; inset: 15px;
+        border: 4px solid rgba(14, 165, 233, 0.1);
+        border-bottom-color: #0ea5e9;
+        border-radius: 50%;
+        animation: spin 2s linear reverse infinite;
+    }
+    .tech-icon {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 2rem; color: #8b5cf6;
+    }
+    .tech-status-text {
+        font-weight: 700; letter-spacing: 0.02em; color: #475569;
+        font-family: var(--v3-font-accent);
+    }
+
+    /* Video Frame */
+    .tech-video-frame {
+        width: 100%;
+        max-width: 800px;
+        padding: 10px;
+        background: #1e293b;
+        border-radius: 28px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .video-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: #000;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    #overlay { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); z-index: 5; }
+
+    /* HUD Elements */
+    .tech-hud { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
+    .hud-corner {
+        position: absolute; width: 40px; height: 40px;
+        border: 3px solid #8b5cf6; opacity: 0.6;
+    }
+    .top-left { top: 30px; left: 30px; border-right-color: transparent; border-bottom-color: transparent; }
+    .top-right { top: 30px; right: 30px; border-left-color: transparent; border-bottom-color: transparent; }
+    .bottom-left { bottom: 30px; left: 30px; border-right-color: transparent; border-top-color: transparent; }
+    .bottom-right { bottom: 30px; right: 30px; border-left-color: transparent; border-top-color: transparent; }
+
+    .scan-line {
+        position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+        background: linear-gradient(90deg, transparent, #0ea5e9, transparent);
+        box-shadow: 0 0 10px #0ea5e9;
+        animation: scan 3s linear infinite;
+        opacity: 0.4;
+    }
+
+    .hud-data {
+        position: absolute; top: 80px; font-family: 'Courier New', monospace;
+        color: #0ea5e9; font-size: 0.7rem; font-weight: bold; padding: 10px;
+        background: rgba(0,0,0,0.4); border-radius: 4px; border-left: 2px solid #0ea5e9;
+    }
+    .hud-data.left { left: 30px; }
+    .hud-data.right { right: 30px; border-left: 0; border-right: 2px solid #0ea5e9; text-align: right; }
+
+    .face-guide-v3 {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 20; text-align: center;
+    }
+    .guide-circle {
+        width: 300px; height: 380px;
+        border: 2px dashed rgba(255, 255, 255, 0.4);
+        border-radius: 50% 50% 45% 45%;
+        margin-bottom: 2rem;
+        box-shadow: 0 0 0 2000px rgba(0,0,0,0.5);
+    }
+    .guide-text { color: white; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; text-shadow: 0 2px 10px rgba(0,0,0,0.5); font-family: var(--v3-font-accent); }
+
+    /* Button Tech */
+    .btn-tech-capture {
+        position: relative;
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        color: white; border: none;
+        padding: 1rem 3rem; border-radius: 16px;
+        font-weight: 800; font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        overflow: hidden;
+        font-family: var(--v3-font-accent);
+    }
+    .btn-glow {
+        position: absolute; inset: 0;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+        transform: translateX(-100%);
+        animation: shimmer 3s infinite;
+    }
+    .btn-tech-capture:hover { background: #7c3aed; transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4); }
+
+    /* ─── SUCCESS SCREEN REBORN V2 ─── */
+    #success-container {
+        padding: 4rem 0 !important;
+    }
+    .success-crown-container {
+        position: relative;
+        width: 160px; height: 160px;
+        margin: 0 auto;
+        margin-bottom: 4rem !important;
+    }
+    .success-orb-v3 {
+        position: absolute; inset: -15px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: success-orb-pulse 3s infinite;
+    }
+    .success-orb-glow {
+        position: absolute; inset: 10px;
+        background: radial-gradient(circle, rgba(250, 204, 21, 0.15) 0%, transparent 80%);
+        border-radius: 50%;
+        animation: success-orb-pulse 4s infinite reverse;
+    }
+    .success-icon-v3 {
+        position: relative;
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+        color: white; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3.5rem;
+        box-shadow: 0 20px 40px rgba(34, 197, 94, 0.35), inset 0 2px 5px rgba(255, 255, 255, 0.4);
+        z-index: 5;
+        border: 4px solid white;
+    }
+
+    /* Success Ornaments */
+    .success-bg-ornament {
+        position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.03) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    /* High-Fidelity Sparkles */
+    .sparkles-v3 { position: absolute; inset: -40px; pointer-events: none; z-index: 10; }
+    .sparkle-v3 {
+        position: absolute; width: 20px; height: 20px;
+        background: #facc15; 
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        animation: sparkle-float-v3 2.5s infinite ease-in-out;
+        box-shadow: 0 0 10px #facc15;
+    }
+    .sparkle-v3.s1 { top: 15%; left: 0; animation-delay: 0s; width: 24px; height: 24px; }
+    .sparkle-v3.s2 { top: 0; right: 15%; animation-delay: 0.5s; width: 18px; height: 18px; }
+    .sparkle-v3.s3 { bottom: 20%; right: 0; animation-delay: 1s; width: 22px; height: 22px; }
+    .sparkle-v3.s4 { bottom: 0; left: 15%; animation-delay: 1.5s; width: 16px; height: 16px; }
+
+    @keyframes sparkle-float-v3 {
+        0%, 100% { transform: translate(0, 0) rotate(0deg) scale(0); opacity: 0; }
+        50% { transform: translate(0, -30px) rotate(180deg) scale(1.2); opacity: 1; }
+    }
+    
+    @keyframes success-orb-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+    }
+
+    /* Security Badge Mini */
+    .security-badge-mini {
+        display: inline-flex;
+        align-items: center;
+        background: #f8fafc;
+        color: #16a34a;
+        padding: 0.8rem 1.8rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        border: 1px solid #e2e8f0;
+        margin-top: 2rem;
+    }
+
+    /* Premium Button v3 - REBORN VIBRANT */
+    .btn-premium-v3 {
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
+        border-radius: 100px;
+        padding: 0.5rem;
+        padding-left: 2rem;
+        transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        font-family: var(--v3-font-accent);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-premium-v3 .btn-text {
+        padding: 0;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        margin-right: 1.2rem;
+        color: #f1f5f9;
+        transition: color 0.3s;
+    }
+
+    .btn-premium-v3 .btn-icon {
+        width: 38px; height: 38px;
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        flex-shrink: 0;
+        font-size: 0.9rem;
+    }
+
+    .btn-premium-v3:hover {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.4);
+        color: white;
+    }
+
+    .btn-premium-v3:hover .btn-text {
+        color: white;
+    }
+
+    .btn-premium-v3:hover .btn-icon {
+        transform: rotate(360deg) scale(1.1);
+        background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+    }
+
+    /* Glass Variant - HIGH CONTRAST DARK GLASS */
+    .btn-premium-v3.glass {
+        background: rgba(15, 23, 42, 0.05);
+        backdrop-filter: blur(12px) saturate(180%);
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        color: #1e293b;
+    }
+    .btn-premium-v3.glass .btn-text {
+        color: #1e293b;
+    }
+    .btn-premium-v3.glass .btn-icon {
+        background: rgba(15, 23, 42, 0.08);
+        color: #1e293b;
+    }
+    .btn-premium-v3.glass:hover {
+        background: rgba(15, 23, 42, 0.1);
+        color: #0f172a;
+    }
+    .btn-premium-v3.glass:hover .btn-icon {
+        background: #8b5cf6;
+        color: white;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes scan { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+    @keyframes shimmer { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
+    @keyframes success-pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 30px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+
+    @media (max-width: 768px) {
+        .guide-circle { width: 220px; height: 280px; }
+        .tech-hud { display: none; }
+        .success-crown-container { width: 100px; height: 100px; }
+        .success-icon-v3 { font-size: 2.2rem; }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+    const video = document.getElementById('video');
+    const statusText = document.getElementById('status-text');
+    const initLoader = document.getElementById('init-loader');
+    const captureBtn = document.getElementById('capture-btn');
+    const videoWrapper = document.getElementById('video-wrapper');
+    const controls = document.getElementById('controls');
+    const setupContainer = document.getElementById('setup-container');
+    const successContainer = document.getElementById('success-container');
+    const step2Indicator = document.getElementById('step-2-indicator');
+
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+
+    async function init() {
+        try {
+            statusText.innerText = "Synchronisation IA...";
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+
+            statusText.innerText = "Initialisation optique...";
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            video.srcObject = stream;
+
+            video.onloadedmetadata = () => {
+                initLoader.style.display = 'none';
+                videoWrapper.style.display = 'block';
+                controls.style.display = 'block';
+                step2Indicator.classList.add('active');
+            };
+
+        } catch (err) {
+            console.error(err);
+            statusText.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Erreur : ${err.message}</span>`;
+        }
+    }
+
+    captureBtn.addEventListener('click', async () => {
+        captureBtn.disabled = true;
+        captureBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i> Analyse...';
+
+        const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!detections) {
+            alert("Visage non détecté. Assurez-vous d'être dans un endroit bien éclairé.");
+            captureBtn.disabled = false;
+            captureBtn.innerHTML = '<i class="fas fa-fingerprint me-2"></i> Capturer mon visage';
+            return;
+        }
+
+        const descriptor = Array.from(detections.descriptor);
+        
+        try {
+            captureBtn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin me-2"></i> Sécurisation...';
+            const response = await fetch("{{ path('api_face_enroll') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ descriptor: descriptor })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                setupContainer.style.display = 'none';
+                successContainer.style.display = 'block';
+                const stream = video.srcObject;
+                stream.getTracks().forEach(track => track.stop());
+            } else {
+                throw new Error(result.error || "Erreur lors de la sauvegarde.");
+            }
+        } catch (err) {
+            alert(err.message);
+            captureBtn.disabled = false;
+            captureBtn.innerHTML = '<i class="fas fa-fingerprint me-2"></i> Capturer mon visage';
+        }
+    });
+
+    init();
+</script>
+{% endblock %}

@@ -1,0 +1,430 @@
+{% extends 'layouts/bo.html.twig' %}
+
+{% block title %}Statistiques Utilisateurs - StudySprint BO{% endblock %}
+{% block breadcrumb %}Statistiques{% endblock %}
+
+{% block content %}
+    <div class="bo-page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="bo-page-title">Tableau de Bord Statistiques</h1>
+            <p class="text-muted">Aperçu global de l'activité des utilisateurs</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ path('admin_users') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Retour
+            </a>
+            <a href="{{ path('admin_statistics_pdf') }}" class="btn btn-primary">
+                <i class="fas fa-file-pdf me-2"></i> Exporter en PDF
+            </a>
+        </div>
+    </div>
+
+    {# KPI Row - Same visual style as Analytics #}
+    <div class="bo-kpi-row">
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Utilisateurs (Hors Admin)</span>
+            </div>
+            <div class="bo-kpi-value">{{ stats.user_kpis.total_non_admins }}</div>
+            <div class="bo-kpi-subtitle">Total communautaire</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Etudiants</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-primary);">{{ stats.user_kpis.students }}</div>
+            <div class="bo-kpi-subtitle">Apprenants inscrits</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Professeurs</span>
+            </div>
+            <div class="bo-kpi-value" style="color: var(--color-secondary);">{{ stats.user_kpis.professors }}</div>
+            <div class="bo-kpi-subtitle">Enseignants actifs</div>
+        </div>
+
+        <div class="bo-kpi-card">
+            <div class="bo-kpi-header">
+                <span class="bo-kpi-label">Actifs / Inactifs</span>
+            </div>
+            <div class="bo-kpi-value">
+                <span style="color: var(--color-success);">{{ stats.user_kpis.active }}</span>
+                <span style="color: var(--color-gray-300);">/</span>
+                <span style="color: var(--color-error);">{{ stats.user_kpis.inactive }}</span>
+            </div>
+            <div class="bo-kpi-subtitle">Statut des comptes</div>
+        </div>
+    </div>
+
+    {# Main Analytics Grid #}
+    <div class="bo-analytics-grid">
+        <div class="bo-analytics-main" style="width: 100%;">
+            {# Registration Trend Chart (LINE) #}
+            <div class="bo-chart-card">
+                <div class="bo-chart-header">
+                    <h3 class="bo-chart-title">Inscriptions par année</h3>
+                </div>
+                <div class="bo-chart-body" style="height: 300px;">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                {# Age Distribution Chart (COLUMN/BAR) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition par âge (Étudiants)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="ageChart"></canvas>
+                    </div>
+                </div>
+
+                {# Country Distribution Chart (PIE) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition par pays</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="countryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Professor Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Professeurs (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="profHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {# Student Hierarchy Chart (Full Width) #}
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem; width: 100%;">
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Répartition des Étudiants (Pays > Établissement)</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 450px;">
+                        <canvas id="studentHierarchyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4" style="margin-top: 1.5rem;">
+                {# Professor Experience Chart (BAR) #}
+                <div class="bo-chart-card">
+                    <div class="bo-chart-header">
+                        <h3 class="bo-chart-title">Expérience des Professeurs</h3>
+                    </div>
+                    <div class="bo-chart-body" style="height: 250px;">
+                        <canvas id="profExpChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Colors from tokens - Matching Analytics style
+    const primaryColor = '#5AAEEF';
+    const orangeColor = '#FDB499';
+    const successColor = '#2DCA73';
+    const warningColor = '#FFB800';
+
+    // Helper to wrap long labels into arrays for multiline display
+    const wrapLabel = (label, maxLength = 12) => {
+        if (!label) return label;
+        if (label.length <= maxLength) return label;
+        const words = label.split(' ');
+        const lines = [];
+        let currentLine = '';
+        words.forEach(word => {
+            if ((currentLine + word).length > maxLength) {
+                if (currentLine) lines.push(currentLine.trim());
+                currentLine = word + ' ';
+            } else {
+                currentLine += word + ' ';
+            }
+        });
+        if (currentLine) lines.push(currentLine.trim());
+        return lines;
+    };
+    
+    // 1. Registration Line Chart
+    const regCtx = document.getElementById('registrationChart');
+    if (regCtx) {
+        const regData = {{ stats.registrations|json_encode|raw }};
+        new Chart(regCtx, {
+            type: 'line',
+            data: {
+                labels: regData.map(d => d.year),
+                datasets: [{
+                    label: 'Inscriptions',
+                    data: regData.map(d => d.count),
+                    borderColor: primaryColor,
+                    backgroundColor: primaryColor + '20', // transparent fill
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'white',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 2. Age Distribution Column Chart
+    const ageCtx = document.getElementById('ageChart');
+    if (ageCtx) {
+        const ageData = {{ stats.age_distribution|json_encode|raw }};
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ageData.labels,
+                datasets: ageData.datasets.map((ds, index) => ({
+                    label: ds.label,
+                    data: ds.data,
+                    backgroundColor: index === 0 ? primaryColor : orangeColor,
+                    borderRadius: 4
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 10 } }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 3. Country Pie Chart
+    const countryCtx = document.getElementById('countryChart');
+    if (countryCtx) {
+        const countryData = {{ stats.countries|json_encode|raw }};
+        // Normalize data keys (label/value) from repository
+        const labels = countryData.map(d => d.label);
+        const values = countryData.map(d => d.value);
+
+        new Chart(countryCtx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899'],
+                    borderWidth: 2,
+                    borderColor: 'white'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Professor Experience Chart
+    const expCtx = document.getElementById('profExpChart');
+    if (expCtx) {
+        const expData = {{ stats.professor_experience|json_encode|raw }};
+        new Chart(expCtx, {
+            type: 'bar',
+            data: {
+                labels: expData.map(d => d.label),
+                datasets: [{
+                    label: 'Professeurs',
+                    data: expData.map(d => d.value),
+                    backgroundColor: '#8B5CF6',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // 5. Professor Hierarchy Chart
+    const profHierCtx = document.getElementById('profHierarchyChart');
+    if (profHierCtx) {
+        const rawData = {{ stats.professor_hierarchy|json_encode|raw }};
+        
+        // Group data by country for multi-dataset approach (for legend)
+        const countries = [...new Set(rawData.map(d => d.pays))];
+        const establishments = rawData.map(d => wrapLabel(d.etablissement, 15));
+        
+        const palette = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasets = countries.map((country, index) => {
+            return {
+                label: country, // Country Code (TN, FR, etc.)
+                data: rawData.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: palette[index % palette.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(profHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishments, // Only establishments on X axis
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawData[index].pays + ' - ' + rawData[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 6. Student Hierarchy Chart
+    const studHierCtx = document.getElementById('studentHierarchyChart');
+    if (studHierCtx) {
+        const rawDataStud = {{ stats.student_hierarchy|json_encode|raw }};
+        
+        const countriesStud = [...new Set(rawDataStud.map(d => d.pays))];
+        const establishmentsStud = rawDataStud.map(d => wrapLabel(d.etablissement, 15));
+        
+        const paletteStud = [primaryColor, orangeColor, successColor, warningColor, '#8B5CF6', '#EC4899', '#10B981'];
+        
+        const datasetsStud = countriesStud.map((country, index) => {
+            return {
+                label: country,
+                data: rawDataStud.map(d => d.pays === country ? d.count : 0),
+                backgroundColor: paletteStud[index % paletteStud.length],
+                borderRadius: 4,
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
+            };
+        });
+        
+        new Chart(studHierCtx, {
+            type: 'bar',
+            data: {
+                labels: establishmentsStud,
+                datasets: datasetsStud
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'right',
+                        labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const index = items[0].dataIndex;
+                                return rawDataStud[index].pays + ' - ' + rawDataStud[index].etablissement;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [5, 5] },
+                        ticks: { stepSize: 1 }
+                    },
+                    x: { 
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 0,
+                            minRotation: 0,
+                            font: { size: 10, weight: '500' },
+                            padding: 8
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

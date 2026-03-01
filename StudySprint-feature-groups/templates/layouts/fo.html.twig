@@ -1,0 +1,168 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/fo.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {# ─── SIDEBAR FO ─── #}
+    <aside class="app-sidebar fo-sidebar">
+        <div class="sidebar-header">
+            <a href="{{ path('app_dashboard') }}" class="sidebar-logo">
+                {{ include('components/_logo.html.twig', { size: 'md', show_text: true }) }}
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Navigation</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="{{ path('app_dashboard') }}" class="sidebar-link {{ app.request.get('_route') == 'app_dashboard' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="9"/>
+                                <rect x="14" y="3" width="7" height="5"/>
+                                <rect x="14" y="12" width="7" height="9"/>
+                                <rect x="3" y="16" width="7" height="5"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_planning') }}" class="sidebar-link {{ app.request.get('_route') == 'app_planning' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Planning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_training') }}" class="sidebar-link {{ app.request.get('_route') == 'app_training' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                            </svg>
+                            <span>Training</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_groups') }}" class="sidebar-link {{ app.request.get('_route') == 'app_groups' ? 'active' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>Groupes</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Raccourcis</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span>Sessions recentes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Favoris</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ path('app_profile') }}" class="fo-user-card" style="text-decoration: none; color: inherit; display: flex;">
+                {% if app.user %}
+                    <div class="fo-user-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                        <div class="fo-user-role">
+                            {% if is_granted('ROLE_ADMIN') %}
+                                Administrateur
+                            {% elseif is_granted('ROLE_PROFESSOR') %}
+                                Professeur
+                            {% elseif is_granted('ROLE_STUDENT') %}
+                                Étudiant
+                            {% else %}
+                                {{ app.user.role|capitalize }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="fo-user-avatar">?</div>
+                    <div class="fo-user-info">
+                        <div class="fo-user-name">Invité</div>
+                    </div>
+                {% endif %}
+            </a>
+        </div>
+    </aside>
+
+    {# ─── MAIN CONTENT ─── #}
+    <main class="app-main">
+        <header class="app-topbar">
+            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-actions">
+                {% block topbar_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <div class="app-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# ─── DRAWER BACKDROP ─── #}
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+
+{# ─── CONFIRMATION DIALOG ─── #}
+<div class="modal" id="confirm-dialog">
+    <div class="modal-dialog" style="max-width: 400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmation</h2>
+                <button class="modal-close" data-modal-close aria-label="Fermer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message" style="margin: 0; color: var(--color-gray-700);">Etes-vous sur de vouloir continuer?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal-close>Annuler</button>
+                <button class="btn btn-danger" id="confirm-action-btn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block drawers %}{% endblock %}
+{% block modals %}{% endblock %}
+{% endblock %}
