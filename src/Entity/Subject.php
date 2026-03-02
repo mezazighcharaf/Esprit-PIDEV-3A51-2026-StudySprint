@@ -38,7 +38,7 @@ class Subject
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, Chapter> */
-    #[ORM\OneToMany(targetEntity: Chapter::class, mappedBy: 'subject', cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(targetEntity: Chapter::class, mappedBy: 'subject', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $chapters;
 
     /** @var Collection<int, Quiz> */

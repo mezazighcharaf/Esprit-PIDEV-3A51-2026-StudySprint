@@ -21,11 +21,11 @@ class PostComment
 
     #[ORM\ManyToOne(targetEntity: GroupPost::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?GroupPost $post = null;
+    private GroupPost $post;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $author = null;
+    private User $author;
 
     #[ORM\ManyToOne(targetEntity: self::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
@@ -40,7 +40,7 @@ class PostComment
         max: 2000,
         maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères'
     )]
-    private ?string $body = null;
+    private string $body = '';
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isBot = false;
@@ -49,7 +49,7 @@ class PostComment
     private ?string $botName = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
@@ -61,7 +61,7 @@ class PostComment
         return $this->id;
     }
 
-    public function getPost(): ?GroupPost
+    public function getPost(): GroupPost
     {
         return $this->post;
     }
@@ -72,7 +72,7 @@ class PostComment
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthor(): User
     {
         return $this->author;
     }

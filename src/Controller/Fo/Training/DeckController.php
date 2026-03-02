@@ -3,6 +3,7 @@
 namespace App\Controller\Fo\Training;
 
 use App\Entity\FlashcardReviewState;
+use App\Entity\User;
 use App\Repository\FlashcardDeckRepository;
 use App\Repository\FlashcardRepository;
 use App\Repository\FlashcardReviewStateRepository;
@@ -21,6 +22,9 @@ use App\Service\AiGatewayService;
 use App\Service\PdfExportService;
 
 #[Route('/fo/training/decks', name: 'fo_training_decks_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class DeckController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -62,12 +66,11 @@ class DeckController extends AbstractController
             throw $this->createAccessDeniedException('Ce deck n\'est pas encore publié.');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
         $dueCount = 0;
 
-        if ($user) {
-            $dueCount = $stateRepo->countDueCardsForUserAndDeck($user, $deck);
-        }
+        $dueCount = $stateRepo->countDueCardsForUserAndDeck($user, $deck);
 
         return $this->render('fo/training/decks/show.html.twig', [
             'deck' => $deck,
@@ -91,11 +94,8 @@ class DeckController extends AbstractController
             throw $this->createNotFoundException('Deck introuvable ou non publié');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            $this->addFlash('error', 'Aucun utilisateur disponible.');
-            return $this->redirectToRoute('fo_training_decks_index');
-        }
 
         // Get due cards first
         $dueStates = $stateRepo->findDueCardsForUserAndDeck($user, $deck, 1);
@@ -195,27 +195,26 @@ class DeckController extends AbstractController
             throw $this->createNotFoundException('Deck introuvable');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
         $dueCount = 0;
         $totalReviewed = 0;
 
-        if ($user) {
-            $dueCount = $stateRepo->countDueCardsForUserAndDeck($user, $deck);
+        $dueCount = $stateRepo->countDueCardsForUserAndDeck($user, $deck);
 
-            // Count reviewed today
-            $today = new \DateTimeImmutable('today');
-            $totalReviewed = (int) $stateRepo->createQueryBuilder('rs')
-                ->select('COUNT(rs.id)')
-                ->join('rs.flashcard', 'f')
-                ->andWhere('rs.user = :user')
-                ->andWhere('f.deck = :deck')
-                ->andWhere('rs.lastReviewedAt >= :today')
-                ->setParameter('user', $user)
-                ->setParameter('deck', $deck)
-                ->setParameter('today', $today)
-                ->getQuery()
-                ->getSingleScalarResult();
-        }
+        // Count reviewed today
+        $today = new \DateTimeImmutable('today');
+        $totalReviewed = (int) $stateRepo->createQueryBuilder('rs')
+            ->select('COUNT(rs.id)')
+            ->join('rs.flashcard', 'f')
+            ->andWhere('rs.user = :user')
+            ->andWhere('f.deck = :deck')
+            ->andWhere('rs.lastReviewedAt >= :today')
+            ->setParameter('user', $user)
+            ->setParameter('deck', $deck)
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getSingleScalarResult();
 
         return $this->render('fo/training/decks/review_complete.html.twig', [
             'deck' => $deck,
@@ -259,14 +258,8 @@ class DeckController extends AbstractController
             return $this->redirectToRoute('fo_training_decks_ai_generate_form');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            if ($isAjax) {
-                return new JsonResponse(['error' => 'Aucun utilisateur disponible'], 401);
-            }
-            $this->addFlash('error', 'Aucun utilisateur disponible.');
-            return $this->redirectToRoute('fo_training_decks_index');
-        }
 
         if ($isAjax) {
             $body = json_decode($request->getContent(), true);
@@ -303,21 +296,21 @@ class DeckController extends AbstractController
                 $includeHints
             );
 
-            $deckId = $data['deck_id'] ?? null;
+            $deckId = $data['deck_id'];
 
             if ($deckId) {
                 if ($isAjax) {
                     return new JsonResponse([
                         'success' => true,
                         'deck_id' => $deckId,
-                        'cards_count' => $data['cards_count'] ?? 0,
-                        'ai_log_id' => $data['ai_log_id'] ?? null,
+                        'cards_count' => $data['cards_count'],
+                        'ai_log_id' => $data['ai_log_id'],
                         'redirect_url' => $this->generateUrl('fo_training_decks_show', ['id' => $deckId]),
                     ]);
                 }
                 $this->addFlash('success', sprintf(
                     'Deck généré avec succès ! %d cartes créées.',
-                    $data['cards_count'] ?? 0
+                    $data['cards_count']
                 ));
                 return $this->redirectToRoute('fo_training_decks_show', ['id' => $deckId]);
             }
@@ -340,7 +333,7 @@ class DeckController extends AbstractController
             throw $this->createNotFoundException('Deck introuvable ou non publié');
         }
 
-        $cards = $deck->getFlashcards()->count() > 0 ? $deck->getFlashcards()->toArray() : $deck->getCards()->toArray();
+        $cards = $deck->getFlashcards()->count() > 0 ? $deck->getFlashcards()->toArray() : $deck->getCards();
 
         return $pdfService->generateFromTemplate('pdf/flashcard_deck.html.twig', [
             'deck' => $deck,

@@ -140,6 +140,16 @@
                     <div class="text-xs text-muted mt-3">
                         Derniere activite : {{ group.last_activity }}
                     </div>
+                    <div class="mt-3">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            data-modal-open="share-group-modal-{{ group.id }}"
+                            onclick="event.preventDefault(); event.stopPropagation(); openShareGroupModal('share-group-modal-{{ group.id }}');"
+                        >
+                            Partager (QR)
+                        </button>
+                    </div>
                 </div>
                 {% endfor %}
 
@@ -235,6 +245,15 @@
                                     <span>Code :</span>
                                     <code style="background: var(--color-gray-100); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; user-select: all;">{{ invitation.code }}</code>
                                 </div>
+                                {% if invitation.status == 'pending' and invitation.invitation_qr_code %}
+                                <div class="text-xs text-muted mt-2" style="display: flex; align-items: center; gap: var(--space-2);">
+                                    <img src="{{ invitation.invitation_qr_code }}" alt="QR invitation {{ invitation.group.name }}" width="56" height="56" style="border: 1px solid var(--border-color); border-radius: 6px; background: white; padding: 3px;">
+                                    <div style="min-width: 0;">
+                                        <div style="font-size: 0.72rem;">QR de partage</div>
+                                        <a href="{{ invitation.invitation_url }}" target="_blank" rel="noopener" style="display: inline-block; margin-top: 2px; font-size: 0.72rem; color: var(--color-primary); text-decoration: underline;">Ouvrir le lien d invitation</a>
+                                    </div>
+                                </div>
+                                {% endif %}
                                 <div class="mt-1">
                                     <span class="badge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;
                                         {% if invitation.status == 'pending' %}background: var(--color-warning-light, #fef3c7); color: var(--color-warning-dark, #92400e);{% endif %}
@@ -484,6 +503,18 @@
 
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    function openShareGroupModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    </script>
+{% endblock %}
+
 {% block modals %}
 {# Modals: Invite Members (per group) #}
 {% for group in data.groups %}
@@ -524,6 +555,52 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-modal-close>Annuler</button>
                 <button type="submit" form="invite-form-{{ group.id }}" class="btn btn-primary">Envoyer les invitations</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{# Modals: Share Group QR (per group) #}
+{% for group in data.groups %}
+<div class="modal" id="share-group-modal-{{ group.id }}">
+    <div class="modal-dialog" style="width: 90%; max-width: 420px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Partager {{ group.name }}</h2>
+                <button class="modal-close" data-modal-close aria-label="Fermer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img
+                    src="{{ group.share_qr_code }}"
+                    alt="QR de partage {{ group.name }}"
+                    width="220"
+                    height="220"
+                    style="border: 1px solid var(--border-color); border-radius: 8px; background: #fff; padding: 8px; margin-bottom: 12px;"
+                >
+                <div class="text-sm text-muted" style="margin-bottom: 8px;">Lien du groupe</div>
+                <input
+                    type="text"
+                    class="form-input"
+                    value="{{ group.share_url }}"
+                    readonly
+                    onclick="this.select();"
+                >
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-modal-close>Fermer</button>
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="navigator.clipboard.writeText('{{ group.share_url }}').then(() => this.textContent = 'Copie').catch(() => {});"
+                >
+                    Copier le lien
+                </button>
             </div>
         </div>
     </div>

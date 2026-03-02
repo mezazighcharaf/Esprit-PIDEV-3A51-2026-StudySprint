@@ -32,7 +32,7 @@ class StudyGroup
         minMessage: 'Le nom du groupe doit contenir au moins {{ limit }} caractères',
         maxMessage: 'Le nom du groupe ne peut pas dépasser {{ limit }} caractères'
     )]
-    private ?string $name = null;
+    private string $name = '';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(
@@ -50,11 +50,11 @@ class StudyGroup
     private ?string $subject = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'studyGroups')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $createdBy = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
@@ -140,7 +140,7 @@ class StudyGroup
         return $this->createdBy;
     }
 
-    public function setCreatedBy(User $createdBy): static
+    public function setCreatedBy(?User $createdBy): static
     {
         $this->createdBy = $createdBy;
         return $this;

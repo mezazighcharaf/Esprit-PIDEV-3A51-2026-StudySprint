@@ -7,6 +7,7 @@ use App\Entity\PlanTask;
 use App\Form\Fo\GeneratePlanType;
 use App\Form\Fo\RevisionPlanType;
 use App\Form\Fo\PlanTaskType;
+use App\Entity\User;
 use App\Repository\RevisionPlanRepository;
 use App\Repository\PlanTaskRepository;
 use App\Repository\UserRepository;
@@ -20,6 +21,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Service\AiGatewayService;
 
 #[Route('/fo/planning', name: 'fo_planning_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class PlanningController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -27,7 +31,8 @@ class PlanningController extends AbstractController
         Request $request,
         RevisionPlanRepository $planRepo,
         PlanTaskRepository $taskRepo,
-        UserRepository $userRepo
+        UserRepository $userRepo,
+        EntityManagerInterface $em
     ): Response {
         // Get month/year from query or default to current
         $year = $request->query->getInt('year', (int) date('Y'));
@@ -81,7 +86,7 @@ class PlanningController extends AbstractController
             ->getResult();
         
         // Calculate stats for this month via native SQL (TIMESTAMPDIFF not supported in DQL)
-        $conn = $taskRepo->getEntityManager()->getConnection();
+        $conn = $em->getConnection();
         $statsRow = $conn->executeQuery(
             'SELECT COUNT(t.id) AS totalCount,
                     SUM(CASE WHEN t.status = :done THEN 1 ELSE 0 END) AS completedCount,
@@ -103,6 +108,16 @@ class PlanningController extends AbstractController
         $totalMinutes = (float) ($statsRow['totalMinutes'] ?? 0);
         $completionRate = $sessionsCount > 0 ? round(($completedCount / $sessionsCount) * 100) : 0;
 
+        $sessionsByDay = [];
+        foreach ($tasks as $task) {
+            if (!$task instanceof PlanTask) {
+                continue;
+            }
+            $key = $task->getStartAt()->format('Y-m-d');
+            $sessionsByDay[$key] = ($sessionsByDay[$key] ?? 0) + 1;
+        }
+        ksort($sessionsByDay);
+
         // Get user's plans for AI suggest buttons
         $userPlans = $planRepo->createQueryBuilder('p')
             ->where('p.user = :user')
@@ -122,6 +137,8 @@ class PlanningController extends AbstractController
             'totalMinutes' => $totalMinutes,
             'completionRate' => $completionRate,
             'userPlans' => $userPlans,
+            'sessionsChartLabels' => array_keys($sessionsByDay),
+            'sessionsChartData' => array_values($sessionsByDay),
         ]);
     }
 
@@ -189,11 +206,8 @@ class PlanningController extends AbstractController
             $data = $form->getData();
 
             // Get current user or demo user
+            /** @var User $user */
             $user = $this->getUser() ?? $userRepo->findOneBy([]);
-            if (!$user) {
-                $this->addFlash('error', 'Aucun utilisateur disponible.');
-                return $this->redirectToRoute('fo_planning_index');
-            }
 
             $startDate = \DateTimeImmutable::createFromMutable($data['startDate']);
             $endDate = \DateTimeImmutable::createFromMutable($data['endDate']);
@@ -286,11 +300,8 @@ class PlanningController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User $currentUser */
             $currentUser = $this->getUser() ?? $userRepo->findOneBy([]);
-            if (!$currentUser) {
-                $this->addFlash('error', 'Utilisateur non connecté.');
-                return $this->redirectToRoute('fo_planning_index');
-            }
 
             $plan->setUser($currentUser);
             $em->persist($plan);
@@ -353,21 +364,13 @@ class PlanningController extends AbstractController
     public function newSession(Request $request, RevisionPlanRepository $planRepo, UserRepository $userRepo, EntityManagerInterface $em): Response
     {
         // Demo mode: get first non-admin user
+        /** @var User $currentUser */
         $currentUser = $this->getUser() ?? $userRepo->createQueryBuilder('u')
             ->where('u.userType != :admin')
             ->setParameter('admin', 'ADMIN')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
-        
-        if (!$currentUser) {
-            $currentUser = $userRepo->findOneBy([]);
-        }
-        
-        if (!$currentUser) {
-            $this->addFlash('error', 'Utilisateur non connecté.');
-            return $this->redirectToRoute('fo_planning_index');
-        }
 
         // Find or create default plan for manual sessions
         $defaultPlan = $planRepo->findOneBy(['user' => $currentUser, 'title' => 'Sessions Manuelles']);
@@ -550,10 +553,10 @@ class PlanningController extends AbstractController
             );
 
             $suggestionsData = [
-                'log_id' => $data['ai_log_id'] ?? null,
-                'suggestions' => $data['suggestions'] ?? [],
-                'explanation' => $data['explanation'] ?? '',
-                'can_apply' => $data['can_apply'] ?? false,
+                'log_id' => $data['ai_log_id'],
+                'suggestions' => $data['suggestions'],
+                'explanation' => $data['explanation'],
+                'can_apply' => $data['can_apply'],
             ];
 
             // Store suggestions in session for confirmation step
@@ -653,7 +656,7 @@ class PlanningController extends AbstractController
 
             $this->addFlash('success', sprintf(
                 'Suggestions appliquées avec succès ! %d modifications effectuées.',
-                $data['applied_count'] ?? 0
+                $data['applied_count']
             ));
 
             return $this->redirectToRoute('fo_planning_show', ['id' => $id]);

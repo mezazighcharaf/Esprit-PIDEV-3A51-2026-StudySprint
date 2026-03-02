@@ -4,6 +4,7 @@ namespace App\Controller\Fo\Training;
 
 use App\Entity\Flashcard;
 use App\Entity\FlashcardDeck;
+use App\Entity\User;
 use App\Repository\FlashcardDeckRepository;
 use App\Repository\FlashcardRepository;
 use App\Repository\SubjectRepository;
@@ -17,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/fo/training/decks/manage', name: 'fo_training_decks_manage_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class DeckManageController extends AbstractController
 {
     #[Route('/my-decks', name: 'my_decks', methods: ['GET'])]
@@ -24,12 +28,8 @@ class DeckManageController extends AbstractController
         FlashcardDeckRepository $deckRepo,
         UserRepository $userRepo
     ): Response {
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        
-        if (!$user) {
-            $this->addFlash('error', 'Utilisateur non connecté.');
-            return $this->redirectToRoute('fo_training_decks_index');
-        }
 
         $decks = $deckRepo->findBy(['owner' => $user], ['createdAt' => 'DESC']);
 
@@ -47,11 +47,8 @@ class DeckManageController extends AbstractController
         UserRepository $userRepo,
         EntityManagerInterface $em
     ): Response {
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            $this->addFlash('error', 'Utilisateur non connecté.');
-            return $this->redirectToRoute('fo_training_decks_index');
-        }
 
         $subjects = $subjectRepo->findAll();
         $tips = $tipsService->getTips(3);

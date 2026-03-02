@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Repository\UserRepository;
 use App\Repository\SubjectRepository;
 use App\Repository\ChapterRepository;
-use App\Repository\PlanTaskRepository;
 use App\Repository\QuizRepository;
 use App\Repository\QuizAttemptRepository;
 use App\Repository\FlashcardDeckRepository;
@@ -21,7 +20,6 @@ class BoDataProvider
         private readonly UserRepository $userRepo,
         private readonly SubjectRepository $subjectRepo,
         private readonly ChapterRepository $chapterRepo,
-        private readonly PlanTaskRepository $taskRepo,
         private readonly QuizRepository $quizRepo,
         private readonly QuizAttemptRepository $attemptRepo,
         private readonly FlashcardDeckRepository $deckRepo,

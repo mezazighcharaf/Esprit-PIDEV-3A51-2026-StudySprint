@@ -13,6 +13,9 @@ use App\Repository\QuizAttemptRepository;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_ADMIN')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class AdminController extends AbstractController
 {
     public function __construct(
@@ -91,10 +94,10 @@ class AdminController extends AbstractController
 
         $rows = array_map(fn($a) => [
             $a->getId(),
-            $a->getUser()?->getFullName() ?? '-',
-            $a->getQuiz()?->getTitle() ?? '-',
+            $a->getUser()->getFullName(),
+            $a->getQuiz()->getTitle(),
             $a->getScore(),
-            $a->getStartedAt()?->format('d/m/Y H:i'),
+            $a->getStartedAt()->format('d/m/Y H:i'),
             $a->getCompletedAt()?->format('d/m/Y H:i') ?? 'En cours',
         ], $attempts);
 

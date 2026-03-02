@@ -1,50 +1,115 @@
 {% extends 'layouts/bo.html.twig' %}
-{% block title %}Tâches - BO{% endblock %}
-{% block breadcrumb %}Tâches{% endblock %}
+{% block title %}Taches - BO{% endblock %}
+{% block breadcrumb %}Taches{% endblock %}
 
 {% block content %}
 <div class="bo-page-header">
-    <h1 class="bo-page-title">Tâches</h1>
+    <h1 class="bo-page-title">Taches</h1>
     <div class="bo-page-actions"><a href="{{ path('bo_tasks_new') }}" class="btn btn-primary">+ Nouvelle</a></div>
 </div>
+
 <div class="card mb-4"><div class="card-body">
-    <form method="get" class="flex gap-4">
-        <input type="text" name="q" value="{{ q }}" placeholder="Rechercher..." class="form-input" style="max-width:300px;">
-        <button type="submit" class="btn btn-secondary">Rechercher</button>
+    <form method="get" class="grid grid-2 gap-4">
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Recherche</label>
+            <input type="text" name="q" value="{{ q }}" placeholder="Titre tache ou plan..." class="form-input">
+        </div>
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Plan</label>
+            <select name="plan" class="form-input">
+                <option value="">Tous les plans</option>
+                {% for planItem in plans %}
+                    <option value="{{ planItem.id }}" {{ plan == planItem.id ? 'selected' : '' }}>{{ planItem.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Statut</label>
+            <select name="status" class="form-input">
+                <option value="">Tous</option>
+                <option value="TODO" {{ status == 'TODO' ? 'selected' : '' }}>A_FAIRE</option>
+                <option value="DOING" {{ status == 'DOING' ? 'selected' : '' }}>EN_COURS</option>
+                <option value="DONE" {{ status == 'DONE' ? 'selected' : '' }}>TERMINE</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Priorite</label>
+            <select name="priority" class="form-input">
+                <option value="">Toutes</option>
+                <option value="1" {{ priority == 1 ? 'selected' : '' }}>1</option>
+                <option value="2" {{ priority == 2 ? 'selected' : '' }}>2</option>
+                <option value="3" {{ priority == 3 ? 'selected' : '' }}>3</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Date de debut min</label>
+            <input type="date" name="date_from" value="{{ dateFrom }}" class="form-input">
+        </div>
+        <div>
+            <label class="text-muted" style="display: block; margin-bottom: 0.25rem;">Date de debut max</label>
+            <input type="date" name="date_to" value="{{ dateTo }}" class="form-input">
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: end;">
+            <button type="submit" class="btn btn-secondary">Filtrer</button>
+            <a href="{{ path('bo_tasks_index') }}" class="btn btn-ghost">Reinitialiser</a>
+        </div>
     </form>
 </div></div>
+
 {% for message in app.flashes('success') %}<div class="alert alert-success mb-4">{{ message }}</div>{% endfor %}
+{% for message in app.flashes('error') %}<div class="alert mb-4" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;">{{ message }}</div>{% endfor %}
+
+{% set statusMap = {'TODO': 'A_FAIRE', 'DOING': 'EN_COURS', 'DONE': 'TERMINE'} %}
+{% set query = app.request.query.all %}
+
 <div class="card"><table class="bo-table">
     <thead><tr>
-        <th><a href="?q={{ q }}&sort=id&dir={{ sort == 'id' and dir == 'ASC' ? 'desc' : 'asc' }}">ID</a></th>
-        <th><a href="?q={{ q }}&sort=title&dir={{ sort == 'title' and dir == 'ASC' ? 'desc' : 'asc' }}">Titre</a></th>
-        <th>Plan</th>
-        <th><a href="?q={{ q }}&sort=taskType&dir={{ sort == 'taskType' and dir == 'ASC' ? 'desc' : 'asc' }}">Type</a></th>
-        <th><a href="?q={{ q }}&sort=status&dir={{ sort == 'status' and dir == 'ASC' ? 'desc' : 'asc' }}">Statut</a></th>
-        <th><a href="?q={{ q }}&sort=priority&dir={{ sort == 'priority' and dir == 'ASC' ? 'desc' : 'asc' }}">Priorité</a></th>
-        <th><a href="?q={{ q }}&sort=startAt&dir={{ sort == 'startAt' and dir == 'ASC' ? 'desc' : 'asc' }}">Début</a></th>
+        <th><a href="?{{ query|merge({sort: 'id', dir: sort == 'id' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">ID</a></th>
+        <th><a href="?{{ query|merge({sort: 'title', dir: sort == 'title' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Titre</a></th>
+        <th><a href="?{{ query|merge({sort: 'plan', dir: sort == 'plan' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Plan</a></th>
+        <th><a href="?{{ query|merge({sort: 'taskType', dir: sort == 'taskType' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Type</a></th>
+        <th><a href="?{{ query|merge({sort: 'status', dir: sort == 'status' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Statut</a></th>
+        <th><a href="?{{ query|merge({sort: 'priority', dir: sort == 'priority' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Priorite</a></th>
+        <th><a href="?{{ query|merge({sort: 'startAt', dir: sort == 'startAt' and dir == 'ASC' ? 'desc' : 'asc'})|url_encode }}">Debut</a></th>
         <th>Actions</th>
     </tr></thead>
     <tbody>
-        {% for item in items %}<tr>
-            <td>{{ item.id }}</td>
-            <td>{{ item.title }}</td>
-            <td>{{ item.plan.title }}</td>
-            <td>{{ item.taskType }}</td>
-            <td><span class="badge badge-{{ item.status == 'DONE' ? 'success' : (item.status == 'DOING' ? 'warning' : 'secondary') }}">{{ item.status }}</span></td>
-            <td>{{ item.priority }}</td>
-            <td>{{ item.startAt ? item.startAt|date('d/m/Y H:i') : '-' }}</td>
-            <td>
-                <a href="{{ path('bo_tasks_show', {id: item.id}) }}" class="btn btn-ghost btn-sm">Voir</a>
-                <a href="{{ path('bo_tasks_edit', {id: item.id}) }}" class="btn btn-ghost btn-sm">Modifier</a>
-                <form method="post" action="{{ path('bo_tasks_delete', {id: item.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
-                    <button type="submit" class="btn btn-ghost btn-sm text-error">Suppr.</button>
-                </form>
-            </td>
-        </tr>{% else %}<tr><td colspan="8" class="text-center text-muted">Aucune tâche</td></tr>{% endfor %}
+        {% for item in items %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.title }}</td>
+                <td>{{ item.plan.title }}</td>
+                <td>{{ item.taskType }}</td>
+                <td><span class="badge badge-{{ item.status == 'DONE' ? 'success' : (item.status == 'DOING' ? 'warning' : 'secondary') }}">{{ statusMap[item.status] ?? item.status }}</span></td>
+                <td>{{ item.priority }}</td>
+                <td>{{ item.startAt ? item.startAt|date('d/m/Y H:i') : '-' }}</td>
+                <td style="display: flex; gap: 0.35rem; align-items: center;">
+                    <a href="{{ path('bo_tasks_show', {id: item.id}) }}" class="btn btn-ghost btn-sm">Voir</a>
+                    <a href="{{ path('bo_tasks_edit', {id: item.id}) }}" class="btn btn-ghost btn-sm">Modifier</a>
+                    <form method="post" action="{{ path('bo_tasks_toggle', {id: item.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ item.id) }}">
+                        <button type="submit" class="btn btn-ghost btn-sm">{{ item.status == 'DONE' ? 'Reouvrir' : 'Terminer' }}</button>
+                    </form>
+                    <form method="post" action="{{ path('bo_tasks_delete', {id: item.id}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.id) }}">
+                        <button type="submit" class="btn btn-ghost btn-sm text-error">Suppr.</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="8" class="text-center text-muted">Aucune tache</td></tr>
+        {% endfor %}
     </tbody>
 </table>
-{% include 'bo/_pagination.html.twig' with {page: page, totalPages: totalPages, total: total, q: q, sort: sort, dir: dir} %}
+{% include 'bo/_pagination.html.twig' with {
+    page: page,
+    totalPages: totalPages,
+    total: total,
+    q: q,
+    sort: sort,
+    dir: dir,
+    extra_query: {status: status, priority: priority, plan: plan, date_from: dateFrom, date_to: dateTo}
+} %}
 </div>
 {% endblock %}
+

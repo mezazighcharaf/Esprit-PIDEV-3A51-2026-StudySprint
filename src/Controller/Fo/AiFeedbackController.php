@@ -2,6 +2,7 @@
 
 namespace App\Controller\Fo;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -9,6 +10,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Service\AiGatewayService;
 
 #[Route('/fo/ai', name: 'fo_ai_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class AiFeedbackController extends AbstractController
 {
     #[Route('/feedback', name: 'feedback', methods: ['POST'])]
@@ -16,6 +20,7 @@ class AiFeedbackController extends AbstractController
         Request $request,
         AiGatewayService $aiGateway
     ): JsonResponse {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'Non authentifié'], 401);

@@ -19,14 +19,14 @@ class PostLike
 
     #[ORM\ManyToOne(targetEntity: GroupPost::class, inversedBy: 'likes')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?GroupPost $post = null;
+    private GroupPost $post;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
@@ -38,7 +38,7 @@ class PostLike
         return $this->id;
     }
 
-    public function getPost(): ?GroupPost
+    public function getPost(): GroupPost
     {
         return $this->post;
     }
@@ -49,7 +49,7 @@ class PostLike
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Fo;
 
+use App\Entity\User;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,12 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/fo/notifications', name: 'fo_notifications_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class NotificationController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(NotificationRepository $repo): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
+        /** @var User $user */
         $user = $this->getUser();
         $notifications = $repo->findByUser($user, 50);
 
@@ -32,7 +37,9 @@ class NotificationController extends AbstractController
             $this->addFlash('error', 'Token CSRF invalide.');
             return $this->redirectToRoute('fo_notifications_index');
         }
-        $repo->markAllAsRead($this->getUser());
+        /** @var User $user */
+        $user = $this->getUser();
+        $repo->markAllAsRead($user);
         $this->addFlash('success', 'Toutes les notifications ont été marquées comme lues.');
         return $this->redirectToRoute('fo_notifications_index');
     }

@@ -13,6 +13,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Service\AiGatewayService;
 
 #[Route('/bo/chapters', name: 'bo_chapters_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class ChapterController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -171,12 +174,14 @@ class ChapterController extends AbstractController
 
         // Call FastAPI AI Gateway
         try {
-            $data = $aiGateway->summarizeChapter($this->getUser()->getId(), $item->getId());
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $data = $aiGateway->summarizeChapter($user->getId(), $item->getId());
 
             // Update chapter with AI data
-            $item->setAiSummary($data['summary'] ?? null);
-            $item->setAiKeyPoints($data['key_points'] ?? []);
-            $item->setAiTags($data['tags'] ?? []);
+            $item->setAiSummary($data['summary']);
+            $item->setAiKeyPoints($data['key_points']);
+            $item->setAiTags($data['tags']);
 
             $em->flush();
 

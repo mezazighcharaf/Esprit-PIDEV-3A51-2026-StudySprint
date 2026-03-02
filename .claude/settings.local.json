@@ -61,7 +61,14 @@
       "Bash(tasklist.exe:*)",
       "Bash(MSYS_NO_PATHCONV=1 cmd.exe:*)",
       "Bash(ollama run:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(powershell:*)",
+      "Bash(cmd:*)",
+      "Bash(python3:*)",
+      "Bash(composer:*)",
+      "Bash(vendor/bin/phpstan analyse:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)"
     ]
   }
 }

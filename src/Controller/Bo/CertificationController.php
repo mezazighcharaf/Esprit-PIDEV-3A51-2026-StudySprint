@@ -13,6 +13,9 @@ use App\Service\MailerService;
 use App\Service\NotificationService;
 
 #[Route('/bo/certifications', name: 'bo_certifications_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class CertificationController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -89,10 +92,12 @@ class CertificationController extends AbstractController
 
         $certRequest->setStatus(TeacherCertificationRequest::STATUS_APPROVED);
         $certRequest->setReviewedAt(new \DateTimeImmutable());
-        $certRequest->setReviewedBy($this->getUser());
+        /** @var \App\Entity\User $reviewer */
+        $reviewer = $this->getUser();
+        $certRequest->setReviewedBy($reviewer);
 
         // Promote user to TEACHER
-        $certRequest->getUser()->setUserType('TEACHER');
+        $certRequest->getUser()->setRole('TEACHER');
 
         $em->flush();
 
@@ -130,7 +135,9 @@ class CertificationController extends AbstractController
 
         $certRequest->setStatus(TeacherCertificationRequest::STATUS_REJECTED);
         $certRequest->setReviewedAt(new \DateTimeImmutable());
-        $certRequest->setReviewedBy($this->getUser());
+        /** @var \App\Entity\User $reviewer */
+        $reviewer = $this->getUser();
+        $certRequest->setReviewedBy($reviewer);
         $certRequest->setReason($reason ?: null);
 
         $em->flush();

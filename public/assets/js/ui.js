@@ -623,9 +623,17 @@
       if (withContext) {
         return withContext.getAttribute('data-group-id');
       }
+      // FO: look for data-group-id anywhere in sidebar or page
+      const sidebarWidget = document.querySelector('[data-group-id]');
+      if (sidebarWidget) {
+        return sidebarWidget.getAttribute('data-group-id');
+      }
       // FO group detail: extract from URL
       const match = window.location.pathname.match(/\/app\/groupes\/(\d+)/);
-      return match ? match[1] : null;
+      if (match) return match[1];
+      console.error('[MemberManagement] Could not determine groupId');
+      Toast.error('Erreur', 'Impossible de déterminer le groupe.');
+      return null;
     }
   };
 

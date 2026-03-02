@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\BotInteractionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: BotInteractionRepository::class)]
 #[ORM\Table(name: 'bot_interaction')]
@@ -19,11 +20,11 @@ class BotInteraction
 
     #[ORM\ManyToOne(targetEntity: StudyGroup::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?StudyGroup $group = null;
+    private StudyGroup $group;
 
     #[ORM\ManyToOne(targetEntity: GroupPost::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?GroupPost $post = null;
+    private GroupPost $post;
 
     #[ORM\ManyToOne(targetEntity: PostComment::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
@@ -31,15 +32,16 @@ class BotInteraction
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $triggeredBy = null;
+    private User $triggeredBy;
 
     #[ORM\Column(type: 'text')]
-    private ?string $question = null;
+    private string $question;
 
     #[ORM\Column(type: 'text')]
-    private ?string $response = null;
+    private string $response;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Ignore]
     private int $tokensUsed = 0;
 
     #[ORM\Column(type: 'integer', nullable: true)]
@@ -49,7 +51,7 @@ class BotInteraction
     private ?string $feedback = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
@@ -61,7 +63,7 @@ class BotInteraction
         return $this->id;
     }
 
-    public function getGroup(): ?StudyGroup
+    public function getGroup(): StudyGroup
     {
         return $this->group;
     }
@@ -72,7 +74,7 @@ class BotInteraction
         return $this;
     }
 
-    public function getPost(): ?GroupPost
+    public function getPost(): GroupPost
     {
         return $this->post;
     }
@@ -94,7 +96,7 @@ class BotInteraction
         return $this;
     }
 
-    public function getTriggeredBy(): ?User
+    public function getTriggeredBy(): User
     {
         return $this->triggeredBy;
     }
@@ -105,7 +107,7 @@ class BotInteraction
         return $this;
     }
 
-    public function getQuestion(): ?string
+    public function getQuestion(): string
     {
         return $this->question;
     }
@@ -116,7 +118,7 @@ class BotInteraction
         return $this;
     }
 
-    public function getResponse(): ?string
+    public function getResponse(): string
     {
         return $this->response;
     }

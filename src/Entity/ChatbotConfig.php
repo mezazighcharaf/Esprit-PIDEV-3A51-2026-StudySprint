@@ -18,7 +18,7 @@ class ChatbotConfig
 
     #[ORM\OneToOne(targetEntity: StudyGroup::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?StudyGroup $group = null;
+    private StudyGroup $group;
 
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
     private bool $isEnabled = true;
@@ -50,7 +50,7 @@ class ChatbotConfig
     private string $language = 'fr';
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
@@ -65,7 +65,7 @@ class ChatbotConfig
         return $this->id;
     }
 
-    public function getGroup(): ?StudyGroup
+    public function getGroup(): StudyGroup
     {
         return $this->group;
     }

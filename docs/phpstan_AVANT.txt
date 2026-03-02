@@ -1,0 +1,622 @@
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mCommand\StatsCommand.php[39m                                                                                      
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  :38    Call to method App\Repository\QuizAttemptRepository::count() - entity App\Entity\QuizAttempt does not have a  
+         field named $isCompleted.                                                                                     
+         🪪  doctrine.countArgument                                                                                    
+ ------ -------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mController\AdminController.php[39m                                                      
+ ------ ------------------------------------------------------------------------------------ 
+  :94    Expression on left side of ?? is not nullable.                                      
+         🪪  nullCoalesce.expr                                                               
+  :94    Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.    
+         🪪  nullsafe.neverNull                                                              
+  :95    Expression on left side of ?? is not nullable.                                      
+         🪪  nullCoalesce.expr                                                               
+  :95    Using nullsafe method call on non-nullable type App\Entity\Quiz. Use -> instead.    
+         🪪  nullsafe.neverNull                                                              
+  :97    Using nullsafe method call on non-nullable type DateTimeImmutable. Use -> instead.  
+         🪪  nullsafe.neverNull                                                              
+ ------ ------------------------------------------------------------------------------------ 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Api\ChatbotController.php[39m                                                                           
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :73    Negated boolean expression is always false.                                                                    
+         🪪  booleanNot.alwaysFalse                                                                                     
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :153   Negated boolean expression is always false.                                                                    
+         🪪  booleanNot.alwaysFalse                                                                                     
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :193   Negated boolean expression is always false.                                                                    
+         🪪  booleanNot.alwaysFalse                                                                                     
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :265   Negated boolean expression is always false.                                                                    
+         🪪  booleanNot.alwaysFalse                                                                                     
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :300   Negated boolean expression is always false.                                                                    
+         🪪  booleanNot.alwaysFalse                                                                                     
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Bo\CertificationController.php[39m                                                           
+ ------ ---------------------------------------------------------------------------------------------------- 
+  :92    Parameter #1 $reviewedBy of method App\Entity\TeacherCertificationRequest::setReviewedBy() expects  
+         App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.                
+         🪪  argument.type                                                                                   
+  :95    Call to an undefined method App\Entity\User::setUserType().                                         
+         🪪  method.notFound                                                                                 
+  :133   Parameter #1 $reviewedBy of method App\Entity\TeacherCertificationRequest::setReviewedBy() expects  
+         App\Entity\User|null, Symfony\Component\Security\Core\User\UserInterface|null given.                
+         🪪  argument.type                                                                                   
+ ------ ---------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Bo\ChapterController.php[39m                                                                            
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :174   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().                       
+         🪪  method.notFound                                                                                            
+  :177   Offset 'summary' on array{summary: string, key_points: array, tags: array, ai_log_id: int} on left side of ??  
+         always exists and is not nullable.                                                                             
+         🪪  nullCoalesce.offset                                                                                        
+  :178   Offset 'key_points' on array{summary: string, key_points: array, tags: array, ai_log_id: int} on left side of  
+         ?? always exists and is not nullable.                                                                          
+         🪪  nullCoalesce.offset                                                                                        
+  :179   Offset 'tags' on array{summary: string, key_points: array, tags: array, ai_log_id: int} on left side of ??     
+         always exists and is not nullable.                                                                             
+         🪪  nullCoalesce.offset                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Bo\QuizController.php[39m                                                     
+ ------ ------------------------------------------------------------------------------------- 
+  :56    Expression on left side of ?? is not nullable.                                       
+         🪪  nullCoalesce.expr                                                                
+  :58    Expression on left side of ?? is not nullable.                                       
+         🪪  nullCoalesce.expr                                                                
+  :58    Using nullsafe method call on non-nullable type App\Entity\Subject. Use -> instead.  
+         🪪  nullsafe.neverNull                                                               
+  :59    Using nullsafe method call on non-nullable type DateTimeImmutable. Use -> instead.   
+         🪪  nullsafe.neverNull                                                               
+ ------ ------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mController\Fo\AiFeedbackController.php[39m                                                    
+ ------ ------------------------------------------------------------------------------------------ 
+  :33    Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().  
+         🪪  method.notFound                                                                       
+ ------ ------------------------------------------------------------------------------------------ 
+
+ ------- -------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m    [32mController\Fo\GroupsController.php[39m                                                                            
+ ------- -------------------------------------------------------------------------------------------------------------- 
+  :68     Property App\Controller\Fo\GroupsController::$roleChecker is never read, only written.                        
+          🪪  property.onlyWritten                                                                                      
+          💡  See: https://phpstan.org/developing-extensions/always-read-written-properties                             
+  :71     Property App\Controller\Fo\GroupsController::$avatarService is never read, only written.                      
+          🪪  property.onlyWritten                                                                                      
+          💡  See: https://phpstan.org/developing-extensions/always-read-written-properties                             
+  :332    If condition is always false.                                                                                 
+          🪪  if.alwaysFalse                                                                                            
+  :399    If condition is always false.                                                                                 
+          🪪  if.alwaysFalse                                                                                            
+  :429    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :468    If condition is always false.                                                                                 
+          🪪  if.alwaysFalse                                                                                            
+  :485    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :516    If condition is always false.                                                                                 
+          🪪  if.alwaysFalse                                                                                            
+  :535    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :599    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :609    Call to protected method getEntityManager() of class Doctrine\ORM\EntityRepository<App\Entity\StudyGroup>.    
+          🪪  method.protected                                                                                          
+  :646    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :650    Call to protected method getEntityManager() of class Doctrine\ORM\EntityRepository<App\Entity\StudyGroup>.    
+          🪪  method.protected                                                                                          
+  :680    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :704    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :742    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :881    Ternary operator condition is always true.                                                                    
+          🪪  ternary.alwaysTrue                                                                                        
+  :970    Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1020   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1072   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1204   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1234   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1267   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1363   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1475   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+  :1502   Negated boolean expression is always false.                                                                   
+          🪪  booleanNot.alwaysFalse                                                                                    
+          💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertai[39m  
+          [36mn: false[39m in your [36mphpstan.neon[39m.                                                                                
+ ------- -------------------------------------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\NotificationController.php[39m                                                                      
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  :20    Parameter #1 $user of method App\Repository\NotificationRepository::findByUser() expects App\Entity\User,     
+         Symfony\Component\Security\Core\User\UserInterface|null given.                                                
+         🪪  argument.type                                                                                             
+  :35    Parameter #1 $user of method App\Repository\NotificationRepository::markAllAsRead() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface|null given.                                                
+         🪪  argument.type                                                                                             
+ ------ -------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\PlanningController.php[39m                                                                           
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :84    Call to protected method getEntityManager() of class Doctrine\ORM\EntityRepository<App\Entity\PlanTask>.       
+         🪪  method.protected                                                                                           
+  :211   Parameter #1 $user of method App\Service\PlanGeneratorService::findOverlappingPlan() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :241   Parameter #1 $user of method App\Service\PlanGeneratorService::generatePlan() expects App\Entity\User,         
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :295   Parameter #1 $user of method App\Entity\RevisionPlan::setUser() expects App\Entity\User,                       
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :553   Offset 'ai_log_id' on array{suggestions: array, explanation: string, ai_log_id: int, can_apply: bool} on left  
+         side of ?? always exists and is not nullable.                                                                  
+         🪪  nullCoalesce.offset                                                                                        
+  :554   Offset 'suggestions' on array{suggestions: array, explanation: string, ai_log_id: int, can_apply: bool} on     
+         left side of ?? always exists and is not nullable.                                                             
+         🪪  nullCoalesce.offset                                                                                        
+  :555   Offset 'explanation' on array{suggestions: array, explanation: string, ai_log_id: int, can_apply: bool} on     
+         left side of ?? always exists and is not nullable.                                                             
+         🪪  nullCoalesce.offset                                                                                        
+  :556   Offset 'can_apply' on array{suggestions: array, explanation: string, ai_log_id: int, can_apply: bool} on left  
+         side of ?? always exists and is not nullable.                                                                  
+         🪪  nullCoalesce.offset                                                                                        
+  :656   Offset 'applied_count' on array{message: string, applied_count: int, total_suggestions: int} on left side of   
+         ?? always exists and is not nullable.                                                                          
+         🪪  nullCoalesce.offset                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\ProfileController.php[39m                                                                            
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :30    Parameter #1 $user of method App\Repository\TeacherCertificationRequestRepository::findLatestByUser() expects  
+         App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                                     
+         🪪  argument.type                                                                                              
+  :31    Parameter #1 $user of method App\Repository\UserBadgeRepository::findByUser() expects App\Entity\User,         
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :48    Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getProfile().                  
+         🪪  method.notFound                                                                                            
+  :51    Parameter #1 $user of method App\Entity\UserProfile::setUser() expects App\Entity\User,                        
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :52    Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::setProfile().                  
+         🪪  method.notFound                                                                                            
+  :115   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getProfile().                  
+         🪪  method.notFound                                                                                            
+  :120   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().                       
+         🪪  method.notFound                                                                                            
+  :129   Parameter #1 $user of method App\Entity\UserProfile::setUser() expects App\Entity\User,                        
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :146   Offset 'ai_log_id' on array{suggested_bio: string|null, suggested_goals: string|null, suggested_routine:       
+         string|null, ai_log_id: int} on left side of ?? always exists and is not nullable.                             
+         🪪  nullCoalesce.offset                                                                                        
+  :178   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::isCertifiedTeacher().          
+         🪪  method.notFound                                                                                            
+  :184   Parameter #1 $user of method App\Repository\TeacherCertificationRequestRepository::hasPendingRequest()         
+         expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                             
+         🪪  argument.type                                                                                              
+  :192   Parameter #1 $user of method App\Entity\TeacherCertificationRequest::setUser() expects App\Entity\User,        
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\SubjectsController.php[39m                                                           
+ ------ ----------------------------------------------------------------------------------------------- 
+  :46    Parameter #1 $createdBy of method App\Entity\Subject::setCreatedBy() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface given.                                      
+         🪪  argument.type                                                                              
+  :88    Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().       
+         🪪  method.notFound                                                                            
+  :90    Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+  :119   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().       
+         🪪  method.notFound                                                                            
+  :121   Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+  :166   Parameter #1 $createdBy of method App\Entity\Chapter::setCreatedBy() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface given.                                      
+         🪪  argument.type                                                                              
+  :190   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().       
+         🪪  method.notFound                                                                            
+  :192   Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+  :193   Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+  :231   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().       
+         🪪  method.notFound                                                                            
+  :232   Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+  :233   Using nullsafe method call on non-nullable type App\Entity\User. Use -> instead.               
+         🪪  nullsafe.neverNull                                                                         
+ ------ ----------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\Training\DeckController.php[39m                                                                      
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :69    Parameter #1 $user of method App\Repository\FlashcardReviewStateRepository::countDueCardsForUserAndDeck()      
+         expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                             
+         🪪  argument.type                                                                                              
+  :101   Parameter #1 $user of method App\Repository\FlashcardReviewStateRepository::findDueCardsForUserAndDeck()       
+         expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                             
+         🪪  argument.type                                                                                              
+  :118   Parameter #1 $user of method App\Repository\FlashcardReviewStateRepository::findNewCardsForUserAndDeck()       
+         expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                             
+         🪪  argument.type                                                                                              
+  :124   Parameter #1 $user of method App\Service\Sm2SchedulerService::createInitialState() expects App\Entity\User,    
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :203   Parameter #1 $user of method App\Repository\FlashcardReviewStateRepository::countDueCardsForUserAndDeck()      
+         expects App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                             
+         🪪  argument.type                                                                                              
+  :298   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().                       
+         🪪  method.notFound                                                                                            
+  :306   Offset 'deck_id' on array{deck_id: int, title: string, cards_count: int, ai_log_id: int, message: string} on   
+         left side of ?? always exists and is not nullable.                                                             
+         🪪  nullCoalesce.offset                                                                                        
+  :313   Offset 'cards_count' on array{deck_id: int, title: string, cards_count: int, ai_log_id: int, message: string}  
+         on left side of ?? always exists and is not nullable.                                                          
+         🪪  nullCoalesce.offset                                                                                        
+  :314   Offset 'ai_log_id' on array{deck_id: int, title: string, cards_count: int, ai_log_id: int, message: string}    
+         on left side of ?? always exists and is not nullable.                                                          
+         🪪  nullCoalesce.offset                                                                                        
+  :320   Offset 'cards_count' on array{deck_id: int, title: string, cards_count: int, ai_log_id: int, message: string}  
+         on left side of ?? always exists and is not nullable.                                                          
+         🪪  nullCoalesce.offset                                                                                        
+  :343   Cannot call method toArray() on array.                                                                         
+         🪪  method.nonObject                                                                                           
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\Training\DeckManageController.php[39m                                              
+ ------ --------------------------------------------------------------------------------------------- 
+  :79    Parameter #1 $owner of method App\Entity\FlashcardDeck::setOwner() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface given.                                    
+         🪪  argument.type                                                                            
+ ------ --------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mController\Fo\Training\QuizController.php[39m                                                                      
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :66    Parameter #1 $user of method App\Repository\QuizAttemptRepository::findByUser() expects App\Entity\User,       
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :90    Parameter #1 $user of method App\Repository\QuizRatingRepository::findByUserAndQuiz() expects                  
+         App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                                     
+         🪪  argument.type                                                                                              
+  :128   Parameter #1 $user of method App\Repository\QuizAttemptRepository::findIncompleteByUserAndQuiz() expects       
+         App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                                     
+         🪪  argument.type                                                                                              
+  :138   Parameter #1 $user of method App\Entity\QuizAttempt::setUser() expects App\Entity\User,                        
+         Symfony\Component\Security\Core\User\UserInterface given.                                                      
+         🪪  argument.type                                                                                              
+  :248   If condition is always true.                                                                                   
+         🪪  if.alwaysTrue                                                                                              
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :253   If condition is always true.                                                                                   
+         🪪  if.alwaysTrue                                                                                              
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :322   Parameter #1 $user of method App\Repository\QuizRatingRepository::findByUserAndQuiz() expects                  
+         App\Entity\User, Symfony\Component\Security\Core\User\UserInterface given.                                     
+         🪪  argument.type                                                                                              
+  :404   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().                       
+         🪪  method.notFound                                                                                            
+  :412   Offset 'quiz_id' on array{quiz_id: int, title: string, questions_count: int, difficulty: string, ai_log_id:    
+         int, message: string} on left side of ?? always exists and is not nullable.                                    
+         🪪  nullCoalesce.offset                                                                                        
+  :419   Offset 'questions_count' on array{quiz_id: int, title: string, questions_count: int, difficulty: string,       
+         ai_log_id: int, message: string} on left side of ?? always exists and is not nullable.                         
+         🪪  nullCoalesce.offset                                                                                        
+  :420   Offset 'ai_log_id' on array{quiz_id: int, title: string, questions_count: int, difficulty: string, ai_log_id:  
+         int, message: string} on left side of ?? always exists and is not nullable.                                    
+         🪪  nullCoalesce.offset                                                                                        
+  :426   Offset 'questions_count' on array{quiz_id: int, title: string, questions_count: int, difficulty: string,       
+         ai_log_id: int, message: string} on left side of ?? always exists and is not nullable.                         
+         🪪  nullCoalesce.offset                                                                                        
+  :466   Parameter #1 $user of method App\Repository\QuizRatingRepository::findByUserAndQuiz() expects                  
+         App\Entity\User, Symfony\Component\Security\Core\User\UserInterface|null given.                                
+         🪪  argument.type                                                                                              
+  :470   Parameter #1 $user of method App\Entity\QuizRating::setUser() expects App\Entity\User,                         
+         Symfony\Component\Security\Core\User\UserInterface|null given.                                                 
+         🪪  argument.type                                                                                              
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mController\Fo\Training\QuizManageController.php[39m                                           
+ ------ ------------------------------------------------------------------------------------------ 
+  :121   Parameter #1 $owner of method App\Entity\Quiz::setOwner() expects App\Entity\User,        
+         Symfony\Component\Security\Core\User\UserInterface given.                                 
+         🪪  argument.type                                                                         
+  :258   Call to an undefined method Symfony\Component\Security\Core\User\UserInterface::getId().  
+         🪪  method.notFound                                                                       
+ ------ ------------------------------------------------------------------------------------------ 
+
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\BotInteraction.php[39m                                                                                  
+ ------ ----------------------------------------------------------------------------------------------------------- 
+  :22    Property App\Entity\BotInteraction::$group type mapping mismatch: property can contain                     
+         App\Entity\StudyGroup|null but database expects App\Entity\StudyGroup.                                     
+         🪪  doctrine.associationType                                                                               
+  :26    Property App\Entity\BotInteraction::$post type mapping mismatch: property can contain                      
+         App\Entity\GroupPost|null but database expects App\Entity\GroupPost.                                       
+         🪪  doctrine.associationType                                                                               
+  :34    Property App\Entity\BotInteraction::$triggeredBy type mapping mismatch: property can contain               
+         App\Entity\User|null but database expects App\Entity\User.                                                 
+         🪪  doctrine.associationType                                                                               
+  :37    Property App\Entity\BotInteraction::$question type mapping mismatch: property can contain string|null but  
+         database expects string.                                                                                   
+         🪪  doctrine.columnType                                                                                    
+  :40    Property App\Entity\BotInteraction::$response type mapping mismatch: property can contain string|null but  
+         database expects string.                                                                                   
+         🪪  doctrine.columnType                                                                                    
+  :52    Property App\Entity\BotInteraction::$createdAt type mapping mismatch: property can contain                 
+         DateTimeImmutable|null but database expects DateTimeImmutable.                                             
+         🪪  doctrine.columnType                                                                                    
+ ------ ----------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\ChatbotConfig.php[39m                                                                   
+ ------ ------------------------------------------------------------------------------------------- 
+  :21    Property App\Entity\ChatbotConfig::$group type mapping mismatch: property can contain      
+         App\Entity\StudyGroup|null but database expects App\Entity\StudyGroup.                     
+         🪪  doctrine.associationType                                                               
+  :53    Property App\Entity\ChatbotConfig::$createdAt type mapping mismatch: property can contain  
+         DateTimeImmutable|null but database expects DateTimeImmutable.                             
+         🪪  doctrine.columnType                                                                    
+ ------ ------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\PostComment.php[39m                                                                                         
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :24    Property App\Entity\PostComment::$post type mapping mismatch: property can contain App\Entity\GroupPost|null   
+         but database expects App\Entity\GroupPost.                                                                     
+         🪪  doctrine.associationType                                                                                   
+  :28    Property App\Entity\PostComment::$author type mapping mismatch: property can contain App\Entity\User|null but  
+         database expects App\Entity\User.                                                                              
+         🪪  doctrine.associationType                                                                                   
+  :43    Property App\Entity\PostComment::$body type mapping mismatch: property can contain string|null but database    
+         expects string.                                                                                                
+         🪪  doctrine.columnType                                                                                        
+  :52    Property App\Entity\PostComment::$createdAt type mapping mismatch: property can contain                        
+         DateTimeImmutable|null but database expects DateTimeImmutable.                                                 
+         🪪  doctrine.columnType                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\PostLike.php[39m                                                                                            
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :22    Property App\Entity\PostLike::$post type mapping mismatch: property can contain App\Entity\GroupPost|null but  
+         database expects App\Entity\GroupPost.                                                                         
+         🪪  doctrine.associationType                                                                                   
+  :26    Property App\Entity\PostLike::$user type mapping mismatch: property can contain App\Entity\User|null but       
+         database expects App\Entity\User.                                                                              
+         🪪  doctrine.associationType                                                                                   
+  :29    Property App\Entity\PostLike::$createdAt type mapping mismatch: property can contain DateTimeImmutable|null    
+         but database expects DateTimeImmutable.                                                                        
+         🪪  doctrine.columnType                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\PostRating.php[39m                                                                                          
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :23    Property App\Entity\PostRating::$post type mapping mismatch: property can contain App\Entity\GroupPost|null    
+         but database expects App\Entity\GroupPost.                                                                     
+         🪪  doctrine.associationType                                                                                   
+  :27    Property App\Entity\PostRating::$user type mapping mismatch: property can contain App\Entity\User|null but     
+         database expects App\Entity\User.                                                                              
+         🪪  doctrine.associationType                                                                                   
+  :36    Property App\Entity\PostRating::$rating type mapping mismatch: property can contain int|null but database      
+         expects int.                                                                                                   
+         🪪  doctrine.columnType                                                                                        
+  :39    Property App\Entity\PostRating::$createdAt type mapping mismatch: property can contain DateTimeImmutable|null  
+         but database expects DateTimeImmutable.                                                                        
+         🪪  doctrine.columnType                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\ReactivationRequest.php[39m                                                                                
+ ------ -------------------------------------------------------------------------------------------------------------- 
+  :18    Property App\Entity\ReactivationRequest::$user type mapping mismatch: property can contain                    
+         App\Entity\User|null but database expects App\Entity\User.                                                    
+         🪪  doctrine.associationType                                                                                  
+  :21    Property App\Entity\ReactivationRequest::$createdAt type mapping mismatch: property can contain               
+         DateTimeImmutable|null but database expects DateTimeImmutable.                                                
+         🪪  doctrine.columnType                                                                                       
+  :24    Property App\Entity\ReactivationRequest::$status type mapping mismatch: property can contain string|null but  
+         database expects string.                                                                                      
+         🪪  doctrine.columnType                                                                                       
+ ------ -------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\Student.php[39m                                                                                           
+ ------ ------------------------------------------------------------------------------------------------------------- 
+  :14    Property App\Entity\Student::$age type mapping mismatch: property can contain int|null but database expects  
+         int.                                                                                                         
+         🪪  doctrine.columnType                                                                                      
+  :18    Property App\Entity\Student::$sexe type mapping mismatch: property can contain string|null but database      
+         expects string.                                                                                              
+         🪪  doctrine.columnType                                                                                      
+  :22    Property App\Entity\Student::$etablissement type mapping mismatch: property can contain string|null but      
+         database expects string.                                                                                     
+         🪪  doctrine.columnType                                                                                      
+  :26    Property App\Entity\Student::$niveau type mapping mismatch: property can contain string|null but database    
+         expects string.                                                                                              
+         🪪  doctrine.columnType                                                                                      
+ ------ ------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\StudyGroup.php[39m                                                                                          
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :35    Property App\Entity\StudyGroup::$name type mapping mismatch: property can contain string|null but database     
+         expects string.                                                                                                
+         🪪  doctrine.columnType                                                                                        
+  :54    Property App\Entity\StudyGroup::$createdBy type mapping mismatch: property can contain App\Entity\User|null    
+         but database expects App\Entity\User.                                                                          
+         🪪  doctrine.associationType                                                                                   
+  :57    Property App\Entity\StudyGroup::$createdAt type mapping mismatch: property can contain DateTimeImmutable|null  
+         but database expects DateTimeImmutable.                                                                        
+         🪪  doctrine.columnType                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mEntity\User.php[39m                                                                                                
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :31    Property App\Entity\User::$nom type mapping mismatch: property can contain string|null but database expects    
+         string.                                                                                                        
+         🪪  doctrine.columnType                                                                                        
+  :35    Property App\Entity\User::$prenom type mapping mismatch: property can contain string|null but database         
+         expects string.                                                                                                
+         🪪  doctrine.columnType                                                                                        
+  :40    Property App\Entity\User::$email type mapping mismatch: property can contain string|null but database expects  
+         string.                                                                                                        
+         🪪  doctrine.columnType                                                                                        
+  :43    Property App\Entity\User::$motDePasse type mapping mismatch: property can contain string|null but database     
+         expects string.                                                                                                
+         🪪  doctrine.columnType                                                                                        
+  :49    Property App\Entity\User::$statut type mapping mismatch: property can contain string|null but database         
+         expects string.                                                                                                
+         🪪  doctrine.columnType                                                                                        
+  :52    Property App\Entity\User::$dateInscription type mapping mismatch: property can contain DateTimeImmutable|null  
+         but database expects DateTimeImmutable.                                                                        
+         🪪  doctrine.columnType                                                                                        
+  :161   Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.                       
+         🪪  nullCoalesce.offset                                                                                        
+  :162   Offset 0 on non-empty-list<string> on left side of ?? always exists and is not nullable.                       
+         🪪  nullCoalesce.offset                                                                                        
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mService\AI\GeminiChatbotService.php[39m                                                       
+ ------ ------------------------------------------------------------------------------------------ 
+  :31    Property App\Service\AI\GeminiChatbotService::$geminiApiKey is never read, only written.  
+         🪪  property.onlyWritten                                                                  
+         💡  See: https://phpstan.org/developing-extensions/always-read-written-properties         
+  :258   Expression on left side of ?? is not nullable.                                            
+         🪪  nullCoalesce.expr                                                                     
+  :266   Expression on left side of ?? is not nullable.                                            
+         🪪  nullCoalesce.expr                                                                     
+ ------ ------------------------------------------------------------------------------------------ 
+
+ ------ ----------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mService\BoDataProvider.php[39m                                                         
+ ------ ----------------------------------------------------------------------------------- 
+  :24    Property App\Service\BoDataProvider::$taskRepo is never read, only written.        
+         🪪  property.onlyWritten                                                           
+         💡  See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ----------------------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mService\GroupInputValidator.php[39m                                                    
+ ------ ----------------------------------------------------------------------------------- 
+  :35    Property App\Service\GroupInputValidator::$validator is never read, only written.  
+         🪪  property.onlyWritten                                                           
+         💡  See: https://phpstan.org/developing-extensions/always-read-written-properties  
+ ------ ----------------------------------------------------------------------------------- 
+
+ ------ ---------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mService\GroupService.php[39m                                                                      
+ ------ ---------------------------------------------------------------------------------------------- 
+  :197   Using nullsafe property access "?->value" on left side of ?? is unnecessary. Use -> instead.  
+         🪪  nullsafe.neverNull                                                                        
+ ------ ---------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mService\QrCodeService.php[39m                                                     
+ ------ ------------------------------------------------------------------------------ 
+  :26    Call to an undefined static method Endroid\QrCode\Builder\Builder::create().  
+         🪪  staticMethod.notFound                                                     
+  :40    Call to an undefined static method Endroid\QrCode\Builder\Builder::create().  
+         🪪  staticMethod.notFound                                                     
+ ------ ------------------------------------------------------------------------------ 
+
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  [32mLine[39m   [32mService\QuizScoringService.php[39m                                                                                 
+ ------ --------------------------------------------------------------------------------------------------------------- 
+  :38    Call to function is_int() with int will always evaluate to true.                                               
+         🪪  function.alreadyNarrowedType                                                                               
+         💡  Because the type is coming from a PHPDoc, you can turn off this check by setting [36mtreatPhpDocTypesAsCertain[39m  
+         [36m: false[39m in your [36mphpstan.neon[39m.                                                                                  
+  :67    Comparison operation ">" between int<1, max> and 0 is always true.                                             
+         🪪  greater.alwaysTrue                                                                                         
+ ------ --------------------------------------------------------------------------------------------------------------- 
+
+ ------ ------------------------------------------------------------------------------------------------------------ 
+  [32mLine[39m   [32mTwig\NotificationExtension.php[39m                                                                              
+ ------ ------------------------------------------------------------------------------------------------------------ 
+  :24    Parameter #1 $user of method App\Repository\NotificationRepository::countUnread() expects App\Entity\User,  
+         Symfony\Component\Security\Core\User\UserInterface given.                                                   
+         🪪  argument.type                                                                                           
+ ------ ------------------------------------------------------------------------------------------------------------ 
+
+[37;41m                                                                                                                       [39;49m
+[37;41m [ERROR] Found 160 errors                                                                                              [39;49m
+[37;41m                                                                                                                       [39;49m
+

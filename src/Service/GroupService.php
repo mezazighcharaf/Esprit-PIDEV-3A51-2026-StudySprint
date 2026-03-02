@@ -194,7 +194,7 @@ class GroupService
                 }
             }
 
-            $roleValue = $targetRole?->value ?? ($newRole instanceof GroupRole ? $newRole->value : $newRole);
+            $roleValue = $targetRole->value;
             $groupMember->setMemberRole($roleValue);
             $this->entityManager->flush();
         }

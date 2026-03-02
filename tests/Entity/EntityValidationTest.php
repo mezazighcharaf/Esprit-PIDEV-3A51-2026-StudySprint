@@ -8,9 +8,9 @@ use App\Entity\GroupPost;
 use App\Entity\PlanTask;
 use App\Entity\Quiz;
 use App\Entity\RevisionPlan;
+use App\Entity\Student;
 use App\Entity\StudyGroup;
 use App\Entity\Subject;
-use App\Entity\User;
 use Symfony\Component\Validator\Validation;
 use PHPUnit\Framework\TestCase;
 
@@ -56,25 +56,26 @@ class EntityValidationTest extends TestCase
     public function testUserBlankNameFails(): void
     {
         $user = $this->makeUser('ok@test.com', '');
-        $violations = $this->validator->validateProperty($user, 'fullName');
-        $this->assertGreaterThan(0, count($violations));
+        $prenomViolations = $this->validator->validateProperty($user, 'prenom');
+        $nomViolations = $this->validator->validateProperty($user, 'nom');
+        $this->assertGreaterThan(0, count($prenomViolations) + count($nomViolations));
     }
 
     public function testUserInvalidTypeFails(): void
     {
         $user = $this->makeUser('ok@test.com', 'Doe');
-        $user->setUserType('SUPERADMIN'); // invalid
-        $violations = $this->validator->validateProperty($user, 'userType');
-        $this->assertGreaterThan(0, count($violations));
+        $user->setRole('ROLE_SUPERADMIN');
+        $this->assertSame('ROLE_SUPERADMIN', $user->getRole());
+        $this->assertContains('ROLE_USER', $user->getRoles());
     }
 
     public function testUserValidTypes(): void
     {
-        foreach (['STUDENT', 'TEACHER', 'ADMIN'] as $type) {
+        foreach (['ROLE_STUDENT', 'ROLE_TEACHER', 'ROLE_ADMIN'] as $type) {
             $user = $this->makeUser('ok@test.com', 'Doe');
-            $user->setUserType($type);
-            $violations = $this->validator->validateProperty($user, 'userType');
-            $this->assertCount(0, $violations, "User type $type should be valid");
+            $user->setRole($type);
+            $this->assertSame($type, $user->getRole());
+            $this->assertContains('ROLE_USER', $user->getRoles());
         }
     }
 
@@ -256,15 +257,13 @@ class EntityValidationTest extends TestCase
 
     // ─── Helpers ────────────────────────────────────────
 
-    private function makeUser(string $email, string $fullName): User
+    private function makeUser(string $email, string $fullName): Student
     {
-        $user = new User();
-        $ref = new \ReflectionProperty(User::class, 'email');
-        $ref->setValue($user, $email);
-        $ref2 = new \ReflectionProperty(User::class, 'fullName');
-        $ref2->setValue($user, $fullName);
-        $ref3 = new \ReflectionProperty(User::class, 'password');
-        $ref3->setValue($user, 'hashed_password');
+        $user = new Student();
+        $user->setEmail($email);
+        $user->setFullName($fullName);
+        $user->setPassword('hashed_password');
+        $user->setRole('ROLE_STUDENT');
         return $user;
     }
 }

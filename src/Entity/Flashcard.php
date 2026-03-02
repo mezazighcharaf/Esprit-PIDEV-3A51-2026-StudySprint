@@ -40,7 +40,7 @@ class Flashcard
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, FlashcardReviewState> */
-    #[ORM\OneToMany(targetEntity: FlashcardReviewState::class, mappedBy: 'flashcard', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: FlashcardReviewState::class, mappedBy: 'flashcard', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $reviewStates;
 
     public function __construct()

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -28,36 +29,38 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    private ?string $nom = null;
+    private string $nom = '';
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    private ?string $prenom = null;
+    private string $prenom = '';
 
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
-    private ?string $email = null;
+    private string $email = '';
 
     #[ORM\Column(length: 255)]
-    private ?string $motDePasse = null;
+    private string $motDePasse = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $role = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $statut = 'actif';
+    private string $statut = 'actif';
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $dateInscription = null;
+    private \DateTimeImmutable $dateInscription;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Ignore]
     private ?string $resetToken = null;
 
     #[ORM\Column(nullable: true)]
+    #[Ignore]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
     #[ORM\Column(nullable: true)]
@@ -83,7 +86,7 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // ──── Our relations ────────────────────────────────────────
 
-    #[ORM\OneToOne(targetEntity: UserProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: UserProfile::class, mappedBy: 'user', cascade: ['persist'], orphanRemoval: true)]
     private ?UserProfile $profile = null;
 
     /** @var Collection<int, Subject> */
@@ -158,8 +161,8 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFullName(string $fullName): static
     {
         $parts = explode(' ', trim($fullName), 2);
-        $this->prenom = $parts[0] ?? '';
-        $this->nom    = $parts[1] ?? $parts[0] ?? '';
+        $this->prenom = $parts[0];
+        $this->nom    = $parts[1] ?? $parts[0];
         return $this;
     }
 

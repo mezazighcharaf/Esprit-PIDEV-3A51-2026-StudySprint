@@ -18,16 +18,15 @@ use App\Repository\PostRatingRepository;
 use App\Repository\StudyGroupRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\GroupVoter;
-use App\Service\AvatarService;
 use App\Service\ContentSanitizer;
 use App\Service\FormattingService;
 use App\Service\GroupInputValidator;
 use App\Service\GroupInvitationService;
-use App\Service\GroupRoleChecker;
 use App\Service\GroupService;
 use App\Service\InvitationMailer;
 use App\Service\PostInteractionService;
 use App\Service\PostService;
+use App\Service\QrCodeService;
 use App\Service\TranslationService;
 use App\Service\AI\GeminiChatbotService;
 use App\Repository\ChatbotConfigRepository;
@@ -37,10 +36,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class GroupsController extends AbstractController
 {
     // Input validation constants
@@ -65,11 +68,10 @@ class GroupsController extends AbstractController
         private CsrfTokenManagerInterface $csrfTokenManager,
         private FormattingService $formattingService,
         private ValidatorInterface $validator,
-        private GroupRoleChecker $roleChecker,
         private GroupInputValidator $inputValidator,
         private ContentSanitizer $contentSanitizer,
-        private AvatarService $avatarService,
         private TranslationService $translationService,
+        private QrCodeService $qrCodeService,
         private GeminiChatbotService $chatbotService,
         private ChatbotConfigRepository $chatbotConfigRepository,
         private EntityManagerInterface $entityManager,
@@ -138,6 +140,12 @@ class GroupsController extends AbstractController
                 $group = $membership->getGroup();
                 $groupId = $group->getId();
                 $members = $membersByGroup[$groupId] ?? [];
+                $groupShareUrl = $this->generateUrl(
+                    'app_group_detail',
+                    ['id' => $groupId],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                );
+                $groupShareQrCode = $this->qrCodeService->generateForUrl($groupShareUrl);
                 
                 $userGroups[] = [
                     'id' => $groupId,
@@ -152,6 +160,8 @@ class GroupsController extends AbstractController
                     'subject' => $group->getSubject(),
                     'privacy' => $group->getPrivacy(),
                     'created_at' => $this->formattingService->formatTimeAgo($group->getCreatedAt()),
+                    'share_url' => $groupShareUrl,
+                    'share_qr_code' => $groupShareQrCode,
                 ];
             }
 
@@ -176,6 +186,19 @@ class GroupsController extends AbstractController
             $sentInvitations = $this->invitationRepository->findSent($user);
             $sentInvitationsData = [];
             foreach ($sentInvitations as $invitation) {
+                $token = $invitation->getToken();
+                $invitationUrl = null;
+                $invitationQrCode = null;
+
+                if (is_string($token) && $token !== '') {
+                    $invitationUrl = $this->generateUrl(
+                        'app_invitation_accept_token',
+                        ['token' => $token],
+                        UrlGeneratorInterface::ABSOLUTE_URL
+                    );
+                    $invitationQrCode = $this->qrCodeService->generateForUrl($invitationUrl);
+                }
+
                 $sentInvitationsData[] = [
                     'id' => $invitation->getId(),
                     'group' => [
@@ -187,6 +210,8 @@ class GroupsController extends AbstractController
                     'invitedAt' => $invitation->getInvitedAt(),
                     'status' => $invitation->getStatus(),
                     'role' => $invitation->getRole(),
+                    'invitation_url' => $invitationUrl,
+                    'invitation_qr_code' => $invitationQrCode,
                 ];
             }
         }
@@ -329,9 +354,6 @@ class GroupsController extends AbstractController
                     $this->addFlash('success', 'Groupe créé avec succès');
                     return $this->redirectToRoute('app_group_detail', ['id' => $group->getId()]);
                 } catch (\Exception $e) {
-                    if ($isAjax) {
-                        return $this->errorResponse('Erreur lors de la création du groupe');
-                    }
                     $this->addFlash('danger', 'Erreur lors de la création du groupe');
                 }
             } else {
@@ -396,9 +418,6 @@ class GroupsController extends AbstractController
                     $this->addFlash('success', 'Groupe modifié avec succès');
                     return $this->redirectToRoute('app_group_detail', ['id' => $group->getId()]);
                 } catch (\Exception $e) {
-                    if ($isAjax) {
-                        return $this->errorResponse('Erreur lors de la modification du groupe');
-                    }
                     $this->addFlash('danger', 'Erreur lors de la modification du groupe');
                 }
             } else {
@@ -425,13 +444,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-
-        if (!$user) {
-            if ($isAjax) {
-                return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-            }
-            return $this->redirectToRoute('app_login');
-        }
 
         $group = $this->groupRepository->find($id);
 
@@ -465,9 +477,6 @@ class GroupsController extends AbstractController
             }
             $this->addFlash('success', 'Groupe supprimé avec succès');
         } catch (\Exception $e) {
-            if ($isAjax) {
-                return $this->errorResponse($e->getMessage());
-            }
             $this->addFlash('danger', 'Erreur lors de la suppression du groupe');
         }
 
@@ -481,13 +490,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-
-        if (!$user) {
-            if ($isAjax) {
-                return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-            }
-            return $this->redirectToRoute('app_login');
-        }
 
         $group = $this->groupRepository->find($id);
 
@@ -513,9 +515,6 @@ class GroupsController extends AbstractController
             }
             $this->addFlash('success', 'Vous avez quitté le groupe');
         } catch (\Exception $e) {
-            if ($isAjax) {
-                return $this->errorResponse($e->getMessage());
-            }
             $this->addFlash('danger', $e->getMessage());
         }
 
@@ -532,9 +531,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
 
         // Verify CSRF token
         if (!$this->isCsrfTokenValid('invite-members-' . $group->getId(), $request->request->get('_token'))) {
@@ -596,9 +592,6 @@ class GroupsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
 
         // Validate action parameter
         if (!in_array($action, self::VALID_INVITATION_ACTIONS, true)) {
@@ -606,7 +599,7 @@ class GroupsController extends AbstractController
             return $this->redirectToRoute('app_groups');
         }
 
-        $invitation = $this->groupRepository->getEntityManager()->getRepository(GroupInvitation::class)->find($id);
+        $invitation = $this->entityManager->getRepository(GroupInvitation::class)->find($id);
 
         if (!$invitation) {
             throw $this->createNotFoundException('Invitation non trouvée');
@@ -643,11 +636,8 @@ class GroupsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
 
-        $invitation = $this->groupRepository->getEntityManager()->getRepository(GroupInvitation::class)->find($id);
+        $invitation = $this->entityManager->getRepository(GroupInvitation::class)->find($id);
 
         if (!$invitation) {
             throw $this->createNotFoundException('Invitation non trouvée');
@@ -675,7 +665,7 @@ class GroupsController extends AbstractController
     #[Route('/app/invitation/{token}', name: 'app_invitation_accept_token')]
     public function acceptByToken(string $token, Request $request): Response
     {
-        /** @var User $user */
+        /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
             // Store the token URL so user can be redirected after login
@@ -701,9 +691,6 @@ class GroupsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('join-by-code', $request->request->get('_token'))) {
@@ -739,9 +726,6 @@ class GroupsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
 
         $group = $this->groupRepository->find($id);
         if (!$group) {
@@ -878,7 +862,7 @@ class GroupsController extends AbstractController
             'can_invite' => $this->isGranted(GroupVoter::INVITE, $group),
             'is_member' => $isMember,
             'current_sort' => $sort,
-            'chatbot' => $chatbotConfig ? [
+            'chatbot' => [
                 'enabled' => $chatbotConfig->isEnabled(),
                 'botName' => $chatbotConfig->getBotName(),
                 'personality' => $chatbotConfig->getPersonality(),
@@ -887,7 +871,7 @@ class GroupsController extends AbstractController
                 'subjectContext' => $chatbotConfig->getSubjectContext(),
                 'language' => $chatbotConfig->getLanguage(),
                 'maxResponseLength' => $chatbotConfig->getMaxResponseLength(),
-            ] : null,
+            ],
             'is_admin' => $currentUserRole === 'admin',
         ];
 
@@ -967,10 +951,6 @@ class GroupsController extends AbstractController
         /** @var User $currentUser */
         $currentUser = $this->getUser();
 
-        if (!$currentUser) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
-
         // Validate user ID
         if (!$this->inputValidator->isValidId($userId)) {
             return $this->errorResponse('ID utilisateur invalide');
@@ -1016,10 +996,6 @@ class GroupsController extends AbstractController
     {
         /** @var User $currentUser */
         $currentUser = $this->getUser();
-
-        if (!$currentUser) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // Validate user ID
         if (!$this->inputValidator->isValidId($userId)) {
@@ -1069,9 +1045,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('create-post-' . $id, $request->request->get('_token'))) {
@@ -1201,9 +1174,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('delete-post-' . $postId, $request->request->get('_token'))) {
@@ -1231,9 +1201,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('like-post-' . $id, $request->request->get('_token'))) {
@@ -1264,9 +1231,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('rate-post-' . $id, $request->request->get('_token'))) {
@@ -1360,9 +1324,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('comment-post-' . $id, $request->request->get('_token'))) {
@@ -1472,9 +1433,6 @@ class GroupsController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         // CSRF validation
         if (!$this->isCsrfTokenValid('delete-comment-' . $id, $request->request->get('_token'))) {
@@ -1499,9 +1457,6 @@ class GroupsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->errorResponse('Non authentifié', Response::HTTP_UNAUTHORIZED);
-        }
 
         $data = json_decode($request->getContent(), true);
 

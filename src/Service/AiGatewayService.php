@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * Centralized service for all FastAPI AI Gateway communications.
@@ -11,6 +12,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class AiGatewayService
 {
     private string $baseUrl;
+    /** @var list<string> */
+    private array $apiPrefixes = ['/api/v1/ai', '/api/ai', '/ai', '/api/v1', '/api', ''];
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
@@ -19,9 +22,67 @@ class AiGatewayService
         $this->baseUrl = rtrim($aiGatewayBaseUrl, '/');
     }
 
-    private function apiUrl(string $path): string
+    private function apiUrl(string $path, string $prefix = '/api/v1/ai'): string
     {
-        return $this->baseUrl . '/api/v1/ai' . $path;
+        $normalizedPrefix = trim($prefix);
+        if ($normalizedPrefix === '') {
+            return $this->baseUrl . $path;
+        }
+        return $this->baseUrl . $normalizedPrefix . $path;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildCandidateUrls(string $path): array
+    {
+        $urls = [];
+        foreach ($this->apiPrefixes as $prefix) {
+            $urls[] = $this->apiUrl($path, $prefix);
+        }
+        return $urls;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function decodeJson(ResponseInterface $response): array
+    {
+        $content = $response->getContent(false);
+        $decoded = json_decode($content, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param list<string> $paths
+     * @param array<string, mixed> $options
+     * @return array<string, mixed>
+     */
+    private function requestWithPathFallback(string $method, array $paths, array $options = []): array
+    {
+        $errors = [];
+
+        foreach ($paths as $path) {
+            foreach ($this->buildCandidateUrls($path) as $url) {
+                $response = $this->httpClient->request($method, $url, $options);
+                $status = $response->getStatusCode();
+                $data = $this->decodeJson($response);
+
+                if ($status >= 200 && $status < 300) {
+                    return $data;
+                }
+
+                if ($status === 404) {
+                    $errors[] = sprintf('%s -> 404', $url);
+                    continue;
+                }
+
+                $detail = (string) ($data['detail'] ?? $data['error'] ?? $response->getContent(false));
+                throw new \RuntimeException(sprintf('%s %s failed (%d): %s', $method, $url, $status, $detail));
+            }
+        }
+
+        throw new \RuntimeException('AI route introuvable. Tried: ' . implode(' | ', $errors));
     }
 
     /**
@@ -30,11 +91,9 @@ class AiGatewayService
      */
     public function getStatus(): array
     {
-        $response = $this->httpClient->request('GET', $this->apiUrl('/status'), [
+        return $this->requestWithPathFallback('GET', ['/status'], [
             'timeout' => 10,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -43,7 +102,7 @@ class AiGatewayService
      */
     public function generateQuiz(int $userId, int $subjectId, ?int $chapterId, int $numQuestions = 5, string $difficulty = 'MEDIUM', ?string $topic = null): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/generate/quiz'), [
+        return $this->requestWithPathFallback('POST', ['/generate/quiz', '/geenerate/quiz', '/quiz/generate'], [
             'json' => [
                 'user_id' => $userId,
                 'subject_id' => $subjectId,
@@ -54,8 +113,6 @@ class AiGatewayService
             ],
             'timeout' => 120,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -64,7 +121,7 @@ class AiGatewayService
      */
     public function generateFlashcards(int $userId, int $subjectId, ?int $chapterId, int $numCards = 10, ?string $topic = null, bool $includeHints = true): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/generate/flashcards'), [
+        return $this->requestWithPathFallback('POST', ['/generate/flashcards', '/geenerate/flashcards', '/flashcards/generate'], [
             'json' => [
                 'user_id' => $userId,
                 'subject_id' => $subjectId,
@@ -75,8 +132,6 @@ class AiGatewayService
             ],
             'timeout' => 120,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -85,7 +140,7 @@ class AiGatewayService
      */
     public function enhanceProfile(int $userId, ?string $currentBio = null, ?string $currentLevel = null, ?string $currentSpecialty = null, ?string $goals = null): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/profile/enhance'), [
+        return $this->requestWithPathFallback('POST', ['/profile/enhance', '/enhance/profile'], [
             'json' => [
                 'user_id' => $userId,
                 'current_bio' => $currentBio,
@@ -95,8 +150,6 @@ class AiGatewayService
             ],
             'timeout' => 60,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -105,15 +158,13 @@ class AiGatewayService
      */
     public function summarizeChapter(int $userId, int $chapterId): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/chapter/summarize'), [
+        return $this->requestWithPathFallback('POST', ['/chapter/summarize', '/summarize/chapter'], [
             'json' => [
                 'user_id' => $userId,
                 'chapter_id' => $chapterId,
             ],
             'timeout' => 60,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -122,7 +173,7 @@ class AiGatewayService
      */
     public function suggestPlanOptimizations(int $userId, int $planId, ?string $optimizationGoals = null): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/planning/suggest'), [
+        return $this->requestWithPathFallback('POST', ['/planning/suggest', '/suggest/planning', '/ai/planning/suggest'], [
             'json' => [
                 'user_id' => $userId,
                 'plan_id' => $planId,
@@ -130,8 +181,6 @@ class AiGatewayService
             ],
             'timeout' => 120,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -140,15 +189,13 @@ class AiGatewayService
      */
     public function applyPlanSuggestions(int $userId, int $suggestionLogId): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/planning/apply'), [
+        return $this->requestWithPathFallback('POST', ['/planning/apply', '/apply/planning', '/ai/planning/apply'], [
             'json' => [
                 'user_id' => $userId,
                 'suggestion_log_id' => $suggestionLogId,
             ],
             'timeout' => 30,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -157,15 +204,13 @@ class AiGatewayService
      */
     public function summarizePost(int $userId, int $postId): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/post/summarize'), [
+        return $this->requestWithPathFallback('POST', ['/post/summarize', '/summarize/post'], [
             'json' => [
                 'user_id' => $userId,
                 'post_id' => $postId,
             ],
             'timeout' => 60,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -174,7 +219,7 @@ class AiGatewayService
      */
     public function submitFeedback(int $userId, int $logId, int $rating): array
     {
-        $response = $this->httpClient->request('POST', $this->apiUrl('/feedback'), [
+        return $this->requestWithPathFallback('POST', ['/feedback'], [
             'json' => [
                 'user_id' => $userId,
                 'log_id' => $logId,
@@ -182,8 +227,6 @@ class AiGatewayService
             ],
             'timeout' => 10,
         ]);
-
-        return $response->toArray();
     }
 
     /**
@@ -192,10 +235,37 @@ class AiGatewayService
      */
     public function getStats(): array
     {
-        $response = $this->httpClient->request('GET', $this->apiUrl('/logs/stats'), [
+        return $this->requestWithPathFallback('GET', ['/logs/stats'], [
             'timeout' => 5,
         ]);
+    }
 
-        return $response->toArray();
+    /**
+     * @return array<string, mixed>
+     */
+    public function translateText(string $text, string $source = 'fr', string $target = 'en'): array
+    {
+        return $this->requestWithPathFallback('POST', ['/tools/translate'], [
+            'json' => [
+                'text' => $text,
+                'source' => $source,
+                'target' => $target,
+            ],
+            'timeout' => 90,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function defineWord(string $word, string $lang = 'fr'): array
+    {
+        return $this->requestWithPathFallback('POST', ['/tools/define'], [
+            'json' => [
+                'word' => $word,
+                'lang' => $lang,
+            ],
+            'timeout' => 90,
+        ]);
     }
 }

@@ -35,7 +35,7 @@ class QuizScoringService
 
         foreach ($answers as $questionIndex => $selectedChoiceKey) {
             // Validate question index
-            if (!is_int($questionIndex) || $questionIndex < 0 || $questionIndex >= $totalQuestions) {
+            if ($questionIndex < 0 || $questionIndex >= $totalQuestions) {
                 throw new \InvalidArgumentException(
                     sprintf('Index de question invalide: %s (quiz a %d questions)', $questionIndex, $totalQuestions)
                 );
@@ -64,7 +64,7 @@ class QuizScoringService
         }
 
         // Calculate score as percentage
-        $score = ($totalQuestions > 0) ? ($correctCount / $totalQuestions) * 100 : 0;
+        $score = ($correctCount / $totalQuestions) * 100;
 
         $attempt->setTotalQuestions($totalQuestions);
         $attempt->setCorrectCount($correctCount);

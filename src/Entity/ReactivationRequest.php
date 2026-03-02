@@ -15,13 +15,13 @@ class ReactivationRequest
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(length: 50)]
-    private ?string $status = 'pending';
+    private string $status = 'pending';
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $comment = null;
@@ -36,7 +36,7 @@ class ReactivationRequest
         return $this->id;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }

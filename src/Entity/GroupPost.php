@@ -62,19 +62,19 @@ class GroupPost
     private \DateTimeImmutable $createdAt;
 
     /** @var Collection<int, self> */
-    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentPost', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parentPost', cascade: ['persist', 'remove'])]
     private Collection $replies;
 
     /** @var Collection<int, PostLike> */
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostLike::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostLike::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $likes;
 
     /** @var Collection<int, PostComment> */
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostComment::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostComment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $comments;
 
     /** @var Collection<int, PostRating> */
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostRating::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostRating::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $ratings;
 
     public function __construct()
@@ -177,6 +177,23 @@ class GroupPost
     public function getReplies(): Collection
     {
         return $this->replies;
+    }
+
+    public function addReply(self $reply): static
+    {
+        if (!$this->replies->contains($reply)) {
+            $this->replies->add($reply);
+            $reply->setParentPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReply(self $reply): static
+    {
+        $this->replies->removeElement($reply);
+
+        return $this;
     }
 
     public function getAiSummary(): ?string

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Entity\User;
 use App\Repository\GroupInvitationRepository;
@@ -56,6 +57,7 @@ class GroupInvitation
     private ?\DateTimeImmutable $respondedAt = null;
 
     #[ORM\Column(length: 64, unique: true, nullable: true)]
+    #[Ignore]
     private ?string $token = null;
 
     #[ORM\Column(type: 'text', nullable: true)]

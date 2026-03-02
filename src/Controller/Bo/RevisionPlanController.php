@@ -6,6 +6,7 @@ use App\Entity\RevisionPlan;
 use App\Form\Bo\RevisionPlanType;
 use App\Repository\RevisionPlanRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class RevisionPlanController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(Request $request, RevisionPlanRepository $repo): Response
+    public function index(
+        Request $request,
+        RevisionPlanRepository $repo,
+        PaginatorInterface $paginator
+    ): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -31,12 +36,18 @@ class RevisionPlanController extends AbstractController
         if ($q) $qb->where('p.title LIKE :q')->setParameter('q', "%$q%");
         $qb->orderBy("p.$sort", $dir);
 
-        $total = (int) (clone $qb)->select('COUNT(p.id)')->getQuery()->getSingleScalarResult();
-        $items = $qb->setFirstResult(($page - 1) * $perPage)->setMaxResults($perPage)->getQuery()->getResult();
+        $pagination = $paginator->paginate($qb, $page, $perPage);
+
+        $total = (int) $pagination->getTotalItemCount();
 
         return $this->render('bo/plans/index.html.twig', [
-            'items' => $items, 'q' => $q, 'sort' => $sort, 'dir' => $dir,
-            'page' => $page, 'totalPages' => (int) ceil($total / $perPage), 'total' => $total,
+            'items' => $pagination,
+            'q' => $q,
+            'sort' => $sort,
+            'dir' => $dir,
+            'page' => $pagination->getCurrentPageNumber(),
+            'totalPages' => max(1, (int) ceil($total / $perPage)),
+            'total' => $total,
         ]);
     }
 

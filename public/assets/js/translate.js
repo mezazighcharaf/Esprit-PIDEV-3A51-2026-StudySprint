@@ -3,6 +3,8 @@
  * Handles translate button toggle, language selection, and API calls.
  */
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.__translateInitialized) return;
+    window.__translateInitialized = true;
     initTranslation();
 });
 

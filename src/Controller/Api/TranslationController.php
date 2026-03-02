@@ -6,12 +6,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Service\AiGatewayService;
 
 #[Route('/api', name: 'api_translation_')]
 class TranslationController extends AbstractController
 {
-    public function __construct(private readonly HttpClientInterface $httpClient) {}
+    public function __construct(private readonly AiGatewayService $aiGateway) {}
 
     #[Route('/translate', name: 'translate', methods: ['POST'])]
     public function translate(Request $request): JsonResponse
@@ -34,16 +34,7 @@ class TranslationController extends AbstractController
         }
 
         try {
-            $response = $this->httpClient->request('POST', 'http://localhost:8001/api/v1/ai/tools/translate', [
-                'timeout' => 90,
-                'json'    => ['text' => $text, 'source' => $source, 'target' => $target],
-            ]);
-
-            $result = $response->toArray(false);
-
-            if ($response->getStatusCode() !== 200) {
-                return $this->json(['error' => $result['detail'] ?? 'IA indisponible.'], 503);
-            }
+            $result = $this->aiGateway->translateText($text, $source, $target);
 
             return $this->json([
                 'original'   => $text,
@@ -51,8 +42,8 @@ class TranslationController extends AbstractController
                 'source'     => $source,
                 'target'     => $target,
             ]);
-        } catch (\Throwable) {
-            return $this->json(['error' => 'Service IA indisponible.'], 503);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Service IA indisponible: ' . $e->getMessage()], 503);
         }
     }
 }

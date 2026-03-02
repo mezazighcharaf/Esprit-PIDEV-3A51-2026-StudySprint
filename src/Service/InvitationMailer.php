@@ -3,9 +3,9 @@
 namespace App\Service;
 
 use App\Entity\GroupInvitation;
-use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -37,15 +37,16 @@ class InvitationMailer
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         // 2. Generate the QR Code pointing to the accept URL (endroid/qr-code v6 API)
-        $builder = new Builder(
-            writer: new PngWriter(),
+        $qrCode = new QrCode(
             data: $acceptUrl,
             encoding: new Encoding('UTF-8'),
             errorCorrectionLevel: ErrorCorrectionLevel::High,
             size: 200,
             margin: 10,
         );
-        $qrCode = $builder->build();
+
+        $writer = new PngWriter();
+        $qrCodeResult = $writer->write($qrCode);
 
         // 3. Build and send the email containing all 3 methods
         $inviterName = $invitation->getInvitedBy()
@@ -67,7 +68,7 @@ class InvitationMailer
                 'groupName' => $groupName,
             ])
             // Embed the QR code as inline image
-            ->embed($qrCode->getString(), 'qr-code', 'image/png');
+            ->embed($qrCodeResult->getString(), 'qr-code', 'image/png');
 
         $this->mailer->send($email);
 

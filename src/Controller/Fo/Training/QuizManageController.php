@@ -3,6 +3,7 @@
 namespace App\Controller\Fo\Training;
 
 use App\Entity\Quiz;
+use App\Entity\User;
 use App\Repository\QuizRepository;
 use App\Repository\SubjectRepository;
 use App\Repository\ChapterRepository;
@@ -15,6 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/fo/training/quizzes/manage', name: 'fo_training_quizzes_manage_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class QuizManageController extends AbstractController
 {
     #[Route('/my-quizzes', name: 'my_quizzes', methods: ['GET'])]
@@ -22,12 +26,8 @@ class QuizManageController extends AbstractController
         QuizRepository $quizRepo,
         UserRepository $userRepo
     ): Response {
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        
-        if (!$user) {
-            $this->addFlash('error', 'Utilisateur non connecté.');
-            return $this->redirectToRoute('fo_training_quizzes_index');
-        }
 
         $quizzes = $quizRepo->findBy(['owner' => $user], ['createdAt' => 'DESC']);
 
@@ -63,11 +63,8 @@ class QuizManageController extends AbstractController
             return $this->redirectToRoute('fo_training_quizzes_manage_new');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            $this->addFlash('error', 'Utilisateur non connecté.');
-            return $this->redirectToRoute('fo_training_quizzes_index');
-        }
 
         $subjects = $subjectRepo->findAll();
 
@@ -254,8 +251,9 @@ class QuizManageController extends AbstractController
             throw $this->createNotFoundException('Quiz introuvable.');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user || $quiz->getOwner()->getId() !== $user->getId()) {
+        if ($quiz->getOwner()->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException();
         }
 

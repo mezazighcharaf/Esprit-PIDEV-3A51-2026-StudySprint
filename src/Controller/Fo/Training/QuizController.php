@@ -3,6 +3,7 @@
 namespace App\Controller\Fo\Training;
 
 use App\Entity\QuizAttempt;
+use App\Entity\User;
 use App\Repository\QuizRepository;
 use App\Repository\QuizAttemptRepository;
 use App\Repository\UserRepository;
@@ -27,6 +28,9 @@ use App\Entity\QuizRating;
 use App\Repository\QuizRatingRepository;
 
 #[Route('/fo/training/quizzes', name: 'fo_training_quizzes_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class QuizController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -56,12 +60,8 @@ class QuizController extends AbstractController
     #[Route('/history', name: 'history', methods: ['GET'])]
     public function history(QuizAttemptRepository $attemptRepo, UserRepository $userRepo): Response
     {
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-
-        if (!$user) {
-            $this->addFlash('error', 'Aucun utilisateur disponible.');
-            return $this->redirectToRoute('fo_training_quizzes_index');
-        }
 
         $attempts = $attemptRepo->findByUser($user, 50);
 
@@ -86,8 +86,10 @@ class QuizController extends AbstractController
         $avgRating = $ratingRepo->getAverageScore($quiz);
         $ratingCount = $ratingRepo->getRatingCount($quiz);
         $userRating = null;
-        if ($this->getUser()) {
-            $userRating = $ratingRepo->findByUserAndQuiz($this->getUser(), $quiz);
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if ($currentUser) {
+            $userRating = $ratingRepo->findByUserAndQuiz($currentUser, $quiz);
         }
 
         return $this->render('fo/training/quizzes/show.html.twig', [
@@ -118,11 +120,8 @@ class QuizController extends AbstractController
             return $this->redirectToRoute('fo_training_quizzes_show', ['id' => $id]);
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            $this->addFlash('error', 'Aucun utilisateur disponible.');
-            return $this->redirectToRoute('fo_training_quizzes_index');
-        }
 
         // Check for existing incomplete attempt
         $existingAttempt = $attemptRepo->findIncompleteByUserAndQuiz($user, $quiz);
@@ -245,31 +244,27 @@ class QuizController extends AbstractController
 
             // Streak
             $user = $attempt->getUser();
-            if ($user) {
-                $streakService->recordActivity($user);
-            }
+            $streakService->recordActivity($user);
 
             // Notification
-            if ($user) {
-                $passed = $attempt->getScore() >= 50;
+            $passed = $attempt->getScore() >= 50;
+            $notificationService->create(
+                $user,
+                $passed ? 'Quiz réussi !' : 'Quiz terminé',
+                sprintf('%s - Score: %.1f%%', $quiz->getTitle(), $attempt->getScore()),
+                $passed ? 'success' : 'info',
+                $this->generateUrl('fo_training_quizzes_result', ['id' => $id, 'attempt' => $attempt->getId()])
+            );
+
+            // Check badges
+            $newBadges = $badgeService->checkAndAwardBadges($user);
+            foreach ($newBadges as $badge) {
                 $notificationService->create(
                     $user,
-                    $passed ? 'Quiz réussi !' : 'Quiz terminé',
-                    sprintf('%s - Score: %.1f%%', $quiz->getTitle(), $attempt->getScore()),
-                    $passed ? 'success' : 'info',
-                    $this->generateUrl('fo_training_quizzes_result', ['id' => $id, 'attempt' => $attempt->getId()])
+                    'Nouveau badge : ' . $badge->getName(),
+                    $badge->getDescription(),
+                    'success'
                 );
-
-                // Check badges
-                $newBadges = $badgeService->checkAndAwardBadges($user);
-                foreach ($newBadges as $badge) {
-                    $notificationService->create(
-                        $user,
-                        'Nouveau badge : ' . $badge->getName(),
-                        $badge->getDescription(),
-                        'success'
-                    );
-                }
             }
 
             return $this->redirectToRoute('fo_training_quizzes_result', [
@@ -318,8 +313,10 @@ class QuizController extends AbstractController
         $results = $scoringService->getDetailedResults($attempt);
 
         $userRating = null;
-        if ($this->getUser()) {
-            $userRating = $ratingRepo->findByUserAndQuiz($this->getUser(), $quiz);
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        if ($currentUser) {
+            $userRating = $ratingRepo->findByUserAndQuiz($currentUser, $quiz);
         }
 
         return $this->render('fo/training/quizzes/result.html.twig', [
@@ -365,14 +362,8 @@ class QuizController extends AbstractController
             return $this->redirectToRoute('fo_training_quizzes_ai_generate_form');
         }
 
+        /** @var User $user */
         $user = $this->getUser() ?? $userRepo->findOneBy([]);
-        if (!$user) {
-            if ($isAjax) {
-                return new JsonResponse(['error' => 'Aucun utilisateur disponible'], 401);
-            }
-            $this->addFlash('error', 'Aucun utilisateur disponible.');
-            return $this->redirectToRoute('fo_training_quizzes_index');
-        }
 
         if ($isAjax) {
             $body = json_decode($request->getContent(), true);
@@ -409,21 +400,21 @@ class QuizController extends AbstractController
                 $topic
             );
 
-            $quizId = $data['quiz_id'] ?? null;
+            $quizId = $data['quiz_id'];
 
             if ($quizId) {
                 if ($isAjax) {
                     return new JsonResponse([
                         'success' => true,
                         'quiz_id' => $quizId,
-                        'questions_count' => $data['questions_count'] ?? 0,
-                        'ai_log_id' => $data['ai_log_id'] ?? null,
+                        'questions_count' => $data['questions_count'],
+                        'ai_log_id' => $data['ai_log_id'],
                         'redirect_url' => $this->generateUrl('fo_training_quizzes_show', ['id' => $quizId]),
                     ]);
                 }
                 $this->addFlash('success', sprintf(
                     'Quiz généré avec succès ! %d questions créées.',
-                    $data['questions_count'] ?? 0
+                    $data['questions_count']
                 ));
                 return $this->redirectToRoute('fo_training_quizzes_show', ['id' => $quizId]);
             }
@@ -462,6 +453,7 @@ class QuizController extends AbstractController
             return $this->redirectToRoute('fo_training_quizzes_show', ['id' => $id]);
         }
 
+        /** @var User $user */
         $user = $this->getUser();
         $rating = $ratingRepo->findByUserAndQuiz($user, $quiz);
 

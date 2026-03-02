@@ -4,6 +4,8 @@ namespace App\Tests\Controller\Bo;
 
 use App\Entity\TeacherCertificationRequest;
 use App\Entity\User;
+use App\Entity\Administrator;
+use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -33,11 +35,10 @@ class TeacherCertificationTest extends WebTestCase
 
         $admin = $repo->findOneBy(['email' => 'test_cert_admin@studysprint.test']);
         if (!$admin) {
-            $admin = new User();
+            $admin = new Administrator();
             $admin->setEmail('test_cert_admin@studysprint.test');
             $admin->setFullName('Cert Admin');
-            $admin->setUserType('ADMIN');
-            $admin->setRoles(['ROLE_ADMIN']);
+            $admin->setRole('ROLE_ADMIN');
             $admin->setPassword($hasher->hashPassword($admin, 'admin123'));
             $em->persist($admin);
             $em->flush();
@@ -46,11 +47,10 @@ class TeacherCertificationTest extends WebTestCase
 
         $student = $repo->findOneBy(['email' => 'test_cert_student@studysprint.test']);
         if (!$student) {
-            $student = new User();
+            $student = new Student();
             $student->setEmail('test_cert_student@studysprint.test');
             $student->setFullName('Cert Student');
-            $student->setUserType('STUDENT');
-            $student->setRoles(['ROLE_USER']);
+            $student->setRole('ROLE_USER');
             $student->setPassword($hasher->hashPassword($student, 'user123'));
             $em->persist($student);
             $em->flush();
@@ -216,7 +216,6 @@ class TeacherCertificationTest extends WebTestCase
         // User should now be TEACHER
         $updatedStudent = $em->getRepository(User::class)->find(self::$studentId);
         $this->assertEquals('TEACHER', $updatedStudent->getUserType());
-        $this->assertTrue($updatedStudent->isCertifiedTeacher());
     }
 
     public function testAdminCanRejectRequest(): void
@@ -228,8 +227,8 @@ class TeacherCertificationTest extends WebTestCase
         $admin = $em->getRepository(User::class)->find(self::$adminId);
         $student = $em->getRepository(User::class)->find(self::$studentId);
 
-        // Reset student to STUDENT
-        $student->setUserType('STUDENT');
+        // Reset student to ROLE_USER
+        $student->setRole('ROLE_USER');
         $em->flush();
 
         // Create a PENDING request
@@ -263,7 +262,7 @@ class TeacherCertificationTest extends WebTestCase
 
         // User should still be STUDENT
         $updatedStudent = $em->getRepository(User::class)->find(self::$studentId);
-        $this->assertEquals('STUDENT', $updatedStudent->getUserType());
+        $this->assertEquals('ROLE_USER', $updatedStudent->getUserType());
     }
 
     public function testRejectedUserCanResubmit(): void

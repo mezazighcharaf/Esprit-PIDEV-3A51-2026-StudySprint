@@ -3,6 +3,8 @@
 namespace App\Tests\Controller\Bo;
 
 use App\Entity\User;
+use App\Entity\Administrator;
+use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -38,11 +40,10 @@ class BoAccessSecurityTest extends WebTestCase
 
         $admin = $repo->findOneBy(['email' => 'test_bo_admin@studysprint.test']);
         if (!$admin) {
-            $admin = new User();
+            $admin = new Administrator();
             $admin->setEmail('test_bo_admin@studysprint.test');
             $admin->setFullName('BO Admin');
-            $admin->setUserType('ADMIN');
-            $admin->setRoles(['ROLE_ADMIN']);
+            $admin->setRole('ROLE_ADMIN');
             $admin->setPassword($hasher->hashPassword($admin, 'admin123'));
             $em->persist($admin);
             $em->flush();
@@ -51,11 +52,10 @@ class BoAccessSecurityTest extends WebTestCase
 
         $user = $repo->findOneBy(['email' => 'test_bo_user@studysprint.test']);
         if (!$user) {
-            $user = new User();
+            $user = new Student();
             $user->setEmail('test_bo_user@studysprint.test');
             $user->setFullName('BO User');
-            $user->setUserType('STUDENT');
-            $user->setRoles(['ROLE_USER']);
+            $user->setRole('ROLE_USER');
             $user->setPassword($hasher->hashPassword($user, 'user123'));
             $em->persist($user);
             $em->flush();

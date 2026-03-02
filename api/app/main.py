@@ -1,4 +1,4 @@
-"""
+﻿"""
 StudySprint FastAPI Application
 Main entry point
 """
@@ -33,16 +33,16 @@ API REST pour la plateforme d'apprentissage StudySprint.
 ### Modules disponibles:
 - **Auth**: Authentification JWT (login, refresh, logout)
 - **Users**: Gestion des utilisateurs et profils
-- **Subjects**: Matières et chapitres
-- **Planning**: Plans de révision et tâches
-- **Groups**: Groupes d'étude et posts
+- **Subjects**: MatiÃ¨res et chapitres
+- **Planning**: Plans de rÃ©vision et tÃ¢ches
+- **Groups**: Groupes d'Ã©tude et posts
 - **Training**: Quiz et tentatives
-- **Flashcards**: Decks et révision SM-2
-- **AI**: Génération de contenu par IA
+- **Flashcards**: Decks et rÃ©vision SM-2
+- **AI**: GÃ©nÃ©ration de contenu par IA
 
 ### Authentification
 Utilisez le endpoint `/api/v1/auth/login` pour obtenir un JWT token.
-Incluez le token dans l'en-tête `Authorization: Bearer <token>`.
+Incluez le token dans l'en-tÃªte `Authorization: Bearer <token>`.
     """,
     version="1.0.0",
     docs_url="/api/docs",
@@ -147,10 +147,10 @@ async def startup_event():
     """
     Application startup tasks.
     """
-    print(f"🚀 StudySprint API starting...")
-    print(f"📚 Environment: {settings.environment}")
-    print(f"🔗 Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else 'configured'}")
-    print(f"📖 Docs: http://localhost:8001/api/docs")
+    print("StudySprint API starting...")
+    print(f"Environment: {settings.environment}")
+    print(f"Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else 'configured'}")
+    print("Docs: http://localhost:8001/api/docs")
 
 
 # Shutdown event
@@ -159,7 +159,7 @@ async def shutdown_event():
     """
     Application shutdown tasks.
     """
-    print("👋 StudySprint API shutting down...")
+    print("StudySprint API shutting down...")
 
 
 if __name__ == "__main__":
@@ -170,3 +170,4 @@ if __name__ == "__main__":
         port=8001,
         reload=settings.debug
     )
+

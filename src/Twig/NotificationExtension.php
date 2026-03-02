@@ -2,6 +2,7 @@
 
 namespace App\Twig;
 
+use App\Entity\User;
 use App\Repository\NotificationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Twig\Extension\AbstractExtension;
@@ -20,7 +21,7 @@ class NotificationExtension extends AbstractExtension implements GlobalsInterfac
         $user = $this->security->getUser();
         $unreadCount = 0;
 
-        if ($user) {
+        if ($user instanceof User) {
             $unreadCount = $this->notificationRepo->countUnread($user);
         }
 

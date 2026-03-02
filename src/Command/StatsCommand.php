@@ -35,11 +35,15 @@ class StatsCommand extends Command
         $totalQuizzes = $this->quizRepo->count([]);
         $totalDecks = $this->deckRepo->count([]);
         $totalAttempts = $this->attemptRepo->count([]);
-        $completedAttempts = $this->attemptRepo->count(['isCompleted' => true]);
+        $completedAttempts = (int) $this->attemptRepo->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.completedAt IS NOT NULL')
+            ->getQuery()
+            ->getSingleScalarResult();
 
         $avgScore = $this->attemptRepo->createQueryBuilder('a')
             ->select('AVG(a.score)')
-            ->where('a.isCompleted = true')
+            ->where('a.completedAt IS NOT NULL')
             ->getQuery()
             ->getSingleScalarResult();
 

@@ -3,6 +3,7 @@
 namespace App\Controller\Fo;
 
 use App\Entity\TeacherCertificationRequest;
+use App\Entity\User;
 use App\Entity\UserProfile;
 use App\Form\Fo\ProfileType;
 use App\Repository\TeacherCertificationRequestRepository;
@@ -22,6 +23,7 @@ class ProfileController extends AbstractController
     #[Route('', name: 'show', methods: ['GET'])]
     public function show(TeacherCertificationRequestRepository $certRepo, UserBadgeRepository $userBadgeRepo): Response
     {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -40,6 +42,7 @@ class ProfileController extends AbstractController
     #[Route('/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, EntityManagerInterface $em): Response
     {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
@@ -92,6 +95,7 @@ class ProfileController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             if ($isAjax) {
@@ -143,7 +147,7 @@ class ProfileController extends AbstractController
                     'suggested_bio' => $data['suggested_bio'] ?? '',
                     'suggested_goals' => $data['suggested_goals'] ?? '',
                     'suggested_routine' => $data['suggested_routine'] ?? '',
-                    'ai_log_id' => $data['ai_log_id'] ?? null,
+                    'ai_log_id' => $data['ai_log_id'],
                 ]);
             }
 
@@ -164,6 +168,7 @@ class ProfileController extends AbstractController
         EntityManagerInterface $em,
         TeacherCertificationRequestRepository $certRepo
     ): Response {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');

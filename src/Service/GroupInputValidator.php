@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Centralized input validation for groups module
@@ -31,9 +30,7 @@ class GroupInputValidator
     private const MAX_COMMENT_LENGTH = 2000;
     private const MAX_POST_BODY_LENGTH = 10000;
 
-    public function __construct(
-        private ValidatorInterface $validator
-    ) {}
+    public function __construct() {}
 
     /**
      * Validate and sanitize email addresses

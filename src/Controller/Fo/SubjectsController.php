@@ -4,6 +4,7 @@ namespace App\Controller\Fo;
 
 use App\Entity\Subject;
 use App\Entity\Chapter;
+use App\Entity\User;
 use App\Form\Fo\SubjectType;
 use App\Form\Fo\ChapterType;
 use App\Repository\SubjectRepository;
@@ -17,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/fo/subjects', name: 'fo_subjects_')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class SubjectsController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -37,6 +41,7 @@ class SubjectsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User|null $currentUser */
             $currentUser = $this->getUser() ?? $userRepo->findOneBy([]);
             if (!$currentUser) {
                 $this->addFlash('error', 'Utilisateur non connecté.');
@@ -85,9 +90,11 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Matière introuvable');
         }
 
-        $currentUserId = $this->getUser()?->getId();
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $currentUserId = $currentUser?->getId();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
+        $isSubjectOwner = $subject->getCreatedBy()->getId() === $currentUserId;
         if (!$isAdmin && !$isSubjectOwner) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette matière.');
         }
@@ -116,9 +123,11 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Matière introuvable');
         }
 
-        $currentUserId = $this->getUser()?->getId();
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $currentUserId = $currentUser?->getId();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
+        $isSubjectOwner = $subject->getCreatedBy()->getId() === $currentUserId;
         if (!$isAdmin && !$isSubjectOwner) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cette matière.');
         }
@@ -150,6 +159,7 @@ class SubjectsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User|null $currentUser */
             $currentUser = $this->getUser() ?? $userRepo->findOneBy([]);
             if (!$currentUser) {
                 $this->addFlash('error', 'Utilisateur non connecté.');
@@ -187,10 +197,12 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Chapitre ou matière introuvable');
         }
 
-        $currentUserId = $this->getUser()?->getId();
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $currentUserId = $currentUser?->getId();
         $isAdmin = $this->isGranted('ROLE_ADMIN');
-        $isSubjectOwner = $subject->getCreatedBy()?->getId() === $currentUserId;
-        $isChapterOwner = $chapter->getCreatedBy()?->getId() === $currentUserId;
+        $isSubjectOwner = $subject->getCreatedBy()->getId() === $currentUserId;
+        $isChapterOwner = $chapter->getCreatedBy()->getId() === $currentUserId;
 
         // Autoriser tout utilisateur connecté (ROLE_USER), en plus des propriétaires et admin
         if (!$this->isGranted('ROLE_USER')) {
@@ -228,9 +240,11 @@ class SubjectsController extends AbstractController
             throw $this->createNotFoundException('Chapitre introuvable');
         }
 
-        $currentUserId = $this->getUser()?->getId();
-        $isSubjectOwner = $chapter->getSubject()->getCreatedBy()?->getId() === $currentUserId;
-        $isChapterOwner = $chapter->getCreatedBy()?->getId() === $currentUserId;
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $currentUserId = $currentUser?->getId();
+        $isSubjectOwner = $chapter->getSubject()->getCreatedBy()->getId() === $currentUserId;
+        $isChapterOwner = $chapter->getCreatedBy()->getId() === $currentUserId;
         $isAdmin = $this->isGranted('ROLE_ADMIN');
 
         if (!$isAdmin && !$isSubjectOwner && !$isChapterOwner) {

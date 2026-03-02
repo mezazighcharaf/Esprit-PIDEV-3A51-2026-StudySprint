@@ -139,30 +139,66 @@ class FeedbackRequest(BaseModel):
 # AI PROVIDER ABSTRACTION
 # =============================================================================
 
-# Ollama model name - hardcoded to avoid .env cache issues
-OLLAMA_MODEL = "vanilj/qwen2.5-14b-instruct-iq4_xs:latest"
+# Backward-compatible default model name.
+OLLAMA_MODEL = settings.ollama_model
+
+
+def format_exception(exc: Exception) -> str:
+    """Return a useful, non-empty error message."""
+    message = str(exc).strip()
+    if message:
+        return message
+    return f"{type(exc).__name__}: {repr(exc)}"
+
+
+def pick_ollama_candidates(available_models: list[str]) -> list[str]:
+    """Pick model candidates in priority order, filtered by installed models."""
+    configured_primary = (settings.ollama_model or OLLAMA_MODEL).strip()
+    configured_fallbacks = [
+        model.strip()
+        for model in settings.ollama_fallback_models.split(",")
+        if model.strip()
+    ]
+
+    ordered: list[str] = []
+    for model in [configured_primary, *configured_fallbacks]:
+        if model and model not in ordered:
+            ordered.append(model)
+
+    installed = set(available_models)
+    candidates = [m for m in ordered if m in installed]
+
+    # Last-resort fallback: pick first installed model so we don't fail unnecessarily.
+    if not candidates and available_models:
+        candidates.append(available_models[0])
+
+    return candidates
+
+
+async def get_ollama_models() -> list[str]:
+    """Return installed Ollama model names."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(f"{settings.ollama_base_url}/api/tags")
+        response.raise_for_status()
+        models = response.json().get("models", [])
+        return [m.get("name", "") for m in models if m.get("name")]
 
 
 async def check_ollama_available() -> bool:
     """Check if Ollama is running"""
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(f"{settings.ollama_base_url}/api/tags")
-            if response.status_code == 200:
-                models = response.json().get("models", [])
-                if not models:
-                    print("[AI] Ollama: no models installed")
-                    return False
-                model_names = [m.get("name", "") for m in models]
-                print(f"[AI] Ollama models available: {model_names}")
-                return True
-            print(f"[AI] Ollama: unexpected status {response.status_code}")
+        model_names = await get_ollama_models()
+        if not model_names:
+            print("[AI] Ollama: no models installed")
+            return False
+        print(f"[AI] Ollama models available: {model_names}")
+        return True
     except Exception as e:
-        print(f"[AI] Ollama not reachable: {e}")
+        print(f"[AI] Ollama not reachable: {format_exception(e)}")
     return False
 
 
-async def call_ollama(prompt: str, system_prompt: str = None) -> str:
+async def call_ollama(prompt: str, model: str, system_prompt: str = None) -> str:
     """Call Ollama local API"""
     messages = []
     if system_prompt:
@@ -170,7 +206,7 @@ async def call_ollama(prompt: str, system_prompt: str = None) -> str:
     messages.append({"role": "user", "content": prompt})
 
     payload = {
-        "model": OLLAMA_MODEL,
+        "model": model,
         "messages": messages,
         "stream": False,
         "options": {
@@ -179,7 +215,7 @@ async def call_ollama(prompt: str, system_prompt: str = None) -> str:
         }
     }
 
-    print(f"[AI] Calling Ollama model={OLLAMA_MODEL}, prompt_len={len(prompt)}")
+    print(f"[AI] Calling Ollama model={model}, prompt_len={len(prompt)}")
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(settings.ollama_timeout, connect=10.0)) as client:
         response = await client.post(
@@ -197,30 +233,45 @@ async def call_ollama(prompt: str, system_prompt: str = None) -> str:
         return content
 
 
-async def call_ai_with_fallback(prompt: str, system_prompt: str = None) -> tuple[str, str]:
+async def call_ai_with_fallback(prompt: str, system_prompt: str = None) -> tuple[str, str, str]:
     """
-    Call Ollama AI. Returns: (response_text, 'ollama')
+    Call Ollama AI with model fallback.
+    Returns: (response_text, provider, model_used)
     """
     print(f"[AI] Starting Ollama call...")
 
-    available = await check_ollama_available()
-    if not available:
+    try:
+        available_models = await get_ollama_models()
+    except Exception as e:
         raise HTTPException(
             status_code=503,
-            detail="Ollama n'est pas accessible sur localhost:11434. Vérifiez que Ollama est lancé."
+            detail=f"Ollama inaccessible: {format_exception(e)}"
         )
 
-    try:
-        result = await call_ollama(prompt, system_prompt)
-        if result and len(result.strip()) > 0:
-            return result, "ollama"
-        raise Exception("Ollama returned empty response")
-    except Exception as e:
-        print(f"[AI] Ollama call failed: {e}")
+    if not available_models:
         raise HTTPException(
             status_code=503,
-            detail=f"Erreur Ollama: {str(e)}"
+            detail="Ollama est accessible mais aucun modèle n'est installé."
         )
+
+    candidates = pick_ollama_candidates(available_models)
+    errors: list[str] = []
+
+    for model in candidates:
+        try:
+            result = await call_ollama(prompt, model, system_prompt)
+            if result and len(result.strip()) > 0:
+                return result, "ollama", model
+            errors.append(f"{model}: empty response")
+        except Exception as e:
+            err = format_exception(e)
+            errors.append(f"{model}: {err}")
+            print(f"[AI] Ollama call failed on {model}: {err}")
+
+    raise HTTPException(
+        status_code=503,
+        detail=f"Erreur Ollama (models essayés: {', '.join(candidates)}): {' | '.join(errors)}"
+    )
 
 def parse_json_response(content: str) -> Any:
     """Parse JSON from AI response, handling markdown code blocks"""
@@ -268,13 +319,14 @@ async def get_ai_status():
 
     return AIStatusResponse(
         ollama_available=ollama_ok,
-        ollama_model=OLLAMA_MODEL,
+        ollama_model=settings.ollama_model or OLLAMA_MODEL,
         active_provider="ollama" if ollama_ok else "none",
         available=ollama_ok
     )
 
 
 @router.post("/generate/quiz", response_model=QuizGenerateResponse)
+@router.post("/geenerate/quiz", response_model=QuizGenerateResponse, include_in_schema=False)
 async def generate_quiz(
     request: QuizGenerateRequest,
     db: Session = Depends(get_db)
@@ -353,7 +405,7 @@ Réponds avec un tableau JSON uniquement, sans aucun texte avant ou après:
 
     try:
         # Call AI
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
 
         # Parse and validate JSON
         questions = None
@@ -364,7 +416,7 @@ Réponds avec un tableau JSON uniquement, sans aucun texte avant ou après:
                     break
             except Exception:
                 if attempt < settings.ai_max_retries - 1:
-                    response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+                    response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
                 continue
 
         if not questions or not isinstance(questions, list):
@@ -388,7 +440,7 @@ Réponds avec un tableau JSON uniquement, sans aucun texte avant ou après:
             generated_by_ai=True,
             ai_meta={
                 "provider": provider,
-                "model": OLLAMA_MODEL,
+                "model": model_used,
                 "log_id": log.id,
                 "topic": request.topic,
                 "generated_at": datetime.utcnow().isoformat()
@@ -424,6 +476,7 @@ Réponds avec un tableau JSON uniquement, sans aucun texte avant ou après:
 
 
 @router.post("/generate/flashcards", response_model=FlashcardGenerateResponse)
+@router.post("/geenerate/flashcards", response_model=FlashcardGenerateResponse, include_in_schema=False)
 async def generate_flashcards(
     request: FlashcardGenerateRequest,
     db: Session = Depends(get_db)
@@ -493,7 +546,7 @@ IMPORTANT: Ne numérote PAS le contenu des cartes. Réponds avec un tableau JSON
     db.commit()
 
     try:
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
 
         cards_data = None
         for attempt in range(settings.ai_max_retries):
@@ -503,7 +556,7 @@ IMPORTANT: Ne numérote PAS le contenu des cartes. Réponds avec un tableau JSON
                     break
             except Exception:
                 if attempt < settings.ai_max_retries - 1:
-                    response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+                    response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
                 continue
 
         if not cards_data or not isinstance(cards_data, list):
@@ -526,6 +579,7 @@ IMPORTANT: Ne numérote PAS le contenu des cartes. Réponds avec un tableau JSON
             generated_by_ai=True,
             ai_meta={
                 "provider": provider,
+                "model": model_used,
                 "log_id": log.id,
                 "topic": request.topic,
                 "generated_at": datetime.utcnow().isoformat()
@@ -614,7 +668,7 @@ IMPORTANT: Retourne UNIQUEMENT un objet JSON valide avec ces champs:
     db.commit()
 
     try:
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
         result = parse_json_response(response_text)
 
         # Persist suggestions to UserProfile
@@ -691,7 +745,7 @@ IMPORTANT: Retourne UNIQUEMENT un objet JSON valide:
     db.commit()
 
     try:
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
         result = parse_json_response(response_text)
 
         # Persist AI fields to Chapter entity
@@ -798,7 +852,7 @@ Limite-toi à 5 suggestions maximum et pertinentes."""
     db.commit()
 
     try:
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
         result = parse_json_response(response_text)
 
         latency = int((time.time() - start_time) * 1000)
@@ -929,7 +983,7 @@ IMPORTANT: Retourne UNIQUEMENT un objet JSON valide:
     db.commit()
 
     try:
-        response_text, provider = await call_ai_with_fallback(prompt, system_prompt)
+        response_text, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
         result = parse_json_response(response_text)
 
         # Persist AI fields to GroupPost entity
@@ -986,10 +1040,6 @@ async def ai_translate(request: TranslateToolRequest, db: Session = Depends(get_
     prompt = f'Traduis ce texte du {src_name} vers le {tgt_name}. Réponds avec UNIQUEMENT la traduction, sans explication ni ponctuation supplémentaire.\n\nTexte: {request.text}'
     system_prompt = "Tu es un traducteur. Réponds UNIQUEMENT avec la traduction, rien d'autre."
 
-    available = await check_ollama_available()
-    if not available:
-        raise HTTPException(status_code=503, detail="IA indisponible.")
-
     log = AiGenerationLog(
         user_id=None,
         feature="translate",
@@ -1002,16 +1052,11 @@ async def ai_translate(request: TranslateToolRequest, db: Session = Depends(get_
 
     start_time = time.time()
     try:
-        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]
-        payload = {"model": OLLAMA_MODEL, "messages": messages, "stream": False, "options": {"temperature": 0.3, "num_predict": 120}}
-        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
-            resp = await client.post(f"{settings.ollama_base_url}/api/chat", json=payload)
-            if resp.status_code != 200:
-                raise Exception(f"Ollama error {resp.status_code}")
-            translated = resp.json().get("message", {}).get("content", "").strip()
+        translated, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
+        translated = translated.strip()
 
         log.status = AiGenerationLog.STATUS_SUCCESS
-        log.output_json = {"translated": translated}
+        log.output_json = {"translated": translated, "provider": provider, "model": model_used}
         log.latency_ms = int((time.time() - start_time) * 1000)
         db.commit()
         return {"translated": translated, "source": request.source, "target": request.target}
@@ -1038,10 +1083,6 @@ async def ai_define(request: DefineToolRequest, db: Session = Depends(get_db)):
     prompt = f'Définis ce terme en {lang_name} en 1-2 phrases courtes et donne un exemple d\'utilisation. Réponds UNIQUEMENT en JSON: {{"definition":"...","example":"..."}}\n\nTerme: {request.word}'
     system_prompt = "Tu es un dictionnaire. Réponds UNIQUEMENT avec un objet JSON valide contenant 'definition' et 'example'. Sois concis."
 
-    available = await check_ollama_available()
-    if not available:
-        raise HTTPException(status_code=503, detail="IA indisponible.")
-
     log = AiGenerationLog(
         user_id=None,
         feature="define",
@@ -1054,13 +1095,8 @@ async def ai_define(request: DefineToolRequest, db: Session = Depends(get_db)):
 
     start_time = time.time()
     try:
-        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]
-        payload = {"model": OLLAMA_MODEL, "messages": messages, "stream": False, "options": {"temperature": 0.3, "num_predict": 150}}
-        async with httpx.AsyncClient(timeout=httpx.Timeout(60.0, connect=10.0)) as client:
-            resp = await client.post(f"{settings.ollama_base_url}/api/chat", json=payload)
-            if resp.status_code != 200:
-                raise Exception(f"Ollama error {resp.status_code}")
-            content = resp.json().get("message", {}).get("content", "").strip()
+        content, provider, model_used = await call_ai_with_fallback(prompt, system_prompt)
+        content = content.strip()
 
         try:
             result = parse_json_response(content)
@@ -1071,7 +1107,12 @@ async def ai_define(request: DefineToolRequest, db: Session = Depends(get_db)):
             example = ""
 
         log.status = AiGenerationLog.STATUS_SUCCESS
-        log.output_json = {"definition": definition, "example": example}
+        log.output_json = {
+            "definition": definition,
+            "example": example,
+            "provider": provider,
+            "model": model_used,
+        }
         log.latency_ms = int((time.time() - start_time) * 1000)
         db.commit()
         return {"word": request.word, "definition": definition, "example": example}

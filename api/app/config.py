@@ -3,6 +3,7 @@ Application Configuration - Self-contained (does NOT read Symfony .env)
 """
 from functools import lru_cache
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import List
 import json
 
@@ -32,6 +33,8 @@ class Settings(BaseSettings):
     # AI Gateway - Ollama (Local only)
     ollama_base_url: str = "http://localhost:11434"
     ollama_timeout: int = 120
+    ollama_model: str = "vanilj/qwen2.5-14b-instruct-iq4_xs:latest"
+    ollama_fallback_models: str = "qwen2.5:3b,qwen2.5:1.5b"
 
     # AI Generation settings
     ai_temperature: float = 0.7
@@ -44,6 +47,19 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = False
+
+    @field_validator('debug', mode='before')
+    @classmethod
+    def normalize_debug(cls, value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {'1', 'true', 'yes', 'on', 'dev', 'debug'}:
+                return True
+            if normalized in {'0', 'false', 'no', 'off', 'prod', 'release'}:
+                return False
+        return bool(value)
 
 
 @lru_cache()

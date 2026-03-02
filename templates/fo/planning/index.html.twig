@@ -2,223 +2,141 @@
 {% block title %}Planning - StudySprint{% endblock %}
 
 {% block content %}
-{# Stats Cards Gradient #}
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
-        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-        </div>
-        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ sessionsCount }}</div>
-        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Sessions ce mois</div>
+<div class="planning-header-row">
+    <div>
+        <h1 class="planning-title">Planning</h1>
+        <p class="planning-subtitle">Organise tes sessions et optimise ton plan avec l IA.</p>
     </div>
-    
-    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
-        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ (totalMinutes / 60)|number_format(1) }}h</div>
-        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Travail planifié</div>
+    <div class="planning-actions">
+        <a href="{{ path('fo_planning_session_new') }}" class="btn btn-secondary">Nouvelle session</a>
+        <a href="{{ path('fo_planning_plan_new') }}" class="btn btn-primary">Nouveau planning</a>
     </div>
-    
-    <div class="card" style="padding: 1.25rem; border-radius: 12px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)';" onmouseout="this.style.transform='';">
-        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-            <svg style="width: 24px; height: 24px; color: rgba(255,255,255,0.9);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div style="font-size: 32px; font-weight: 700; color: white; margin-bottom: 0.25rem;">{{ completionRate }}%</div>
-        <div style="font-size: 13px; color: rgba(255,255,255,0.85);">Taux complétion</div>
-    </div>
-</div>
-
-<div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-    <a href="{{ path('fo_planning_plan_new') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
-        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Nouveau planning
-    </a>
 </div>
 
 {% for message in app.flashes('success') %}
-    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ message }}
-    </div>
+    <div class="planning-alert success">{{ message }}</div>
 {% endfor %}
 {% for message in app.flashes('error') %}
-    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-        <svg style="width: 20px; height: 20px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ message }}
-    </div>
+    <div class="planning-alert error">{{ message }}</div>
 {% endfor %}
 
-{# Calendar + Sidebar 2-col layout #}
-<div style="display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start;">
-    {# Left: FullCalendar #}
-    <div class="card" style="border-radius: 12px; padding: 1.5rem;">
-        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Calendrier interactif</h2>
-        <div id="fullCalendar"></div>
+<div class="planning-kpis">
+    <div class="planning-kpi kpi-a">
+        <span class="planning-kpi-value">{{ sessionsCount }}</span>
+        <span class="planning-kpi-label">Sessions ce mois</span>
     </div>
-
-    <div class="card" style="border-radius: 12px; padding: 1.5rem;">
-        <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 1rem 0;">Sessions par jour</h2>
-        <canvas id="planningSessionsChart" height="120"></canvas>
+    <div class="planning-kpi kpi-b">
+        <span class="planning-kpi-value">{{ (totalMinutes / 60)|number_format(1) }}h</span>
+        <span class="planning-kpi-label">Travail planifie</span>
     </div>
-
-    {# Right sidebar #}
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-    <div>
-        <div class="card" style="border-radius: 12px; overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); padding: 1.25rem 1.5rem; border-bottom: 2px solid #f3f4f6;">
-                <h3 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0;">Sessions à venir</h3>
-            </div>
-            <div style="padding: 1rem;">
-                {% if upcomingTasks is empty %}
-                    <div style="text-align: center; padding: 2rem 1rem;">
-                        <svg style="width: 64px; height: 64px; color: #d1d5db; margin: 0 auto 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <p style="color: #6b7280; font-size: 14px; margin: 0;">Aucune session planifiée</p>
-                    </div>
-                {% else %}
-                    <div style="display: flex; flex-direction: column; gap: 0.875rem;">
-                        {% for task in upcomingTasks %}
-                        <a href="{{ path('fo_planning_show', {id: task.plan.id}) }}" style="display: block; padding: 1rem; border-radius: 10px; background: {{ task.status == 'DONE' ? '#f0fdf4' : '#f9fafb' }}; border-left: 4px solid {{ task.taskType == 'REVISION' ? '#667eea' : (task.taskType == 'QUIZ' ? '#f59e0b' : '#6b7280') }}; transition: all 0.2s; text-decoration: none; color: inherit;" onmouseover="this.style.background='{{ task.status == 'DONE' ? '#dcfce7' : '#f3f4f6' }}';" onmouseout="this.style.background='{{ task.status == 'DONE' ? '#f0fdf4' : '#f9fafb' }}';">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.625rem;">
-                                <strong style="font-size: 14px; color: #111827; flex: 1;">{{ task.title }}</strong>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.625rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 12px; color: #6b7280;">
-                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    {{ task.startAt|date('d/m/Y à H:i') }}
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 12px; color: #6b7280;">
-                                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    {% set durationMin = ((task.endAt.timestamp - task.startAt.timestamp) / 60)|round %}
-                                    {% if durationMin >= 60 %}{{ (durationMin / 60)|round(0, 'floor') }}h{% if durationMin % 60 > 0 %}{{ '%02d'|format(durationMin % 60) }}{% endif %}{% else %}{{ durationMin }} min{% endif %}
-                                </div>
-                            </div>
-                            <span class="badge badge-{% if task.taskType == 'REVISION' %}primary{% elseif task.taskType == 'QUIZ' %}warning{% else %}secondary{% endif %}" style="font-size: 11px;">
-                                {{ task.taskType }}
-                            </span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        {# MES PLANS + IA #}
-        <div class="card" style="border-radius: 12px; overflow: hidden; margin-top: 1rem;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 1.5rem;">
-                <div style="display: flex; align-items: center; gap: 0.625rem;">
-                    <svg style="width: 20px; height: 20px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                    <h3 style="font-size: 16px; font-weight: 600; color: white; margin: 0;">Optimiser avec l'IA</h3>
-                </div>
-            </div>
-            <div style="padding: 1rem;">
-                {% if userPlans is empty %}
-                    <div style="text-align: center; padding: 1.5rem 1rem;">
-                        <p style="color: #6b7280; font-size: 13px; margin: 0 0 1rem 0;">Créez un plan de révision pour utiliser l'IA</p>
-                        <a href="{{ path('fo_planning_generate') }}" class="btn btn-primary btn-sm">Créer un plan</a>
-                    </div>
-                {% else %}
-                    <p style="font-size: 12px; color: #6b7280; margin: 0 0 0.75rem 0;">Cliquez sur le bouton éclair pour que l'IA optimise un plan :</p>
-                    <div id="aiPlansList" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        {% for plan in userPlans %}
-                        <div style="display: flex; align-items: center; gap: 0.5rem;" id="plan-row-{{ plan.id }}">
-                            <a href="{{ path('fo_planning_show', {id: plan.id}) }}" style="flex: 1; padding: 0.75rem; border-radius: 8px; background: #f9fafb; border: 1px solid #e5e7eb; text-decoration: none; color: #111827; font-size: 13px; font-weight: 500; transition: all 0.15s;" onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
-                                {{ plan.title|slice(0, 30) }}
-                                <span style="display: block; font-size: 11px; color: #6b7280; font-weight: 400; margin-top: 2px;">
-                                    {{ plan.startDate|date('d/m') }} → {{ plan.endDate|date('d/m') }}
-                                </span>
-                            </a>
-                            <button type="button" class="btn btn-sm ai-suggest-btn" data-plan-id="{{ plan.id }}" data-token="{{ csrf_token('ai_suggest_' ~ plan.id) }}" style="flex-shrink: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.5rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Optimiser avec l'IA">
-                                <svg class="ai-icon" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                </svg>
-                                <div class="ai-spinner" style="display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-                            </button>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    <!-- Loading banner -->
-                    <div id="aiLoadingBanner" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; text-align: center;">
-                        <p style="font-size: 12px; color: #1e40af; margin: 0; font-weight: 500;" id="aiLoadingText">Analyse IA en cours... 0s</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+    <div class="planning-kpi kpi-c">
+        <span class="planning-kpi-value">{{ completionRate }}%</span>
+        <span class="planning-kpi-label">Taux completion</span>
     </div>
 </div>
 
+<div class="planning-grid">
+    <section class="planning-main">
+        <div class="card planning-card">
+            <h2 class="planning-section-title">Calendrier interactif</h2>
+            <div id="fullCalendar"></div>
+        </div>
+    </section>
+
+    <aside class="planning-side">
+        <div class="card planning-card">
+            <h2 class="planning-section-title">Sessions par jour</h2>
+            <canvas id="planningSessionsChart" height="130"></canvas>
+        </div>
+
+        <div class="card planning-card">
+            <h2 class="planning-section-title">Sessions a venir</h2>
+            {% if upcomingTasks is empty %}
+                <p class="planning-empty">Aucune session planifiee.</p>
+            {% else %}
+                <div class="planning-list">
+                    {% for task in upcomingTasks %}
+                        <a href="{{ path('fo_planning_show', {id: task.plan.id}) }}" class="planning-item">
+                            <div class="planning-item-top">
+                                <strong>{{ task.title }}</strong>
+                                <span class="badge badge-{% if task.taskType == 'REVISION' %}primary{% elseif task.taskType == 'QUIZ' %}warning{% else %}secondary{% endif %}">{{ task.taskType }}</span>
+                            </div>
+                            <div class="planning-item-meta">{{ task.startAt|date('d/m/Y H:i') }}</div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card planning-card">
+            <h2 class="planning-section-title">Optimiser avec l IA</h2>
+            {% if userPlans is empty %}
+                <p class="planning-empty">Cree un plan pour utiliser l IA.</p>
+            {% else %}
+                <div class="planning-list">
+                    {% for plan in userPlans %}
+                        <div class="planning-item-row">
+                            <a href="{{ path('fo_planning_show', {id: plan.id}) }}" class="planning-item-link">
+                                <strong>{{ plan.title|slice(0, 36) }}</strong>
+                                <span>{{ plan.startDate|date('d/m') }} -> {{ plan.endDate|date('d/m') }}</span>
+                            </a>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-primary ai-suggest-btn"
+                                data-plan-id="{{ plan.id }}"
+                                data-token="{{ csrf_token('ai_suggest_' ~ plan.id) }}"
+                                title="Optimiser avec l IA"
+                            >
+                                IA
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div id="aiLoadingBanner" class="planning-info-banner" style="display: none;">
+                    <span id="aiLoadingText">Analyse IA en cours...</span>
+                </div>
+            {% endif %}
+        </div>
+    </aside>
+</div>
+
 <style>
-@keyframes spin { to { transform: rotate(360deg); } }
+.planning-header-row { display:flex; flex-direction:column; align-items:center; gap:.55rem; margin-bottom:1rem; text-align:center; }
+.planning-title { margin:0; font-size:1.35rem; font-weight:700; color:#111827; }
+.planning-subtitle { margin:.25rem 0 0 0; color:#6b7280; font-size:.92rem; }
+.planning-actions { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; }
+.planning-alert { border-radius:10px; padding:.8rem 1rem; margin-bottom:.8rem; font-weight:500; }
+.planning-alert.success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.planning-alert.error { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+.planning-kpis { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:1rem; margin-bottom:1rem; }
+.planning-kpi { border-radius:12px; padding:1rem 1.1rem; color:#fff; display:flex; flex-direction:column; }
+.planning-kpi.kpi-a { background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); }
+.planning-kpi.kpi-b { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
+.planning-kpi.kpi-c { background:linear-gradient(135deg,#43e97b 0%,#38f9d7 100%); }
+.planning-kpi-value { font-size:1.9rem; font-weight:700; line-height:1; }
+.planning-kpi-label { margin-top:.45rem; font-size:.84rem; opacity:.95; }
+.planning-grid { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:1rem; align-items:start; }
+.planning-main, .planning-side { min-width:0; }
+.planning-side { display:flex; flex-direction:column; gap:1rem; }
+.planning-card { padding:1rem; border-radius:12px; }
+.planning-section-title { margin:0 0 .8rem 0; font-size:1rem; font-weight:700; color:#111827; }
+.planning-empty { color:#6b7280; margin:.4rem 0; font-size:.9rem; }
+.planning-list { display:flex; flex-direction:column; gap:.6rem; }
+.planning-item { display:block; text-decoration:none; color:inherit; border:1px solid #e5e7eb; border-radius:10px; padding:.7rem .8rem; background:#f9fafb; }
+.planning-item:hover { background:#f3f4f6; border-color:#d1d5db; }
+.planning-item-top { display:flex; justify-content:space-between; gap:.5rem; align-items:center; margin-bottom:.25rem; }
+.planning-item-meta { color:#6b7280; font-size:.78rem; }
+.planning-item-row { display:flex; align-items:center; gap:.5rem; }
+.planning-item-link { flex:1; text-decoration:none; color:#111827; border:1px solid #e5e7eb; border-radius:9px; padding:.62rem .75rem; background:#f9fafb; display:flex; flex-direction:column; gap:.2rem; }
+.planning-item-link span { color:#6b7280; font-size:.75rem; }
+.planning-info-banner { margin-top:.7rem; padding:.7rem .8rem; border-radius:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; font-size:.82rem; }
+@media (max-width: 1200px) {
+    .planning-grid { grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width: 900px) {
+    .planning-kpis { grid-template-columns:1fr; }
+}
 </style>
-
-<script>
-document.querySelectorAll('.ai-suggest-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        var planId = btn.dataset.planId;
-        var token = btn.dataset.token;
-        var icon = btn.querySelector('.ai-icon');
-        var spinner = btn.querySelector('.ai-spinner');
-        var banner = document.getElementById('aiLoadingBanner');
-        var bannerText = document.getElementById('aiLoadingText');
-
-        document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
-            b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'wait';
-        });
-        if (icon) icon.style.display = 'none';
-        if (spinner) spinner.style.display = 'block';
-        if (banner) banner.style.display = 'block';
-
-        var seconds = 0;
-        var tmr = setInterval(function() {
-            seconds++;
-            if (bannerText) bannerText.textContent = 'Analyse IA en cours... ' + seconds + 's — veuillez patienter';
-        }, 1000);
-
-        fetch('/fo/planning/' + planId + '/ai-suggest', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body: JSON.stringify({ _token: token })
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            clearInterval(tmr);
-            if (data.success && data.confirm_url) {
-                window.location.href = data.confirm_url;
-            } else {
-                if (banner) banner.style.display = 'none';
-                if (bannerText) bannerText.textContent = data.error || 'Erreur';
-                document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
-                    b.disabled = false; b.style.opacity = '1'; b.style.cursor = '';
-                });
-                if (icon) icon.style.display = ''; if (spinner) spinner.style.display = 'none';
-            }
-        })
-        .catch(function() {
-            clearInterval(tmr);
-            if (banner) { banner.style.display = 'block'; bannerText.textContent = 'Erreur réseau'; bannerText.style.color = '#991b1b'; }
-            document.querySelectorAll('.ai-suggest-btn').forEach(function(b) {
-                b.disabled = false; b.style.opacity = '1'; b.style.cursor = '';
-            });
-            if (icon) icon.style.display = ''; if (spinner) spinner.style.display = 'none';
-        });
-    });
-});
-</script>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
@@ -226,63 +144,83 @@ document.querySelectorAll('.ai-suggest-btn').forEach(function(btn) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calEl = document.getElementById('fullCalendar');
-    if (!calEl) return;
-    var calendar = new FullCalendar.Calendar(calEl, {
-        initialView: 'dayGridMonth',
-        locale: 'fr',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek'
-        },
-        buttonText: { today: "Aujourd'hui", month: 'Mois', week: 'Semaine', list: 'Liste' },
-        events: '{{ path("fo_planning_events_json") }}',
-        editable: false,
-        eventDisplay: 'block',
-        height: 'auto',
-        eventClick: function(info) {
-            var props = info.event.extendedProps;
-            if (props.planId) {
-                window.location.href = '{{ path("fo_planning_index") }}/' + props.planId;
+    if (calEl) {
+        var showPlanUrlTemplate = '{{ path("fo_planning_show", {id: 0}) }}';
+        var calendar = new FullCalendar.Calendar(calEl, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+            buttonText: { today: "Aujourd'hui", month: 'Mois', week: 'Semaine', list: 'Liste' },
+            events: '{{ path("fo_planning_events_json") }}',
+            editable: false,
+            eventDisplay: 'block',
+            height: 'auto',
+            eventClick: function(info) {
+                var props = info.event.extendedProps || {};
+                if (props.planId) {
+                    window.location.href = showPlanUrlTemplate.replace('/0', '/' + props.planId);
+                }
             }
-        }
-    });
-    calendar.render();
-
-    // Chart.js - Sessions par jour (palette existante)
-    var ctx = document.getElementById('planningSessionsChart');
-    if (ctx) {
-        var tasksData = {{ tasks|json_encode|raw }};
-        var countsByDay = {};
-        tasksData.forEach(function(t){
-            if (!t.startAt) return;
-            var d = new Date(t.startAt.date ?? t.startAt);
-            var key = d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
-            countsByDay[key] = (countsByDay[key] || 0) + 1;
         });
-        var labels = Object.keys(countsByDay).sort();
-        var dataPoints = labels.map(function(k){ return countsByDay[k]; });
-        new Chart(ctx, {
+        calendar.render();
+    }
+
+    var chartCanvas = document.getElementById('planningSessionsChart');
+    if (chartCanvas) {
+        var labels = {{ sessionsChartLabels|json_encode|raw }};
+        var values = {{ sessionsChartData|json_encode|raw }};
+        new Chart(chartCanvas, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
                     label: 'Sessions',
-                    data: dataPoints,
+                    data: values,
                     backgroundColor: '#667eea',
-                    borderRadius: 6,
+                    borderRadius: 6
                 }]
             },
             options: {
                 responsive: true,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: '#6b7280', autoSkip: true, maxTicksLimit: 10 } },
+                    x: { ticks: { color: '#6b7280', autoSkip: true, maxTicksLimit: 8 } },
                     y: { beginAtZero: true, ticks: { color: '#6b7280', stepSize: 1 } }
                 }
             }
         });
     }
+
+    document.querySelectorAll('.ai-suggest-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var planId = btn.dataset.planId;
+            var token = btn.dataset.token;
+            var banner = document.getElementById('aiLoadingBanner');
+            var bannerText = document.getElementById('aiLoadingText');
+            if (banner) banner.style.display = 'block';
+            if (bannerText) bannerText.textContent = 'Analyse IA en cours...';
+            btn.disabled = true;
+
+            fetch('/fo/planning/' + planId + '/ai-suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ _token: token })
+            })
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (data.success && data.confirm_url) {
+                    window.location.href = data.confirm_url;
+                    return;
+                }
+                if (bannerText) bannerText.textContent = data.error || 'Erreur IA';
+                btn.disabled = false;
+            })
+            .catch(function() {
+                if (bannerText) bannerText.textContent = 'Erreur reseau';
+                btn.disabled = false;
+            });
+        });
+    });
 });
 </script>
 {% endblock %}

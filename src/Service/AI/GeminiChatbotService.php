@@ -28,7 +28,6 @@ class GeminiChatbotService
         private BotInteractionRepository $interactionRepository,
         private PostCommentRepository $commentRepository,
         private LoggerInterface $logger,
-        private string $geminiApiKey = '',
     ) {}
 
     public function shouldTrigger(string $content, ChatbotConfig $config): bool
@@ -255,7 +254,7 @@ class GeminiChatbotService
             'file'     => 'un partage de fichier',
             'poll'     => 'un sondage',
         ];
-        $typeLabel = $typeLabels[$post->getPostType() ?? 'text'] ?? 'une publication';
+        $typeLabel = $typeLabels[$post->getPostType()] ?? 'une publication';
 
         $userPrompt  = "Un membre vient de publier {$typeLabel} dans le groupe \"{$config->getGroup()->getName()}\".";
         if ($post->getTitle()) {
@@ -263,7 +262,7 @@ class GeminiChatbotService
         }
         $userPrompt .= "\nContenu: {$post->getBody()}";
 
-        $instruction = match ($post->getPostType() ?? 'text') {
+        $instruction = match ($post->getPostType()) {
             'question' => "Réponds à cette question de manière pédagogique et utile.",
             'resource' => "Commente cette ressource: explique pourquoi c'est utile.",
             'file'     => "Commente ce partage de fichier: explique comment il peut aider l'étude.",

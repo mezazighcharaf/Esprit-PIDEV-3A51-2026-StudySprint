@@ -53,10 +53,10 @@ class QuizController extends AbstractController
             $qz->getId(),
             $qz->getTitle(),
             $qz->getDifficulty(),
-            count($qz->getQuestions() ?? []),
+            count($qz->getQuestions()),
             $qz->isPublished() ? 'Oui' : 'Non',
-            $qz->getSubject()?->getName() ?? '-',
-            $qz->getCreatedAt()?->format('d/m/Y H:i'),
+            $qz->getSubject()->getName(),
+            $qz->getCreatedAt()->format('d/m/Y H:i'),
         ], $quizzes);
 
         return $csv->export(

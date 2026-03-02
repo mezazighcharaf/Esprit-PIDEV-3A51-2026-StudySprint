@@ -20,11 +20,11 @@ class PostRating
 
     #[ORM\ManyToOne(targetEntity: GroupPost::class, inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?GroupPost $post = null;
+    private GroupPost $post;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\Column(type: 'smallint')]
     #[Assert\NotBlank(message: 'La note est requise')]
@@ -33,10 +33,10 @@ class PostRating
         max: 5,
         notInRangeMessage: 'La note doit être entre {{ min }} et {{ max }}'
     )]
-    private ?int $rating = null;
+    private int $rating = 0;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
@@ -48,7 +48,7 @@ class PostRating
         return $this->id;
     }
 
-    public function getPost(): ?GroupPost
+    public function getPost(): GroupPost
     {
         return $this->post;
     }
@@ -59,7 +59,7 @@ class PostRating
         return $this;
     }
 
-    public function getUser(): ?User
+    public function getUser(): User
     {
         return $this->user;
     }

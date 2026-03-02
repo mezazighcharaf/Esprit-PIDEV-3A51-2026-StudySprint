@@ -222,7 +222,7 @@ class AiGatewayServiceTest extends TestCase
 
         $this->assertSame(100, $result['total_requests']);
         $this->assertSame(90, $result['success_count']);
-        $this->assertSame(10.0, $result['failure_rate']);
+        $this->assertEquals(10.0, $result['failure_rate']);
     }
 
     // =========================================================================
@@ -232,13 +232,13 @@ class AiGatewayServiceTest extends TestCase
     public function testServiceThrowsOnHttpError(): void
     {
         $response = $this->createMock(ResponseInterface::class);
-        $response->method('toArray')->willThrowException(
-            new \Symfony\Component\HttpClient\Exception\ServerException($response)
-        );
+        $response->method('getStatusCode')->willReturn(500);
+        $response->method('getContent')->with(false)->willReturn('{"detail":"boom"}');
 
         $this->httpClient->method('request')->willReturn($response);
 
-        $this->expectException(\Symfony\Component\HttpClient\Exception\ServerException::class);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('failed (500)');
 
         $this->service->generateQuiz(1, 10, null);
     }
@@ -250,7 +250,8 @@ class AiGatewayServiceTest extends TestCase
         $expected = ['total_requests' => 0, 'success_count' => 0, 'failed_count' => 0, 'failure_rate' => 0, 'by_feature' => [], 'avg_latency_ms' => 0, 'last_7_days_count' => 0, 'avg_feedback_rating' => null];
 
         $response = $this->createMock(ResponseInterface::class);
-        $response->method('toArray')->willReturn($expected);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getContent')->with(false)->willReturn(json_encode($expected, JSON_THROW_ON_ERROR));
 
         $this->httpClient->expects($this->once())
             ->method('request')
@@ -268,7 +269,8 @@ class AiGatewayServiceTest extends TestCase
     private function mockResponse(string $method, string $pathSuffix, array $returnData, int $expectedTimeout): void
     {
         $response = $this->createMock(ResponseInterface::class);
-        $response->method('toArray')->willReturn($returnData);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getContent')->with(false)->willReturn(json_encode($returnData, JSON_THROW_ON_ERROR));
 
         $this->httpClient->expects($this->once())
             ->method('request')

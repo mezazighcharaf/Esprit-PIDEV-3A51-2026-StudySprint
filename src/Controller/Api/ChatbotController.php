@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/app/api/chatbot')]
+/**
+ * @method \App\Entity\User|null getUser()
+ */
 class ChatbotController extends AbstractController
 {
     public function __construct(
@@ -70,9 +73,6 @@ class ChatbotController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
-        }
 
         $group = $this->groupRepository->find($groupId);
         if (!$group) {
@@ -150,9 +150,6 @@ class ChatbotController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
-        }
 
         $group = $this->groupRepository->find($groupId);
         if (!$group) {
@@ -190,9 +187,6 @@ class ChatbotController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
-        }
 
         $group = $this->groupRepository->find($groupId);
         if (!$group) {
@@ -262,9 +256,6 @@ class ChatbotController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
-        }
 
         $interaction = $this->interactionRepository->find($interactionId);
         if (!$interaction) {
@@ -297,9 +288,6 @@ class ChatbotController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['success' => false, 'error' => 'Non authentifié'], 401);
-        }
 
         $group = $this->groupRepository->find($groupId);
         if (!$group) {

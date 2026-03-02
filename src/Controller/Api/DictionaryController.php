@@ -5,12 +5,12 @@ namespace App\Controller\Api;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Service\AiGatewayService;
 
 #[Route('/api/dictionary', name: 'api_dictionary_')]
 class DictionaryController extends AbstractController
 {
-    public function __construct(private readonly HttpClientInterface $httpClient) {}
+    public function __construct(private readonly AiGatewayService $aiGateway) {}
 
     #[Route('/{word}', name: 'lookup', methods: ['GET'])]
     public function lookup(string $word): JsonResponse
@@ -21,24 +21,15 @@ class DictionaryController extends AbstractController
         }
 
         try {
-            $response = $this->httpClient->request('POST', 'http://localhost:8001/api/v1/ai/tools/define', [
-                'timeout' => 90,
-                'json'    => ['word' => $word, 'lang' => 'fr'],
-            ]);
-
-            $result = $response->toArray(false);
-
-            if ($response->getStatusCode() !== 200) {
-                return $this->json(['error' => $result['detail'] ?? 'IA indisponible.'], 503);
-            }
+            $result = $this->aiGateway->defineWord($word, 'fr');
 
             return $this->json([
                 'word'       => $result['word'] ?? $word,
                 'definition' => $result['definition'] ?? '',
                 'example'    => $result['example'] ?? '',
             ]);
-        } catch (\Throwable) {
-            return $this->json(['error' => 'Service IA indisponible.'], 503);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Service IA indisponible: ' . $e->getMessage()], 503);
         }
     }
 }
