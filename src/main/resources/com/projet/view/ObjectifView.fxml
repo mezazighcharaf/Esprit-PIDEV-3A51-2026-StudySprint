@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.projet.controller.ObjectifController"
+      spacing="16" stylesheets="@styles.css">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Mes Objectifs" styleClass="page-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtRecherche" promptText="🔍 Rechercher un objectif..."
+                   styleClass="search-field" />
+        <Button text="+ Ajouter" styleClass="btn-primary" onAction="#handleAjouter" />
+    </HBox>
+
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+        <!-- Table -->
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="8">
+            <TableView fx:id="tableObjectifs" VBox.vgrow="ALWAYS" styleClass="table-view"
+                       style="-fx-pref-height: 500;">
+                <columns>
+                    <TableColumn fx:id="colTitre"       text="Titre"       prefWidth="170" />
+                    <TableColumn fx:id="colDescription"  text="Description" prefWidth="190" />
+                    <TableColumn fx:id="colDateDebut"    text="Début"       prefWidth="90"  />
+                    <TableColumn fx:id="colDateFin"      text="Fin"         prefWidth="90"  />
+                    <TableColumn fx:id="colStatut"       text="Statut"      prefWidth="100" />
+                    <TableColumn fx:id="colActions"      text="Actions"     prefWidth="180" />
+                </columns>
+                <placeholder>
+                    <Label text="Aucun objectif trouvé." style="-fx-text-fill: #9ca3af;" />
+                </placeholder>
+            </TableView>
+        </VBox>
+
+        <!-- Formulaire -->
+        <VBox styleClass="card" prefWidth="290" spacing="6">
+            <Label fx:id="lblFormTitle" text="Nouvel Objectif"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+            <Separator />
+
+            <!-- Titre -->
+            <Label text="Titre *" styleClass="form-label" />
+            <TextField fx:id="txtTitre" promptText="Titre de l'objectif" styleClass="form-field" />
+            <Label fx:id="errTitre" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <!-- Description -->
+            <Label text="Description" styleClass="form-label" />
+            <TextArea fx:id="txtDescription" promptText="Description (optionnel)"
+                      prefRowCount="3" styleClass="form-field" wrapText="true" />
+
+            <!-- Date début -->
+            <Label text="Date de début *" styleClass="form-label" />
+            <DatePicker fx:id="dpDateDebut" styleClass="form-field" prefWidth="260" />
+            <Label fx:id="errDateDebut" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <!-- Date fin -->
+            <Label text="Date de fin *" styleClass="form-label" />
+            <DatePicker fx:id="dpDateFin" styleClass="form-field" prefWidth="260" />
+            <Label fx:id="errDateFin" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <!-- Statut -->
+            <Label text="Statut *" styleClass="form-label" />
+            <ComboBox fx:id="cbStatut" prefWidth="260" styleClass="form-field" />
+            <Label fx:id="errStatut" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <HBox spacing="8">
+                <Button fx:id="btnSave" text="Enregistrer" styleClass="btn-primary"
+                        onAction="#handleSave" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                <Button text="Annuler" styleClass="btn-light" onAction="#clearForm" />
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

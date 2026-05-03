@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.projet.controller.TacheController"
+      spacing="16" stylesheets="@styles.css">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Mes Tâches" styleClass="page-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtRecherche" promptText="🔍 Rechercher une tâche..."
+                   styleClass="search-field" />
+        <Button text="📄 Exporter PDF" styleClass="btn-success" onAction="#handleExportPDF" />
+        <Button text="📊 Exporter Excel" styleClass="btn-success" onAction="#handleExportExcel" />
+        <Button text="+ Ajouter"       styleClass="btn-primary" onAction="#handleAjouter" />
+    </HBox>
+
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+
+        <!-- Table -->
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="8">
+            <TableView fx:id="tableTaches" VBox.vgrow="ALWAYS" styleClass="table-view"
+                       style="-fx-pref-height: 500;">
+                <columns>
+                    <TableColumn fx:id="colTitre"    text="Titre"       prefWidth="150" />
+                    <TableColumn fx:id="colObjectif" text="Objectif"    prefWidth="130" />
+                    <TableColumn fx:id="colDuree"    text="Durée"       prefWidth="80"  />
+                    <TableColumn fx:id="colPriorite" text="Priorité"    prefWidth="90"  />
+                    <TableColumn fx:id="colStatut"   text="Statut"      prefWidth="100" />
+                    <TableColumn fx:id="colActions"  text="Actions"     prefWidth="210" />
+                </columns>
+                <placeholder>
+                    <Label text="Aucune tâche trouvée." style="-fx-text-fill: #9ca3af;" />
+                </placeholder>
+            </TableView>
+        </VBox>
+
+        <!-- Formulaire -->
+        <VBox styleClass="card" prefWidth="290" spacing="6">
+            <Label fx:id="lblFormTitle" text="Nouvelle Tâche"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+            <Separator />
+
+            <!-- Titre -->
+            <Label text="Titre *" styleClass="form-label" />
+            <TextField fx:id="txtTitre" promptText="Titre de la tâche" styleClass="form-field" />
+            <Label fx:id="errTitre" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <!-- Durée -->
+            <Label text="Durée (minutes) *" styleClass="form-label" />
+            <TextField fx:id="txtDuree" promptText="Ex: 30" styleClass="form-field" />
+            <Label fx:id="errDuree" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <!-- Priorité -->
+            <Label text="Priorité *" styleClass="form-label" />
+            <ComboBox fx:id="cbPriorite" prefWidth="260" styleClass="form-field" />
+            <Label fx:id="errPriorite" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" />
+
+            <!-- Statut -->
+            <Label text="Statut *" styleClass="form-label" />
+            <ComboBox fx:id="cbStatut" prefWidth="260" styleClass="form-field" />
+            <Label fx:id="errStatut" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" />
+
+            <!-- Objectif -->
+            <Label text="Objectif *" styleClass="form-label" />
+            <ComboBox fx:id="cbObjectif" prefWidth="260" styleClass="form-field" />
+            <Label fx:id="errObjectif" text="" visible="false"
+                   style="-fx-text-fill: #ef4444; -fx-font-size: 11px;" wrapText="true" maxWidth="260" />
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <HBox spacing="8">
+                <Button fx:id="btnSave" text="Enregistrer" styleClass="btn-primary"
+                        onAction="#handleSave" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                <Button text="Annuler" styleClass="btn-light" onAction="#clearForm" />
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

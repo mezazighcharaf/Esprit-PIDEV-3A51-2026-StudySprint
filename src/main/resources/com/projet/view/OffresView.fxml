@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.projet.controller.OffresController"
+      spacing="16" stylesheets="@styles.css">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Offres d'Emploi" styleClass="page-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label fx:id="lblResultats" text=""
+               style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+    </HBox>
+
+    <!-- Barre de recherche -->
+    <VBox styleClass="card" spacing="12">
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <TextField fx:id="txtKeyword" promptText="Ex: Java developer, Data analyst, DevOps..."
+                       styleClass="form-field"
+                       style="-fx-pref-width: 400; -fx-pref-height: 40;"
+                       onAction="#handleRechercher" />
+            <ComboBox fx:id="cbPays" prefWidth="140" styleClass="form-field" />
+            <Button text="🔍 Rechercher" styleClass="btn-primary"
+                    style="-fx-pref-height: 40;"
+                    onAction="#handleRechercher" />
+            <Button text="↺ Réinitialiser" styleClass="btn-light"
+                    style="-fx-pref-height: 40;"
+                    onAction="#handleReset" />
+        </HBox>
+
+        <!-- Suggestions rapides -->
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Suggestions :" style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" />
+            <Button text="Java" styleClass="badge-primary" onAction="#searchJava" style="-fx-cursor: hand;" />
+            <Button text="Python" styleClass="badge-info" onAction="#searchPython" style="-fx-cursor: hand;" />
+            <Button text="DevOps" styleClass="badge-secondary" onAction="#searchDevOps" style="-fx-cursor: hand;" />
+            <Button text="Data Analyst" styleClass="badge-warning" onAction="#searchData" style="-fx-cursor: hand;" />
+            <Button text="Spring Boot" styleClass="badge-success" onAction="#searchSpring" style="-fx-cursor: hand;" />
+        </HBox>
+    </VBox>
+
+    <!-- Loading indicator -->
+    <HBox fx:id="loadingBox" alignment="CENTER" spacing="10" visible="false" managed="false">
+        <ProgressIndicator prefWidth="24" prefHeight="24" />
+        <Label text="Recherche en cours..." style="-fx-text-fill: #6b7280;" />
+    </HBox>
+
+    <!-- Liste des offres -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color: transparent; -fx-border-color: transparent;">
+        <VBox fx:id="offresContainer" spacing="12" />
+    </ScrollPane>
+
+    <!-- Pagination -->
+    <HBox fx:id="paginationBox" alignment="CENTER" spacing="12" visible="false" managed="false">
+        <Button text="◀ Précédent" fx:id="btnPrev" styleClass="btn-light" onAction="#handlePrev" />
+        <Label fx:id="lblPage" text="Page 1"
+               style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
+        <Button text="Suivant ▶" fx:id="btnNext" styleClass="btn-primary" onAction="#handleNext" />
+    </HBox>
+</VBox>

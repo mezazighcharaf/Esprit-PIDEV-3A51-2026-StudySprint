@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.projet.controller.MainController"
+      prefHeight="700.0" prefWidth="1100.0"
+      stylesheets="@styles.css">
+
+    <!-- Sidebar -->
+    <VBox styleClass="sidebar" spacing="0">
+        <!-- Logo -->
+        <Label text="∞ StudySprint" styleClass="sidebar-header" />
+        <Separator />
+
+        <!-- Navigation -->
+        <VBox spacing="4" style="-fx-padding: 12 8 8 8;">
+            <Label text="NAVIGATION" styleClass="nav-section-title" />
+            <Button fx:id="btnDashboard" text="  📊  Dashboard"
+                    styleClass="nav-btn" onAction="#showDashboard" />
+            <Button fx:id="btnObjectifs" text="  🎯  Objectifs"
+                    styleClass="nav-btn" onAction="#showObjectifs" />
+            <Button fx:id="btnTaches" text="  ✅  Tâches"
+                    styleClass="nav-btn" onAction="#showTaches" />
+            <Button fx:id="btnOffres" text="  💼  Offres d'emploi"
+                    styleClass="nav-btn" onAction="#showOffres" />
+            <Button fx:id="btnStats" text="  📈  Statistiques"
+                    styleClass="nav-btn" onAction="#showStats" />
+        </VBox>
+
+        <!-- Spacer -->
+        <Region VBox.vgrow="ALWAYS" />
+
+        <!-- User Profile + Logout -->
+        <Separator />
+        <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 10 10 10 10;">
+            <Label fx:id="lblUserAvatar" text="ET" styleClass="user-avatar" />
+            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <Label fx:id="lblUserName" text="Étudiant" styleClass="user-name" />
+                <Label text="Étudiant" styleClass="user-role" />
+            </VBox>
+            <Button text="⏻" styleClass="btn-danger"
+                    style="-fx-padding: 4 8 4 8; -fx-font-size: 12px;"
+                    onAction="#handleLogout" />
+        </HBox>
+    </VBox>
+
+    <!-- Main Content Area -->
+    <StackPane fx:id="contentArea" HBox.hgrow="ALWAYS" styleClass="main-content" />
+</HBox>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.chart.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.projet.controller.DashboardController"
+            fitToWidth="true"
+            style="-fx-background-color: #f3f4f6; -fx-border-color: transparent;"
+            stylesheets="@styles.css">
+<VBox spacing="20" style="-fx-padding: 0 0 20 0;">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Dashboard" styleClass="page-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button text="+ Nouvel Objectif" styleClass="btn-primary" onAction="#goToNewObjectif" />
+    </HBox>
+
+    <!-- Citation motivante -->
+    <VBox styleClass="card" spacing="8"
+          style="-fx-background-color: #f0fdf4; -fx-border-color: #10b981; -fx-border-width: 1; -fx-border-radius: 12;">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="💬 Citation du jour"
+                   style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #065f46;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="↻" styleClass="btn-light"
+                    style="-fx-font-size: 12px; -fx-padding: 2 8 2 8;"
+                    onAction="#handleNouvellecitation" />
+        </HBox>
+        <Label fx:id="lblCitation" text="Chargement..."
+               style="-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #1f2937;"
+               wrapText="true" />
+        <Label fx:id="lblAuteurCitation" text=""
+               style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
+    </VBox>
+
+    <!-- Rappels -->
+    <VBox fx:id="rappelsBox" spacing="6" managed="true" visible="true" />
+
+    <!-- Hero Card -->
+    <VBox fx:id="heroCard" styleClass="hero-card" spacing="8">
+        <Label fx:id="lblPriorityTag" text="PRIORITÉ DU JOUR"
+               style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.8); -fx-font-weight: bold;" />
+        <Label fx:id="lblPriorityTitle" text="Aucun objectif en cours"
+               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" />
+        <Label fx:id="lblPriorityDeadline" text=""
+               style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.85);" />
+        <ProgressBar fx:id="progressBar" prefWidth="500" prefHeight="8"
+                     style="-fx-accent: white;" progress="0" />
+        <Label fx:id="lblProgressText" text=""
+               style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.8);" />
+    </VBox>
+
+    <!-- Stats Row -->
+    <HBox spacing="16">
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Tâches terminées" styleClass="stat-label" />
+            <Label fx:id="lblTasksDone" text="0" styleClass="stat-value" />
+            <Label text="Total complétées" style="-fx-font-size: 11px; -fx-text-fill: #10b981;" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Tâches en cours" styleClass="stat-label" />
+            <Label fx:id="lblTasksInProgress" text="0" styleClass="stat-value" />
+            <Label text="En progression" style="-fx-font-size: 11px; -fx-text-fill: #3b82f6;" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Objectifs actifs" styleClass="stat-label" />
+            <Label fx:id="lblObjectifsActifs" text="0" styleClass="stat-value" />
+            <Label text="En cours" style="-fx-font-size: 11px; -fx-text-fill: #f59e0b;" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Tâches à faire" styleClass="stat-label" />
+            <Label fx:id="lblTasksTodo" text="0" styleClass="stat-value" />
+            <Label text="En attente" style="-fx-font-size: 11px; -fx-text-fill: #6b7280;" />
+        </VBox>
+    </HBox>
+
+    <!-- Recommandation IA -->
+    <VBox fx:id="recommandationBox" styleClass="card" spacing="10"
+          style="-fx-background-color: #fffbeb; -fx-border-color: #f59e0b; -fx-border-width: 1; -fx-border-radius: 12;">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="🤖 Recommandation" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #92400e;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Aller à la tâche →" fx:id="btnGoToRecommandation"
+                    styleClass="btn-warning" onAction="#goToRecommandation" />
+        </HBox>
+        <Label fx:id="lblRecommandationTache" text=""
+               style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+        <Label fx:id="lblRecommandationRaison" text=""
+               style="-fx-font-size: 12px; -fx-text-fill: #6b7280;" wrapText="true" />
+    </VBox>
+
+    <!-- Score + Badges -->
+    <HBox spacing="16">
+        <!-- Score de préparation -->
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="10">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="🎯 Score de Préparation"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="📄 Rapport PDF" styleClass="btn-primary"
+                        onAction="#handleGenererRapport" />
+            </HBox>
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <Label fx:id="lblScore" text="0%"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3b82f6;" />
+                <VBox spacing="4">
+                    <Label fx:id="lblScoreNiveau" text="—"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
+                    <Label fx:id="lblScoreMessage" text=""
+                           style="-fx-font-size: 12px; -fx-text-fill: #6b7280;"
+                           wrapText="true" maxWidth="320" />
+                </VBox>
+            </HBox>
+            <ProgressBar fx:id="progressScore" prefWidth="400" prefHeight="10" progress="0" />
+        </VBox>
+
+        <!-- Badges -->
+        <VBox styleClass="card" prefWidth="340" spacing="10">
+            <Label text="🏆 Badges"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+            <HBox fx:id="badgesBox" spacing="10" alignment="CENTER_LEFT" />
+        </VBox>
+    </HBox>
+
+    <!-- Bottom Row: Todo + Chart -->
+    <HBox spacing="16">
+        <!-- Todo List -->
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="12">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="À faire aujourd'hui"
+                       style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="Voir tout" styleClass="btn-light" onAction="#goToTaches" />
+            </HBox>
+            <VBox fx:id="todoList" spacing="8" />
+        </VBox>
+
+        <!-- Pie Chart -->
+        <VBox styleClass="card" prefWidth="300" spacing="8">
+            <Label text="Statistiques des tâches"
+                   style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+            <PieChart fx:id="pieChart" prefHeight="240" legendVisible="true" />
+        </VBox>
+    </HBox>
+
+</VBox>
+</ScrollPane>

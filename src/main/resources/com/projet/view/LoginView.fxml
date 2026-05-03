@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.projet.controller.LoginController"
+           stylesheets="@styles.css"
+           style="-fx-background-color: #f3f4f6;">
+
+    <!-- Centered Login Card -->
+    <VBox alignment="CENTER" spacing="0"
+          style="-fx-background-color: white; -fx-background-radius: 16;
+                 -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 20, 0, 0, 6);
+                 -fx-padding: 48 40 40 40;"
+          maxWidth="420" maxHeight="520">
+
+        <!-- Logo -->
+        <Label text="∞ StudySprint"
+               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #3b82f6; -fx-padding: 0 0 6 0;" />
+        <Label text="Connectez-vous à votre espace"
+               style="-fx-font-size: 13px; -fx-text-fill: #9ca3af; -fx-padding: 0 0 28 0;" />
+
+        <!-- Error message -->
+        <Label fx:id="lblError" text=""
+               style="-fx-text-fill: #ef4444; -fx-font-size: 12px; -fx-padding: 0 0 10 0;"
+               wrapText="true" maxWidth="320" />
+
+        <!-- Email -->
+        <Label text="Adresse email" styleClass="form-label" style="-fx-padding: 0 0 4 0;" />
+        <TextField fx:id="txtEmail" promptText="email@exemple.com"
+                   styleClass="form-field"
+                   style="-fx-pref-width: 320; -fx-pref-height: 40; -fx-font-size: 13px;"
+                   onAction="#handleLogin" />
+
+        <Region prefHeight="14" />
+
+        <!-- Password -->
+        <Label text="Mot de passe" styleClass="form-label" style="-fx-padding: 0 0 4 0;" />
+        <PasswordField fx:id="txtPassword" promptText="••••••••"
+                       styleClass="form-field"
+                       style="-fx-pref-width: 320; -fx-pref-height: 40; -fx-font-size: 13px;"
+                       onAction="#handleLogin" />
+
+        <Region prefHeight="24" />
+
+        <!-- Login Button -->
+        <Button text="Se connecter" styleClass="btn-primary"
+                style="-fx-pref-width: 320; -fx-pref-height: 42; -fx-font-size: 14px;"
+                onAction="#handleLogin" defaultButton="true" />
+
+        <Region prefHeight="16" />
+
+        <!-- Divider -->
+        <HBox alignment="CENTER" spacing="10">
+            <Separator HBox.hgrow="ALWAYS" />
+            <Label text="ou" style="-fx-text-fill: #9ca3af; -fx-font-size: 12px;" />
+            <Separator HBox.hgrow="ALWAYS" />
+        </HBox>
+
+        <Region prefHeight="16" />
+
+        <!-- Register link -->
+        <HBox alignment="CENTER" spacing="6">
+            <Label text="Pas encore de compte ?"
+                   style="-fx-font-size: 13px; -fx-text-fill: #6b7280;" />
+            <Button text="S'inscrire" styleClass="btn-light"
+                    style="-fx-font-size: 13px; -fx-cursor: hand;"
+                    onAction="#handleRegister" />
+        </HBox>
+    </VBox>
+</StackPane>

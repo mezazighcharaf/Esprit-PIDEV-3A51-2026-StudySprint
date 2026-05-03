@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.projet.controller.StatisticsController"
+      spacing="20" stylesheets="@styles.css">
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Statistiques" styleClass="page-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button text="↻ Actualiser" styleClass="btn-primary" onAction="#loadStatistics" />
+    </HBox>
+
+    <!-- Stats Summary Row -->
+    <HBox spacing="16">
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Total Tâches" styleClass="stat-label" />
+            <Label fx:id="lblTotal" text="0" styleClass="stat-value" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="Terminées" styleClass="stat-label" />
+            <Label fx:id="lblTermine" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="En cours" styleClass="stat-label" />
+            <Label fx:id="lblEnCours" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #3b82f6;" />
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="4">
+            <Label text="À faire" styleClass="stat-label" />
+            <Label fx:id="lblAFaire" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #6b7280;" />
+        </VBox>
+    </HBox>
+
+    <!-- Charts Row -->
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="8">
+            <Label text="Répartition par Statut"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
+            <PieChart fx:id="pieChartStatut" VBox.vgrow="ALWAYS" prefHeight="300" />
+        </VBox>
+
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" spacing="8">
+            <Label text="Répartition par Priorité"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #374151;" />
+            <BarChart fx:id="barChartPriorite" VBox.vgrow="ALWAYS" prefHeight="300">
+                <xAxis><CategoryAxis label="Priorité" /></xAxis>
+                <yAxis><NumberAxis label="Nombre de tâches" /></yAxis>
+            </BarChart>
+        </VBox>
+    </HBox>
+</VBox>
